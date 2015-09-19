@@ -11,6 +11,8 @@ The monitoring system developed for raspberry-pi under the project GV/2015/088.
   forked from
   [hackstuces/PlugwiseOnLinux](https://github.com/hackstuces/PlugwiseOnLinux).
 
+- [ESAI-CEU-UCH/Plugwise-2-py](git@github.com:ESAI-CEU-UCH/Plugwise-2-py.git) forked from [SevenW/Plugwise-2-py](https://github.com/SevenW/Plugwise-2-py).
+
 - [Blog entry about PlugwiseOnLinux https](//blog.karssen.org/2011/11/20/using-plugwise-adapters-with-linux/).
 
 - [Adding RTC to Rpi](http://thepihut.com/blogs/raspberry-pi-tutorials/17209332-adding-a-real-time-clock-to-your-raspberry-pi).
