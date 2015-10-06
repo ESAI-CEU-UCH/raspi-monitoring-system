@@ -10,7 +10,6 @@
 
 import time
 import paho.mqtt.client as mqtt
-import Aemet
 import Adafruit_DHT
 import csv
 import urllib2
