@@ -1,0 +1,5 @@
+El alcance del proyecto es instalar y configurar la infrastructura necesaria para la medicion de consumos electricos y temperaturas en diferentes hogares.
+Se podra monitorizar en tiempo real los diferentes datos que se obtengan de los sensores y otras fuentes desde un panel de control, estos datos tambien se
+ almacenaran en una base de datos para que puedan ser tratados y analizados posteriormente.
+En una segunda fase con los datos registrados se realizaran estadisticas para analizar los consumos.
+
