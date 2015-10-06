@@ -8,3 +8,6 @@ wrapper para emitir los mensajes de la manera adecuada. Cuando te
 hayas mirado esto, escribe aquí una descripción, con referencias, del
 protocolo, de manera que luego puedas usar ese texto para ponerlo en
 la memoria del proyecto.
+
+El protocolo MQTT PROBANDO
+
