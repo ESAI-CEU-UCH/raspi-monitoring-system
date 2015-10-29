@@ -24,9 +24,9 @@ El uso de + permite sustituir solo un directorio "/canal/+/subtema1" permtira al
 Utilizando este sistema de publicacion y subscripcion se permite la cominicacion 1 a 1 , 1 a muchos y muchos a 1.
 
 Permite definir 3 niveles de QoS 
--0 At most once delivery El mensaje llega al receptor 1 o ninguna veces
--1 At least once delivery Asegura que el mensaje llega al receptor al menos una vez 
--2 Exactly once delivery
+- 0 At most once delivery El mensaje llega al receptor 1 o ninguna veces
+- 1 At least once delivery Asegura que el mensaje llega al receptor al menos una vez 
+- 2 Exactly once delivery
 
 Permite definir un mensaje especial "Last Will and Testament" que se emitira en caso de desconexion irregular del cliente
 Persistencia, MQTT permite que el Broker almacene solamente el ultimo mensaje bueno recibidoy que al suscribirse un cliente este lo reciba al conectarse.
