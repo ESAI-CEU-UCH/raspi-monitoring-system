@@ -14,13 +14,15 @@ error y enviar un correo electrónico informando de que ha habido un problema.
 
 Al hilo de lo anterior, se me ocurre que podemos implementar un módulo Python
 que permita comunicarnos con nuestra cuenta de correo `esaiceuuch@gmail.com`.
-Dicho servicio debería ser cargado y utilizado así:
+Dicho servicio debería ser cargado como demonio, y tendría una parte cliente
+que podría utilizarse así:
 
 ```Python
-import MailLogger
-# El servicio abre un archivo con los credenciales de la cuenta de correo
-# (en este caso credenciales para conectarse a GMail).
-logger = MailLogger.open("/etc/mail_credentials")
+import MailLoggerClient
+# El cliente abre una conexión con el servicio de logging indicado en
+# el transporte dado. Se podría simplemente llamar a open() sin ningún
+# argumento y usaría el transporte determinado por defecto en el sistema.
+logger = MailLoggerClient.open(TRANSPORT)
 
 # Deberiamos poder configurarlo para que nos envie mensajes instantaneos o bien
 # resumenes diarios, semanales, mensuales, ... La configuracion aqui indicada
@@ -38,6 +40,16 @@ logger.warning("Cuidadin.")
 logger.alert("Algo muy malo ha pasado.")
 logger.error("Algo malo pero recuperable.")
 ```
+
+El servidor recibiría un fichero con credenciales para conectar a la cuenta de
+correo electrónico, y sería ejecutado así desde un terminal:
+
+```
+$ python MailLoggerSever /etc/mail_credentials
+```
+
+Este servicio utilizará el módulo `Scheduler` explicado en la siguiente sección
+para registrar la ejecución planificada de los resúmenes indicados.
 
 ## Servicios en segundo plano
 
@@ -61,23 +73,33 @@ esta funcionalidad:
 - `loop_forever()` Ejecuta un bucle infinito que nunca termina y por tanto
   nunca devuelve la ejecución.
 
-- `once_after(seconds, func, *args, **kwargs)` Permite registrar la ejecución de
-  una función dentro de un número determinado de segundos.
+- `uuid = once_after(seconds, func, *args, **kwargs)` Permite registrar la
+  ejecución de una función dentro de un número determinado de segundos. Esta
+  función devuelve un `uuid` que puede ser utilizado para eliminar el trabajo
+  del planificador.
 
-- `once_o_clock(seconds, func, *args, **kwargs)` Permite registrar la ejecución
-  de una función la siguiente vez que el timestamp sea múltiplo de un número
-  determinado de segundos. Esta función es útil para ajustar la ejecución a
-  un momento determinado en el tiempo.
+- `uuid = once_o_clock(seconds, func, *args, **kwargs)` Permite registrar la
+  ejecución de una función la siguiente vez que el timestamp sea múltiplo de un
+  número determinado de segundos. Esta función es útil para ajustar la ejecución
+  a un momento determinado en el tiempo. Esta función devuelve un `uuid` que
+  puede ser utilizado para eliminar el trabajo del planificador.
 
-- `once_when(timestamp, func, *args, **kwargs)` Permite registrar la ejecución
-  de una función en un momento concreto determinado por el timestamp dado.
+- `uuid = once_when(timestamp, func, *args, **kwargs)` Permite registrar la
+  ejecución de una función en un momento concreto determinado por el timestamp
+  dado. Esta función devuelve un `uuid` que puede ser utilizado para eliminar el
+  trabajo del planificador.
 
-- `repeat_every(seconds, func, *args, **kwargs)` Registra la función cada número
-  de segundos indicado.
+- `uuid = repeat_every(seconds, func, *args, **kwargs)` Registra la función cada
+  número de segundos indicado. Esta función devuelve un `uuid` que puede ser
+  utilizado para eliminar el trabajo del planificador.
 
-- `repeat_o_clock(seconds, func, *args, **kwargs)` Registra la función para
-  ejecutarse cada vez que el timestamp sea múltiplo del número de segundos
-  indicado.
+- `uuid = repeat_o_clock(seconds, func, *args, **kwargs)` Registra la función
+  para ejecutarse cada vez que el timestamp sea múltiplo del número de segundos
+  indicado. Esta función devuelve un `uuid` que puede ser utilizado para
+  eliminar el trabajo del planificador.
+
+- `remove(uuid)` Recibe un `uuid` devuelto por alguna de las funciones
+  `repeat_*` o `once_*`, eliminando el trabajo asociado del planificador.
 
 # Descripción general
 

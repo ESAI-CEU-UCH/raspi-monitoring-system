@@ -20,8 +20,10 @@ import Scheduler
 def say(something, more):
     print(time.time(), something, more)
 Scheduler.start()
-Scheduler.repeat_every(5, say, "Hello", "World")
-Scheduler.repeat_o_clock(60, say, "One", "Minute")
+a = Scheduler.repeat_every(5, say, "Hello", "World")
+b = Scheduler.repeat_o_clock(60, say, "One", "Minute")
+DO_STUFF()
+Scheduler.remove(a)
 DO_STUFF()
 Scheduler.stop()
 
@@ -40,9 +42,16 @@ Scheduler.loop_forever()
 import sys
 import time
 import threading
+from uuid import uuid4
 
 import Queue
 
+#####################
+## PRIVATE SECTION ##
+#####################
+
+# Set of removed jobs.
+__removed = set()
 # Queue of pending jobs. Every job is tuple (timestamp, (function, args, kwargs)).
 __jobs  = Queue.PriorityQueue()
 # Condition to awake main thread when jobs are ready or sleep time has passed.
@@ -87,10 +96,13 @@ def __main_loop():
     """
     while __main_thread_running:
         __check_running_threads()
-        when,data = __jobs.get()
-        amount    = when - time.time()
+        when,uuid,data = __jobs.get()
+        if uuid in __removed:
+            __removed.discard(uuid)
+            continue
+        amount = when - time.time()
         if amount > 0:
-            __jobs.put( (when,data) )
+            __jobs.put( (when,uuid,data) )
             amount = when - time.time()
             if amount > 0:
                 __awake.acquire()
@@ -101,19 +113,19 @@ def __main_loop():
             job,args,kwargs = data
             __running.append( __run_threaded(job, *args, **kwargs) )
 
-def once_after(seconds, func, *args, **kwargs):
+def __once_after(seconds, uuid, func, *args, **kwargs):
     """Executes the given job function after given seconds amount."""
     if __main_thread_running:
         now  = time.time()
         when = now + seconds
-        __jobs.put( (when, (func,args,kwargs)) )
+        __jobs.put( (when, uuid, (func,args,kwargs)) )
         __awake.acquire()
         __awake.notify()
         __awake.release()
     else:
         raise Exception("Unable to enqueue any job while Scheduler is stopped.")
 
-def __repeated_job(func, seconds, expected_when, *args, **kwargs):
+def __repeated_job(seconds, expected_when, uuid, func, *args, **kwargs):
     """Repeats execution of a function every seconds.
     
     This function uses expected_when in order to improve precision of next
@@ -123,39 +135,67 @@ def __repeated_job(func, seconds, expected_when, *args, **kwargs):
     diff = now - expected_when
     amount = seconds - diff
     if amount < 0: amount = amount % seconds
-    once_after(amount, __repeated_job, func, seconds, now + amount,
-               *args, **kwargs)
+    __once_after(amount, uuid, __repeated_job, seconds, now + amount, uuid,
+                 func, *args, **kwargs)
     func(*args, **kwargs)
+
+def __repeated_o_clock(seconds, uuid, func, *args, **kwargs):
+    """Repeats execution of job function at next time multiple of the given seconds."""
+    now  = time.time()
+    when = now + (seconds - (now % seconds))
+    __once_after(when - now, uuid, __repeated_o_clock, seconds, uuid,
+                 func, *args, **kwargs)
+    func(*args, **kwargs)
+
+####################
+## PUBLIC SECTION ##
+####################
+
+def remove(uuid):
+    """Allow remove a job scheduled using any repeat_* functions.
+    
+    This function is not removing the job from the scheduler, it uses a set of
+    removed uuids ignoring the execution of the job once it pops out of the
+    priority queue.
+    """
+    __removed.add(uuid)
+
+def once_after(seconds, func, *args, **kwargs):
+    """Executes the given job function after given seconds amount."""
+    uuid = uuid4()
+    __once_after(seconds, uuid, func, *args, **kwargs)
+    return uuid
 
 def repeat_every(seconds, func, *args, **kwargs):
     """Repeats execution of given job function after every seconds."""
-    once_after(seconds, __repeated_job, func, seconds, time.time() + seconds,
-               *args, **kwargs)
+    uuid = uuid4()
+    __once_after(seconds, uuid, __repeated_job, seconds, time.time() + seconds, uuid,
+                 func, *args, **kwargs)
+    return uuid
 
 def once_when(timestamp, func, *args, **kwargs):
     """Executes job function at the given timestamp."""
+    uuid = uuid4()
     seconds = timestamp - time.time()
-    if seconds > 0:
-        return once_after(seconds, func, *args, **kwargs)
+    if seconds > 0: __once_after(seconds, uuid, func, *args, **kwargs)
+    return uuid
 
 def once_o_clock(seconds, func, *args, **kwargs):
     """Executes job function at next time multiple of the given seconds."""
-    now = time.time()
+    uuid = uuid4()
+    now  = time.time()
     when = now + (seconds - (now % seconds))
-    return once_after(when - now, func, *args, **kwargs)
-
-def __repeated_o_clock(seconds, func, *args, **kwargs):
-    """Repeats execution of job function at next time multiple of the given seconds."""
-    now = time.time()
-    when = now + (seconds - (now % seconds))
-    once_after(when - now, __repeated_o_clock, seconds, func, *args, **kwargs)
-    func(*args, **kwargs)
+    __once_after(when - now, uuid, func, *args, **kwargs)
+    return uuid
 
 def repeat_o_clock(seconds, func, *args, **kwargs):
     """Repeated execution of job function at every next time multiple of the given seconds."""
-    now = time.time()
+    uuid = uuid4()
+    now  = time.time()
     when = now + (seconds - (now % seconds))
-    once_after(when - now, __repeated_o_clock, seconds, func, *args, **kwargs)
+    __once_after(when - now, uuid, __repeated_o_clock, seconds, uuid,
+                 func, *args, **kwargs)
+    return uuid
 
 def start():
     """Executes the scheduler."""

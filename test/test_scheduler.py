@@ -6,9 +6,16 @@ def say(something, more):
 
 sched.start()
 
-sched.repeat_every(5, say, "Hello", "World")
-sched.repeat_o_clock(60, say, "One", "Minute")
+a = sched.repeat_every(5, say, "Hello", "World")
+b = sched.repeat_o_clock(60, say, "One", "Minute")
 
-time.sleep(20)
+time.sleep(31)
+
+sched.remove(a)
+print("Removed ", time.time())
+
+time.sleep(31)
+print("Stopping", time.time())
 
 sched.stop()
+print("Stopped ", time.time())
