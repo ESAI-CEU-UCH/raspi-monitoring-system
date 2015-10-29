@@ -1,6 +1,19 @@
 """The purpose of this module is to implement precise time-delayed execution of
 functions.
 
+This module allow to execute functions delayed in time. The functions are able
+to receive many positional and/or keyword arguments. A function can be executed
+once delayed a given number of seconds, or repeated every N seconds. Similarly,
+a function can be called once the next timestamp multiple of a given number of
+seconds, or repeated every timestamp multiple of a given number of seconds. For
+this purpose, you can use the functions once_after(), repeat_every(),
+once_o_clock() and repeat_o_clock().
+
+The normal use of this module requires the execution of start() function before
+any function scheduling, and stop() function once the program is ready to its
+termination. If the program is intended to run forever, you can use
+loop_forever() function which never returns.
+
 Example:
 
 import Scheduler
@@ -22,6 +35,7 @@ Scheduler.start()
 Scheduler.repeat_every(5, say, "Hello", "World")
 Scheduler.repeat_o_clock(60, say, "One", "Minute")
 Scheduler.loop_forever()
+
 """
 import sys
 import time
@@ -87,20 +101,20 @@ def __main_loop():
             job,args,kwargs = data
             __running.append( __run_threaded(job, *args, **kwargs) )
 
-def once_after(seconds, job, *args, **kwargs):
+def once_after(seconds, func, *args, **kwargs):
     """Executes the given job function after given seconds amount."""
     if __main_thread_running:
         now  = time.time()
         when = now + seconds
-        __jobs.put( (when, (job,args,kwargs)) )
+        __jobs.put( (when, (func,args,kwargs)) )
         __awake.acquire()
         __awake.notify()
         __awake.release()
     else:
         raise Exception("Unable to enqueue any job while Scheduler is stopped.")
 
-def __repeated_job(job, seconds, expected_when, *args, **kwargs):
-    """Repeats execution of a job every seconds.
+def __repeated_job(func, seconds, expected_when, *args, **kwargs):
+    """Repeats execution of a function every seconds.
     
     This function uses expected_when in order to improve precision of next
     repetition.
@@ -109,33 +123,39 @@ def __repeated_job(job, seconds, expected_when, *args, **kwargs):
     diff = now - expected_when
     amount = seconds - diff
     if amount < 0: amount = amount % seconds
-    once_after(amount, __repeated_job, job, seconds, now + amount,
+    once_after(amount, __repeated_job, func, seconds, now + amount,
                *args, **kwargs)
-    job(*args, **kwargs)
+    func(*args, **kwargs)
 
-def repeat_every(seconds, job, *args, **kwargs):
+def repeat_every(seconds, func, *args, **kwargs):
     """Repeats execution of given job function after every seconds."""
-    once_after(seconds, __repeated_job, job, seconds, time.time() + seconds,
+    once_after(seconds, __repeated_job, func, seconds, time.time() + seconds,
                *args, **kwargs)
 
-def once_o_clock(seconds, job, *args, **kwargs):
+def once_when(timestamp, func, *args, **kwargs):
+    """Executes job function at the given timestamp."""
+    seconds = timestamp - time.time()
+    if seconds > 0:
+        return once_after(seconds, func, *args, **kwargs)
+
+def once_o_clock(seconds, func, *args, **kwargs):
     """Executes job function at next time multiple of the given seconds."""
     now = time.time()
     when = now + (seconds - (now % seconds))
-    return once_after(when - now, job, *args, **kwargs)
+    return once_after(when - now, func, *args, **kwargs)
 
-def __repeated_o_clock(seconds, job, *args, **kwargs):
+def __repeated_o_clock(seconds, func, *args, **kwargs):
     """Repeats execution of job function at next time multiple of the given seconds."""
     now = time.time()
     when = now + (seconds - (now % seconds))
-    once_after(when - now, __repeated_o_clock, seconds, job, *args, **kwargs)
-    job(*args, **kwargs)
+    once_after(when - now, __repeated_o_clock, seconds, func, *args, **kwargs)
+    func(*args, **kwargs)
 
-def repeat_o_clock(seconds, job, *args, **kwargs):
+def repeat_o_clock(seconds, func, *args, **kwargs):
     """Repeated execution of job function at every next time multiple of the given seconds."""
     now = time.time()
     when = now + (seconds - (now % seconds))
-    once_after(when - now, __repeated_o_clock, seconds, job, *args, **kwargs)
+    once_after(when - now, __repeated_o_clock, seconds, func, *args, **kwargs)
 
 def start():
     """Executes the scheduler."""
@@ -159,8 +179,9 @@ def stop():
         __main_thread = None
 
 def loop_forever():
-    """Executes infinite loop, so it never ends."""
-    if not __main_thread_running: start()
+    """Executes infinite loop, so it never ends and never returns."""
+    if not __main_thread_running:
+        raise Exception("Unable to loop while Scheduler is stopped.")
     __main_thread.join()
 
 if __name__ == "__main__":

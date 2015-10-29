@@ -39,6 +39,46 @@ logger.alert("Algo muy malo ha pasado.")
 logger.error("Algo malo pero recuperable.")
 ```
 
+## Servicios en segundo plano
+
+De cara a evitar tener una multitud de demonios gestionados por el sistema
+operativo, y de cara a mejorar la precisión temporal con la que se ejecutan los
+procesos, se desarrolla el módulo `Scheduler` para Python. Este módulo permite
+ejecutar funciones en segundo plano y bajo unos parámetros de retraso/repetición
+en el tiempo determinados. El módulo precisa la ejecución de `start()` antes de
+registrar las funciones, después se pueden ejecutar las funciones
+`once_after()`, `repeat_every()`, `once_o_clock()` y `repeat_o_clock()` para
+planificar la ejecución de funciones requerida por el usuario. El módulo ofrece
+esta funcionalidad:
+
+- `start()` Esta función debe ser ejecutada **antes** de empezar a planificar
+  la ejecución de funciones.
+
+- `stop()` Función utilizada para indicar que el programa debe terminar, y por
+  tanto el planificador de funciones debe ser vaciado y terminado de forma
+  limpia y correcta.
+
+- `loop_forever()` Ejecuta un bucle infinito que nunca termina y por tanto
+  nunca devuelve la ejecución.
+
+- `once_after(seconds, func, *args, **kwargs)` Permite registrar la ejecución de
+  una función dentro de un número determinado de segundos.
+
+- `once_o_clock(seconds, func, *args, **kwargs)` Permite registrar la ejecución
+  de una función la siguiente vez que el timestamp sea múltiplo de un número
+  determinado de segundos. Esta función es útil para ajustar la ejecución a
+  un momento determinado en el tiempo.
+
+- `once_when(timestamp, func, *args, **kwargs)` Permite registrar la ejecución
+  de una función en un momento concreto determinado por el timestamp dado.
+
+- `repeat_every(seconds, func, *args, **kwargs)` Registra la función cada número
+  de segundos indicado.
+
+- `repeat_o_clock(seconds, func, *args, **kwargs)` Registra la función para
+  ejecutarse cada vez que el timestamp sea múltiplo del número de segundos
+  indicado.
+
 # Descripción general
 
 La idea es tener un sistema de monitorización que nos permita guardar en una
