@@ -13,7 +13,7 @@ error y enviar un correo electrónico informando de que ha habido un problema.
 ## Mensajes de error y avisos de la raspberry pi
 
 Al hilo de lo anterior, se me ocurre que podemos implementar un módulo Python
-que permita comunicarnos con nuestra cuenta de correo `esaiceuuch@gmail.com`.
+que permita comunicarnos con nuestra cuenta de correo `esaiceuuch`.
 Dicho servicio debería ser cargado como demonio, y tendría una parte cliente
 que podría utilizarse así:
 
