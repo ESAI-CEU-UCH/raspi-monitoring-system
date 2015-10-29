@@ -25,8 +25,8 @@ import MailLoggerClient
 logger = MailLoggerClient.open(TRANSPORT)
 
 # Deberiamos poder configurarlo para que nos envie mensajes instantaneos o bien
-# resumenes diarios, semanales, mensuales, ... La configuracion aqui indicada
-# seria la esperada por defecto?
+# resumenes diarios o semanales. La configuracion aqui indicada seria la
+# esperada por defecto?
 logger.config(logger.levels.DEBUG, logger.schedule.SILENTLY)
 logger.config(logger.levels.INFO, logger.schedule.DAILY)
 logger.config(logger.levels.ALERT, logger.schedule.INSTANTANEOUSLY)
