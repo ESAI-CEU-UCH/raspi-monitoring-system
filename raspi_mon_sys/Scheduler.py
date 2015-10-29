@@ -152,7 +152,7 @@ def __repeated_o_clock(seconds, uuid, func, *args, **kwargs):
 ####################
 
 def remove(uuid):
-    """Allow remove a job scheduled using any repeat_* functions.
+    """Allow remove a job scheduled using any repeat_* or once_* functions.
     
     This function is not removing the job from the scheduler, it uses a set of
     removed uuids ignoring the execution of the job once it pops out of the
@@ -161,27 +161,27 @@ def remove(uuid):
     __removed.add(uuid)
 
 def once_after(seconds, func, *args, **kwargs):
-    """Executes the given job function after given seconds amount."""
+    """Executes the given job function after given seconds amount and returns a UUID."""
     uuid = uuid4()
     __once_after(seconds, uuid, func, *args, **kwargs)
     return uuid
 
 def repeat_every(seconds, func, *args, **kwargs):
-    """Repeats execution of given job function after every seconds."""
+    """Repeats execution of given job function after every seconds and returns a UUID."""
     uuid = uuid4()
     __once_after(seconds, uuid, __repeated_job, seconds, time.time() + seconds, uuid,
                  func, *args, **kwargs)
     return uuid
 
 def once_when(timestamp, func, *args, **kwargs):
-    """Executes job function at the given timestamp."""
+    """Executes job function at the given timestamp and returns a UUID."""
     uuid = uuid4()
     seconds = timestamp - time.time()
     if seconds > 0: __once_after(seconds, uuid, func, *args, **kwargs)
     return uuid
 
 def once_o_clock(seconds, func, *args, **kwargs):
-    """Executes job function at next time multiple of the given seconds."""
+    """Executes job function at next time multiple of the given seconds and returns a UUID."""
     uuid = uuid4()
     now  = time.time()
     when = now + (seconds - (now % seconds))
@@ -189,7 +189,7 @@ def once_o_clock(seconds, func, *args, **kwargs):
     return uuid
 
 def repeat_o_clock(seconds, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given seconds."""
+    """Repeated execution of job function at every next time multiple of the given seconds and returns a UUID."""
     uuid = uuid4()
     now  = time.time()
     when = now + (seconds - (now % seconds))
