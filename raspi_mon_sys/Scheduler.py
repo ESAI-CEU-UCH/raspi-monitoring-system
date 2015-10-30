@@ -131,21 +131,25 @@ def __repeated_job(seconds, expected_when, uuid, func, *args, **kwargs):
     This function uses expected_when in order to improve precision of next
     repetition.
     """
+    func(*args, **kwargs)
     now = time.time()
     diff = now - expected_when
     amount = seconds - diff
-    if amount < 0: amount = amount % seconds
-    __once_after(amount, uuid, __repeated_job, seconds, now + amount, uuid,
+    if amount < 0:
+        amount = amount % seconds
+        expected_when = now + amount
+    else:
+        expected_when += seconds
+    __once_after(amount, uuid, __repeated_job, seconds, expected_when, uuid,
                  func, *args, **kwargs)
-    func(*args, **kwargs)
 
 def __repeated_o_clock(seconds, uuid, func, *args, **kwargs):
     """Repeats execution of job function at next time multiple of the given seconds."""
+    func(*args, **kwargs)
     now  = time.time()
     when = now + (seconds - (now % seconds))
     __once_after(when - now, uuid, __repeated_o_clock, seconds, uuid,
                  func, *args, **kwargs)
-    func(*args, **kwargs)
 
 ####################
 ## PUBLIC SECTION ##
@@ -178,6 +182,7 @@ def once_when(timestamp, func, *args, **kwargs):
     uuid = uuid4()
     seconds = timestamp - time.time()
     if seconds > 0: __once_after(seconds, uuid, func, *args, **kwargs)
+    else: raise Exception("Unable to schedule functions in the past")
     return uuid
 
 def once_o_clock(seconds, func, *args, **kwargs):
