@@ -55,9 +55,10 @@ class LoggerClient:
             str(levels.WARNING) : schedules.INSTANTANEOUSLY,
             str(levels.ERROR)   : schedules.INSTANTANEOUSLY
         }
-        self.ctx = zmq.Context.instance()
-        self.s = self.ctx.socket(zmq.PUSH)
-        self.s.connect(transport)
+        self.__transport = transport
+        ctx = zmq.Context.instance()
+        self.__s = ctx.socket(zmq.PUSH)
+        self.__s.connect(transport)
         self.levels = levels
         self.schedules = schedules
 
@@ -71,6 +72,11 @@ class LoggerClient:
             "text"     : text,
             "datetime" : datetime.datetime.now()
         }
+        
+    def clone(self):
+        other = LoggerClient(self.__transport)
+        for k,v in self.__level2schedule.iteritems():
+            other.__level2schedule[k] = v
 
     def config(self, level, schedule):
         """Associates the given level with the given schedule."""
@@ -87,7 +93,7 @@ class LoggerClient:
         text = strfmt % args
         schedule = self.__level2schedule[str(level)]
         msg = self.__generate_message(level, schedule, text)
-        self.s.send_pyobj(msg)
+        self.__s.send_pyobj(msg)
 
     def debug(self, strfmt, *args):
         """Writes a text string at DEBUG level.
@@ -131,9 +137,9 @@ class LoggerClient:
 
     def close(self):
         """Terminates connection with MailLoggerServer.."""
-        if self.s is not None:
-            self.s.close()
-            self.s = None
+        if self.__s is not None:
+            self.__s.close()
+            self.__s = None
 
 def open(transport=default_transport):
     """Returns a new LoggerClient() instance."""
