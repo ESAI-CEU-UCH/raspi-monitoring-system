@@ -14,6 +14,10 @@ any function scheduling, and stop() function once the program is ready to its
 termination. If the program is intended to run forever, you can use
 loop_forever() function which never returns.
 
+ATTENTION: this module uses UTC timestamps, so don't expect it to be correlated
+with your timezone. Add the required offset to timestamps depending in your
+timezone if you really need it.
+
 Example:
 
 import Scheduler

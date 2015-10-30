@@ -1,13 +1,17 @@
 #!env python2.7
-"""
-The purpose of this module is to allow messaging via email with a standalone
-system. It needs you to install schedule module:
+"""The purpose of this module is to allow messaging via email with a standalone
+system. It needs you to install enum module:
 
 $ pip install enum
 
 And is executed as:
 
 $ python MailLoggerServer.py mail_credentials [zmq_transport]
+
+Once it is executed, client module can connect using the appropiate ZMQ
+transport. Messages would be shown at screen using stderr output and they would
+be enqueued for delayed mail delivery, ignored from mail, or sended
+instantaneously.
 """
 from uuid import getnode as get_mac
 
@@ -41,6 +45,7 @@ __weekly_queue = Queue.Queue()
 __levels    = MailLoggerClient.levels
 __schedules = MailLoggerClient.schedules
 
+# Mapping between schedule options and python queues.
 __schedule2queue = {
     str(__schedules.HOURLY) : __hourly_queue,
     str(__schedules.DAILY)  : __daily_queue,
@@ -48,7 +53,8 @@ __schedule2queue = {
 }
 
 def __generate_message_line(msg):
-    time_str     = datetime.datetime.strftime(datetime.datetime.now(), "%c")
+    """Given a message it generates a string to be shown at screen or mail."""
+    time_str     = datetime.datetime.strftime(msg["datetime"], "%c")
     host_str     = socket.gethostname()
     level_str    = msg["level"]
     schedule_str = msg["schedule"]
@@ -58,9 +64,11 @@ def __generate_message_line(msg):
     return line_str
 
 def __generate_subject(frequency):
+    """Generates a subject for the email."""
     return "MailLogger raspi %s -- %s"%(__mac_addr, str(frequency))
 
 def __queue_handler(frequency, queue):
+    """Traverses the given queue and concatenates by lines all message texts."""
     subject = __generate_subject(frequency)
     if queue.empty():
         msg = "Empty queue"
@@ -71,6 +79,7 @@ def __queue_handler(frequency, queue):
     Utils.sendmail(__mail_credentials, subject, msg)
 
 def start():
+    """Starts the execution of the server."""
     if not Scheduler.is_running():
         ctx = zmq.Context.instance()
         s   = ctx.socket(zmq.PULL)
