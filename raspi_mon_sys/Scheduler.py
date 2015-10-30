@@ -103,6 +103,7 @@ def __main_loop():
             amount = when - time.time()
             if amount > 0:
                 __awake.wait(amount)
+                __awake.clear()
         else:
             job,args,kwargs = data
             __running.append( __run_threaded(job, *args, **kwargs) )
