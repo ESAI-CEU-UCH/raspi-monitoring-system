@@ -79,30 +79,54 @@ class LoggerClient:
         self.__level2schedule[str(level)] = schedule
 
     def write(self, level, strfmt, *args):
-        """Writes a text string using the given level."""
+        """Writes a text string using the given level.
+        
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         text = strfmt % args
         schedule = self.__level2schedule[str(level)]
         msg = self.__generate_message(level, schedule, text)
         self.s.send_pyobj(msg)
 
     def debug(self, strfmt, *args):
-        """Writes a text string at DEBUG level."""
+        """Writes a text string at DEBUG level.
+        
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         self.write(levels.DEBUG, strfmt, *args)
 
     def info(self, strfmt, *args):
-        """Writes a text string at INFO level."""
+        """Writes a text string at INFO level.
+        
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         self.write(levels.INFO, strfmt, *args)
 
     def alert(self, strfmt, *args):
-        """Writes a text string at ALERT level."""
+        """Writes a text string at ALERT level.
+        
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         self.write(levels.ALERT, strfmt, *args)
 
     def warning(self, strfmt, *args):
-        """Writes a text string at WARNING level."""
+        """Writes a text string at WARNING level.
+
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         self.write(levels.WARNING, strfmt, *args)
 
     def error(self, strfmt, *args):
-        """Writes a text string at ERROR level."""
+        """Writes a text string at ERROR level.
+
+        This function implements kind of printf(), so it receives a string
+        format and a variadic list of values.
+        """
         self.write(levels.error, strfmt, *args)
 
     def close(self):
