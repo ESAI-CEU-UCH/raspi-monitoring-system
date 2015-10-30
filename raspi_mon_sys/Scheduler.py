@@ -54,20 +54,13 @@ import Queue
 __removed = set()
 # Queue of pending jobs. Every job is tuple (timestamp, (function, args, kwargs)).
 __jobs  = Queue.PriorityQueue()
-# Condition to awake main thread when jobs are ready or sleep time has passed.
-__awake = threading.Condition()
+# Event to awake main thread when jobs are ready or sleep time has passed.
+__awake = threading.Event()
 # List of pending threads, in order to execute join when the terminate.
 __running = []
 # Thread for main function execution.
 __main_thread = None
 __main_thread_running = False
-
-def __sleep(amount):
-    """Sleeps an amount time and awakes main thread after it."""
-    time.sleep(amount)
-    __awake.acquire()
-    __awake.notify()
-    __awake.release()
 
 def __run_threaded(job_func, *args, **kwargs):
     """Executes the given function with args and kwargs in a thread."""
@@ -75,15 +68,15 @@ def __run_threaded(job_func, *args, **kwargs):
     try:
         job_thread.start()
     except:
-        print "Unexpected error:", sys.exc_info()[0]
+        print("Unexpected error:", sys.exc_info()[0])
     return job_thread
 
-def __check_running_threads():
+def __check_running_threads(timeout=0.0):
     """Traverses __running list looking for joinable threads."""
     global __running
     r = []
     for th in __running:
-        th.join(0.0)
+        th.join(timeout)
         if th.isAlive(): r.append( th )
     __running = r
 
@@ -105,10 +98,7 @@ def __main_loop():
             __jobs.put( (when,uuid,data) )
             amount = when - time.time()
             if amount > 0:
-                __awake.acquire()
-                __running.append( __run_threaded(__sleep, amount) )
-                __awake.wait()
-                __awake.release()
+                __awake.wait(amount)
         else:
             job,args,kwargs = data
             __running.append( __run_threaded(job, *args, **kwargs) )
@@ -119,9 +109,7 @@ def __once_after(seconds, uuid, func, *args, **kwargs):
         now  = time.time()
         when = now + seconds
         __jobs.put( (when, uuid, (func,args,kwargs)) )
-        __awake.acquire()
-        __awake.notify()
-        __awake.release()
+        __awake.set()
     else:
         raise Exception("Unable to enqueue any job while Scheduler is stopped.")
 
@@ -217,11 +205,13 @@ def stop():
         global __main_thread
         __main_thread_running = False
         while not __jobs.empty(): __jobs.get()
-        __awake.acquire()
-        __awake.notify()
-        __awake.release()
+        __awake.set()
+        __check_running_threads(None)
         __main_thread.join()
         __main_thread = None
+
+def is_running():
+    return __main_thread_running
 
 def loop_forever():
     """Executes infinite loop, so it never ends and never returns."""
