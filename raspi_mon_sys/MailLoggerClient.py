@@ -36,6 +36,7 @@ logger.config(logger.levels.ERROR, logger.schedules.INSTANTANEOUSLY)
 from enum import Enum
 
 import datetime
+import threading
 import zmq
 
 default_transport = "ipc:///tmp/zmq_mail_logger_server.ipc"
@@ -55,10 +56,11 @@ class LoggerClient:
             str(levels.WARNING) : schedules.INSTANTANEOUSLY,
             str(levels.ERROR)   : schedules.INSTANTANEOUSLY
         }
-        self.__transport = transport
         ctx = zmq.Context.instance()
         self.__s = ctx.socket(zmq.PUSH)
         self.__s.connect(transport)
+        self.__transport = transport
+        self.__lock = threading.RLock()
         self.levels = levels
         self.schedules = schedules
 
@@ -75,14 +77,18 @@ class LoggerClient:
         
     def clone(self):
         other = LoggerClient(self.__transport)
+        self.__lock.acquire()
         for k,v in self.__level2schedule.iteritems():
             other.__level2schedule[k] = v
+        self.__lock.release()
 
     def config(self, level, schedule):
         """Associates the given level with the given schedule."""
         if not level in levels or not schedule in schedules:
             raise Exception("Needs a level and a schedule as arguments")
+        self.__lock.acquire()
         self.__level2schedule[str(level)] = schedule
+        self.__lock.release()
 
     def write(self, level, strfmt, *args):
         """Writes a text string using the given level.
@@ -91,9 +97,11 @@ class LoggerClient:
         format and a variadic list of values.
         """
         text = strfmt % args
+        self.__lock.acquire()
         schedule = self.__level2schedule[str(level)]
         msg = self.__generate_message(level, schedule, text)
         self.__s.send_pyobj(msg)
+        self.__lock.release()
 
     def debug(self, strfmt, *args):
         """Writes a text string at DEBUG level.
@@ -137,9 +145,11 @@ class LoggerClient:
 
     def close(self):
         """Terminates connection with MailLoggerServer.."""
+        self.__lock.acquire()
         if self.__s is not None:
             self.__s.close()
             self.__s = None
+        self.__lock.release()
 
 def open(transport=default_transport):
     """Returns a new LoggerClient() instance."""
