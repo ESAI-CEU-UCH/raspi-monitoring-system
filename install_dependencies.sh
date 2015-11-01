@@ -2,4 +2,4 @@
 # Executes installation of needed dependencies.
 # pip install uuid
 pip install enum
-aptitude install python-zmq python3-zmq
+aptitude install python-zmq
