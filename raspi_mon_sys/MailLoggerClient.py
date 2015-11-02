@@ -68,11 +68,12 @@ class LoggerClient:
     def __del__(self):
         self.close()
 
-    def __generate_message(self, level, schedule, text):
+    def __generate_message(self, name, level, schedule, text):
         return {
+            "name"     : name,
             "level"    : str(level),
             "schedule" : str(schedule),
-            "text"     : self.__name + ": " + text,
+            "text"     : text,
             "datetime" : datetime.datetime.now()
         }
         
@@ -100,7 +101,7 @@ class LoggerClient:
         text = strfmt % args
         self.__lock.acquire()
         schedule = self.__level2schedule[str(level)]
-        msg = self.__generate_message(level, schedule, text)
+        msg = self.__generate_message(self.__name, level, schedule, text)
         self.__s.send_pyobj(msg)
         self.__lock.release()
 

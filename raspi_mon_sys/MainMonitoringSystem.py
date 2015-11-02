@@ -40,7 +40,7 @@ Scheduler.start()
 
 logger.info("Scheduler started")
 
-Scheduler.repeat_o_clock(T1_MINUTE, CheckIP.publish)
+Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
 
 logger.info("Scheduler configured")
 logger.info("Starting infinite loop")

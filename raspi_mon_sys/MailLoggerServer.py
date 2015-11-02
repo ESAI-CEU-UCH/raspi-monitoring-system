@@ -56,16 +56,18 @@ def __generate_message_line(msg):
     """Given a message it generates a string to be shown at screen or mail."""
     time_str     = datetime.datetime.strftime(msg["datetime"], "%c")
     host_str     = socket.gethostname()
+    name_str     = msg["name"]
     level_str    = msg["level"]
     schedule_str = msg["schedule"]
     text_str     = msg["text"].replace('\n', '\\n')
-    line_str     = "%s %s %s %9s %17s: %s"%(time_str, host_str, __mac_addr,
-                                            level_str, schedule_str, text_str)
+    line_str     = "%s %s %s %9s %17s: %s: %s"%(time_str, host_str, __mac_addr,
+                                                level_str, schedule_str,
+                                                name_str, text_str)
     return line_str
 
-def __generate_subject(frequency):
+def __generate_subject(frequency, name="LIST"):
     """Generates a subject for the email."""
-    return "MailLogger raspi %s -- %s"%(__mac_addr, str(frequency))
+    return "MailLogger raspi %s - %s - %s"%(__mac_addr, name, str(frequency))
 
 def __queue_handler(frequency, queue):
     """Traverses the given queue and concatenates by lines all message texts."""
@@ -104,7 +106,8 @@ def start():
                 sys.stderr.write(txt + "\n")
 
                 if sched == str(__schedules.INSTANTANEOUSLY):
-                    subject = __generate_subject(__schedules.INSTANTANEOUSLY)
+                    subject = __generate_subject(__schedules.INSTANTANEOUSLY,
+                                                 msg["name"])
                     Utils.sendmail(__mail_credentials, subject, txt)
 
                 elif sched != __schedules.SILENTLY:

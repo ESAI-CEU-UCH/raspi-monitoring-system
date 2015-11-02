@@ -26,7 +26,9 @@ def publish():
         s.connect(("8.8.8.8",80))
         private_ip= s.getsockname()[0]
         s.close()
-        public_ip = urlopen('http://ip.42.pl/raw').read()
+        f = urlopen('http://ip.42.pl/raw')
+        public_ip = f.read()
+        f.close()
         if private_ip != last_private_ip or public_ip != last_public_ip:
             logger.alert("My private IP address is %s", private_ip)
             logger.alert("My public IP address is %s", public_ip)
@@ -38,3 +40,5 @@ def publish():
         if not failure:
             logger.alert("Unable to retrieve IP addresses")
             failure = True
+            last_private_ip = None
+            last_public_ip  = None
