@@ -15,7 +15,7 @@ local time zone.
 Example:
 
 import raspi_mon_sys.MailLoggerClient as MailLoggerClient
-logger = MailLoggerClient.open() # it can receive a transport string
+logger = MailLoggerClient.open("name") # it can receive a transport string
 logger.debug("Program traces and related stuff.")
 logger.info("Any useful information.")
 logger.warning("Be careful, error incoming.")
@@ -46,7 +46,7 @@ schedules = Enum('SILENTLY', 'INSTANTANEOUSLY', 'HOURLY', 'DAILY', 'WEEKLY')
 class LoggerClient:
     """This class implements the interface to communicate with MailLoggerServer."""
 
-    def __init__(self, transport):
+    def __init__(self, name, transport):
         """Initializes connection with server using the given transport and
         builds a default mapping between levels and schedules."""
         self.__level2schedule = {
@@ -61,6 +61,7 @@ class LoggerClient:
         self.__s.connect(transport)
         self.__transport = transport
         self.__lock = threading.RLock()
+        self.__name = name
         self.levels = levels
         self.schedules = schedules
 
@@ -71,12 +72,12 @@ class LoggerClient:
         return {
             "level"    : str(level),
             "schedule" : str(schedule),
-            "text"     : text,
+            "text"     : self.__name + ": " + text,
             "datetime" : datetime.datetime.now()
         }
         
     def clone(self):
-        other = LoggerClient(self.__transport)
+        other = LoggerClient(self.__name, self.__transport)
         self.__lock.acquire()
         for k,v in self.__level2schedule.iteritems():
             other.__level2schedule[k] = v
@@ -151,6 +152,6 @@ class LoggerClient:
             self.__s = None
         self.__lock.release()
 
-def open(transport=default_transport):
+def open(name,transport=default_transport):
     """Returns a new LoggerClient() instance."""
-    return LoggerClient(transport)
+    return LoggerClient(name,transport)

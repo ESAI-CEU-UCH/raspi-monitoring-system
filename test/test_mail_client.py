@@ -1,6 +1,6 @@
 import raspi_mon_sys.MailLoggerClient as MailLoggerClient
 
-logger = MailLoggerClient.open()
+logger = MailLoggerClient.open("test")
 
 logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
 logger.config(logger.levels.INFO, logger.schedules.HOURLY)

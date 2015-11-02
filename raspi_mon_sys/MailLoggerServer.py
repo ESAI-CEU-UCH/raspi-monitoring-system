@@ -37,9 +37,9 @@ __mail_credentials = json.loads( open(sys.argv[1]).read() )
 __mac_addr = hex(get_mac()).replace('0x','')
 
 # Queues of pending messages.
-__hourly_queue = Queue.Queue()
-__daily_queue  = Queue.Queue()
-__weekly_queue = Queue.Queue()
+__hourly_queue = Queue.PriorityQueue()
+__daily_queue  = Queue.PriorityQueue()
+__weekly_queue = Queue.PriorityQueue()
 
 # Enums.
 __levels    = MailLoggerClient.levels
@@ -74,7 +74,7 @@ def __queue_handler(frequency, queue):
         msg = "Empty queue"
     else:
         lines_list = []
-        while not queue.empty(): lines_list.append( queue.get() )
+        while not queue.empty(): lines_list.append( queue.get()[1] )
         msg = '\n'.join( lines_list )
     Utils.sendmail(__mail_credentials, subject, msg)
 
@@ -104,7 +104,7 @@ def start():
                     Utils.sendmail(__mail_credentials, subject, txt)
 
                 elif sched != __schedules.SILENTLY:
-                    __schedule2queue[ sched ].put( txt )
+                    __schedule2queue[ sched ].put( (msg["datetime"],txt) )
         except:
             print("Stopping server")
             Scheduler.stop()
