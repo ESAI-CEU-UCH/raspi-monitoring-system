@@ -34,7 +34,7 @@ if __nargs > 3: raise Exception("Sever needs one or two arguments")
 if len(sys.argv) == 3: __transport = sys.argv[2]
 __mail_credentials = json.loads( open(sys.argv[1]).read() )
 
-__mac_addr = hex(get_mac()).replace('0x','')
+__mac_addr  = hex(get_mac()).replace('0x','')
 
 # Queues of pending messages.
 __hourly_queue = Queue.PriorityQueue()
@@ -76,7 +76,11 @@ def __queue_handler(frequency, queue):
         lines_list = []
         while not queue.empty(): lines_list.append( queue.get()[1] )
         msg = '\n'.join( lines_list )
-    Utils.sendmail(__mail_credentials, subject, msg)
+    try:
+        Utils.sendmail(__mail_credentials, subject, msg)
+    except:
+        if msg != "Empty queue":
+            print("FATAL ERROR: irrecoverable information loss :(")
 
 def start():
     """Starts the execution of the server."""
