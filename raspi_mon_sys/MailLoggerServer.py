@@ -20,6 +20,7 @@ import json
 import Queue
 import Scheduler
 import socket
+import traceback
 import sys
 import zmq
 
@@ -81,6 +82,7 @@ def __queue_handler(frequency, queue):
     try:
         Utils.sendmail(__mail_credentials, subject, msg)
     except:
+        print "Unexpected error:", traceback.format_exc()
         if msg != "Empty queue":
             print("FATAL ERROR: irrecoverable information loss :(")
 
@@ -108,7 +110,10 @@ def start():
                 if sched == str(__schedules.INSTANTANEOUSLY):
                     subject = __generate_subject(__schedules.INSTANTANEOUSLY,
                                                  msg["name"])
-                    Utils.sendmail(__mail_credentials, subject, txt)
+                    try:
+                        Utils.sendmail(__mail_credentials, subject, txt)
+                    except:
+                        print "Unexpected error:", traceback.format_exc()
 
                 elif sched != __schedules.SILENTLY:
                     __schedule2queue[ sched ].put( (msg["datetime"],txt) )
