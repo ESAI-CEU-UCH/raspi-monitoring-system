@@ -90,6 +90,26 @@ def __queue_handler(mail_credentials_path, frequency, queue):
         if msg != "Empty queue":
             print("FATAL ERROR: irrecoverable information loss :(")
 
+def __process_message(mail_credentials_path, msg):
+    sched = msg["schedule"]
+    txt   = __generate_message_line(msg)
+    
+    sys.stderr.write(txt + "\n")
+    
+    if sched == str(__schedules.INSTANTANEOUSLY):
+        subject = __generate_subject(__schedules.INSTANTANEOUSLY,
+                                     msg["name"])
+        try:
+            mail_credentials = json.loads( open(mail_credentials_path).read() )
+            Utils.sendmail(mail_credentials, subject, txt)
+            mail_credentials = None
+        except:
+            print "Unexpected error:", traceback.format_exc()
+            
+    elif sched != __schedules.SILENTLY:
+        __schedule2queue[ sched ].put( (msg["datetime"],txt) )
+
+
 def start(mail_credentials_path=__mail_credentials_path,
           transport_string=__transport):
     """Starts the execution of the server.
@@ -99,6 +119,13 @@ def start(mail_credentials_path=__mail_credentials_path,
 
     """
     if not Scheduler.is_running():
+        __process_message(mail_credentials_path, {
+            "name" : "MailLoggerServer",
+            "level" : str(__levels.ALERT),
+            "schedule" : str(__schedules.INSTANTANEOUSLY),
+            "text" : "Logging service STARTED",
+            "datetime" : datetime.datetime.now()
+        })
         mail_credentials = json.loads( open(mail_credentials_path).read() )
         mail_credentials = None
         ctx = zmq.Context.instance()
@@ -117,24 +144,15 @@ def start(mail_credentials_path=__mail_credentials_path,
         try:
             while True:
                 msg   = s.recv_pyobj()
-                sched = msg["schedule"]
-                txt   = __generate_message_line(msg)
-
-                sys.stderr.write(txt + "\n")
-
-                if sched == str(__schedules.INSTANTANEOUSLY):
-                    subject = __generate_subject(__schedules.INSTANTANEOUSLY,
-                                                 msg["name"])
-                    try:
-                        mail_credentials = json.loads( open(mail_credentials_path).read() )
-                        Utils.sendmail(mail_credentials, subject, txt)
-                        mail_credentials = None
-                    except:
-                        print "Unexpected error:", traceback.format_exc()
-
-                elif sched != __schedules.SILENTLY:
-                    __schedule2queue[ sched ].put( (msg["datetime"],txt) )
+                __process_message(mail_credentials_path, msg)
         except:
+            __process_message(mail_credentials_path, {
+                "name" : "MailLoggerServer",
+                "level" : "ALERT",
+                "schedule" : "INSTANTANEOUSLY",
+                "text" : "Logging service STOPPED",
+                "datetime" : datetime.datetime.now()
+            })
             print("Stopping server")
             Scheduler.stop()
             raise
