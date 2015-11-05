@@ -1,3 +1,43 @@
+# Más sobre base de datos
+
+Después de mucho investigar, parece que la opción más razonable es utilizar
+InfluxDB en la raspberry pi, de tal forma que la base de datos sea alojada
+mediante un enlace simbólico en el directorio temporal `/tmp/var/...`. Dicho
+directorio temporal será creado como un sistema de ficheros en memoria, y
+podemos limitarlo a un máximo de 100MB. La base de datos por tanto también
+deberá limitarse para no ocupar todo ese espacio. Esto quiere decir que el
+almacenamiento de la base de datos **no será persistente** en la raspberry pi.
+
+La persistencia la obtendremos utilizando nuestra base de datos MongoDB que se
+encuentra activa en nuestros servidores de la universidad. Dicha base de datos
+mongodb será actualizada cada hora, y tendrá una colección de documentos por
+cada raspberry pi que usemos para medir. Las colecciones serán nombradas
+en función de la dirección MAC del dispositivo. Cada documento dentro de la
+colección será una tabla JSON similar a esto:
+
+```javascript
+{
+  "id" : un uuid dado por mongodb?,
+  "basetime" : timestamp base al que hace referencia este documento,
+  "source" : identificador de la fuente de estos datos,
+  "times" : [ time0, time1, time2, ...],
+  "values" : [ value0, value1, value2, ...],
+}
+```
+
+Cada hora se insertará un documento nuevo por cada `fuente` que tengamos en la
+casa. Distinguiremos diferentes espacios de nombres:
+
+- `GVA2015_data`: contendrá las colecciones con los datos anteriores.
+- `GVA2015_sources`: contendrá una descripción de las `fuentes` de cada
+  casa. Estas fuentes estarán descritas en colecciones indexadas por el
+  identificador de cada casa.
+- `GVA2015_houses`: contendrá colecciones con información de cada casa. Aquí
+  tendremos la relación entre MAC de la raspberry pi y casa donde fue colocada.
+- `GVA2015_config`: contendrá colecciones indexadas por la MAC de la raspberry
+  pi que permitirán configurar el sistema de monitorización en el arranque del
+  dispositivo.
+
 # Ideas sobre servidor y raspberry pi
 
 Estoy pensando la posibilidad de que el servidor identifique a la raspberry pi
