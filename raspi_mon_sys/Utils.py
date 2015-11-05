@@ -1,7 +1,22 @@
+#!/usr/bin/env python2.7
+"""Several utilities shared between different modules."""
 from email.mime.text import MIMEText
 import smtplib
 
 def sendmail(credentials, subject, msg):
+    """Sends an email using the given credentials dictionary, subject and message
+    strings.
+
+    The credentials dictionary should contain the following keys:
+
+    - server: a sever hostname string.
+    - port: a port number.
+    - user: a string with user name.
+    - password: a password string.
+    - from: string with From header content.
+    - to: string with To header content.
+
+    """
     smtpserver = smtplib.SMTP_SSL(credentials["server"], credentials["port"])
     smtpserver.ehlo()
     #smtpserver.starttls()

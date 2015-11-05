@@ -1,17 +1,25 @@
-#!env python2.7
+#!/usr/bin/env python2.7
 """The purpose of this module is to allow messaging via email with a standalone
-system. It needs you to install enum module:
+system. It needs you to install enum module as `pip install enum`.
+This module is executed as:
 
-$ pip install enum
+.. code-block:: bash
 
-And is executed as:
+   $ python MailLoggerServer.py [mail_credentials [zmq_transport]]
 
-$ python MailLoggerServer.py mail_credentials [zmq_transport]
+By default it looks for `/etc/mail_credentials.json` if first argument is not
+given and uses a default ZeroMQ transport if second one is given either.
 
 Once it is executed, client module can connect using the appropiate ZMQ
 transport. Messages would be shown at screen using stderr output and they would
 be enqueued for delayed mail delivery, ignored from mail, or sended
 instantaneously.
+
+Alternatively, it is possible to import the module from another Python script
+calling directly `start()` function:
+
+>>> import raspi_mon_sys.MailLoggerServer as server
+>>> server.start()
 """
 from uuid import getnode as get_mac
 
@@ -27,14 +35,8 @@ import zmq
 import raspi_mon_sys.MailLoggerClient as MailLoggerClient
 import raspi_mon_sys.Utils as Utils
 
-# Command line arguments.
-__nargs = len(sys.argv)
 __transport = MailLoggerClient.default_transport
-if __nargs < 2: raise Exception("Sever needs mail credentials as argument")
-if __nargs > 3: raise Exception("Sever needs one or two arguments")
-if len(sys.argv) == 3: __transport = sys.argv[2]
-__mail_credentials = json.loads( open(sys.argv[1]).read() )
-
+__mail_credentials_path = "/etc/mail_credentials.json"
 __mac_addr  = hex(get_mac()).replace('0x','')
 
 # Queues of pending messages.
@@ -70,7 +72,7 @@ def __generate_subject(frequency, name="LIST"):
     """Generates a subject for the email."""
     return "MailLogger raspi %s - %s - %s"%(__mac_addr, name, str(frequency))
 
-def __queue_handler(frequency, queue):
+def __queue_handler(mail_credentials_path, frequency, queue):
     """Traverses the given queue and concatenates by lines all message texts."""
     subject = __generate_subject(frequency)
     if queue.empty():
@@ -80,25 +82,38 @@ def __queue_handler(frequency, queue):
         while not queue.empty(): lines_list.append( queue.get()[1] )
         msg = '\n'.join( lines_list )
     try:
-        Utils.sendmail(__mail_credentials, subject, msg)
+        mail_credentials = json.loads( open(mail_credentials_path).read() )
+        Utils.sendmail(mail_credentials, subject, msg)
+        mail_credentials = None
     except:
         print "Unexpected error:", traceback.format_exc()
         if msg != "Empty queue":
             print("FATAL ERROR: irrecoverable information loss :(")
 
-def start():
-    """Starts the execution of the server."""
+def start(mail_credentials_path=__mail_credentials_path,
+          transport_string=__transport):
+    """Starts the execution of the server.
+    
+    The first argument is a path to `mail_credentials.json` file and the second
+    argument is a ZeroMQ transport string for bind server socket.
+
+    """
     if not Scheduler.is_running():
+        mail_credentials = json.loads( open(mail_credentials_path).read() )
+        mail_credentials = None
         ctx = zmq.Context.instance()
         s   = ctx.socket(zmq.PULL)
-        s.bind(__transport)
+        s.bind(transport_string)
         
         Scheduler.start()
-        Scheduler.repeat_o_clock(3600, __queue_handler, "HOURLY", __hourly_queue)
-        Scheduler.repeat_o_clock(3600*24, __queue_handler, "DAILY", __daily_queue)
-        Scheduler.repeat_o_clock(3600*24*7, __queue_handler, "WEEKLY", __weekly_queue)
+        Scheduler.repeat_o_clock(3600, __queue_handler,
+                                 mail_credentials_path, "HOURLY", __hourly_queue)
+        Scheduler.repeat_o_clock(3600*24, __queue_handler,
+                                 mail_credentials_path, "DAILY", __daily_queue)
+        Scheduler.repeat_o_clock(3600*24*7, __queue_handler,
+                                 mail_credentials_path, "WEEKLY", __weekly_queue)
         
-        print("Running server at ZMQ transport: " + __transport)
+        print("Running server at ZMQ transport: " + transport_string)
         try:
             while True:
                 msg   = s.recv_pyobj()
@@ -111,7 +126,9 @@ def start():
                     subject = __generate_subject(__schedules.INSTANTANEOUSLY,
                                                  msg["name"])
                     try:
-                        Utils.sendmail(__mail_credentials, subject, txt)
+                        mail_credentials = json.loads( open(mail_credentials_path).read() )
+                        Utils.sendmail(mail_credentials, subject, txt)
+                        mail_credentials = None
                     except:
                         print "Unexpected error:", traceback.format_exc()
 
@@ -124,4 +141,7 @@ def start():
 
 ##############################################################################
 
-if __name__ == "__main__": start()
+if __name__ == "__main__":
+    credentials = sys.argv[1] if len(sys.argv) > 1 else __mail_credentials_path
+    transport = sys.argv[2] if len(sys.argv) > 2 else __transport
+    start(credentials, transport)

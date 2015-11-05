@@ -1,4 +1,4 @@
-#!/use/bin/env python
+#!/usr/bin/env python2.7
 """This module is an example of how monitoring Python modules should be
 implemented.
 """

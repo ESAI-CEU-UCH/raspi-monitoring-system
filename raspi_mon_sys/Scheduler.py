@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 """The purpose of this module is to implement precise time-delayed execution of
 functions.
 
@@ -6,41 +7,38 @@ to receive many positional and/or keyword arguments. A function can be executed
 once delayed a given number of seconds, or repeated every N seconds. Similarly,
 a function can be called once the next timestamp multiple of a given number of
 seconds, or repeated every timestamp multiple of a given number of seconds. For
-this purpose, you can use the functions once_after(), repeat_every(),
-once_o_clock() and repeat_o_clock().
+this purpose, you can use the functions `once_after()`, `repeat_every()`,
+`once_o_clock()` and `repeat_o_clock()`.
 
-The normal use of this module requires the execution of start() function before
-any function scheduling, and stop() function once the program is ready to its
+The normal use of this module requires the execution of `start()` function before
+any function scheduling, and `stop()` function once the program is ready to its
 termination. If the program is intended to run forever, you can use
-loop_forever() function which never returns.
+`loop_forever()` function which never returns.
 
-ATTENTION: this module uses UTC timestamps, so don't expect it to be correlated
-with your timezone. Add the required offset to timestamps depending in your
-timezone if you really need it.
+**ATTENTION**: this module uses UTC timestamps, so don't expect it to be
+correlated with your timezone. Add the required offset to timestamps depending
+in your timezone if you really need it.
 
 Example:
 
-import Scheduler
-def say(something, more):
-    print(time.time(), something, more)
-Scheduler.start()
-a = Scheduler.repeat_every(5, say, "Hello", "World")
-b = Scheduler.repeat_o_clock(60, say, "One", "Minute")
-DO_STUFF()
-Scheduler.remove(a)
-DO_STUFF()
-Scheduler.stop()
-
+>>> import Scheduler
+>>> def say(something, more): print(time.time(), something, more)
+>>> Scheduler.start()
+>>> a = Scheduler.repeat_every(5, say, "Hello", "World")
+>>> b = Scheduler.repeat_o_clock(60, say, "One", "Minute")
+>>> DO_STUFF()
+>>> Scheduler.remove(a)
+>>> DO_STUFF()
+>>> Scheduler.stop()
 
 Another Example:
 
-import Scheduler
-def say(something, more):
-    print(time.time(), something, more)
-Scheduler.start()
-Scheduler.repeat_every(5, say, "Hello", "World")
-Scheduler.repeat_o_clock(60, say, "One", "Minute")
-Scheduler.loop_forever()
+>>> import Scheduler
+>>> def say(something, more): print(time.time(), something, more)
+>>> Scheduler.start()
+>>> Scheduler.repeat_every(5, say, "Hello", "World")
+>>> Scheduler.repeat_o_clock(60, say, "One", "Minute")
+>>> Scheduler.loop_forever()
 
 """
 import sys

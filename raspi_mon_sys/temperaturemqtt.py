@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 # Copyright (C) 2015 Miguel Lorenzo
 # Use of this source code is governed by the MIT license found in the LICENSE file.

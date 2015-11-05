@@ -1,4 +1,4 @@
-#!env python2.7
+#!/usr/bin/env python2.7
 """The purpose of this module is to allow messaging via email with a standalone
 system. It needs you to install enum module:
 
@@ -12,25 +12,25 @@ The module exports the following levels and schedules:
 Schedules are based on UTC timestamps, so don't expect to be correlated with
 local time zone.
 
-Example:
+:Example:
 
-import raspi_mon_sys.MailLoggerClient as MailLoggerClient
-logger = MailLoggerClient.open("name") # it can receive a transport string
-logger.debug("Program traces and related stuff.")
-logger.info("Any useful information.")
-logger.warning("Be careful, error incoming.")
-logger.error("Something bad happened but the system still working.")
-logger.alert("Something really bad happened.")
-logger.write(MailLoggerClient.levels.DEBUG, "Another debug info.")
+>>> import raspi_mon_sys.MailLoggerClient as MailLoggerClient
+>>> logger = MailLoggerClient.open("name") # it can receive a transport string
+>>> logger.debug("Program traces and related stuff.")
+>>> logger.info("Any useful information.")
+>>> logger.warning("Be careful, error incoming.")
+>>> logger.error("Something bad happened but the system still working.")
+>>> logger.alert("Something really bad happened.")
+>>> logger.write(MailLoggerClient.levels.DEBUG, "Another debug info.")
 
 
 The default configuration is as follows:
 
-logger.config(logger.levels.DEBUG, logger.schedules.SILENTLY)
-logger.config(logger.levels.INFO, logger.schedules.DAILY)
-logger.config(logger.levels.ALERT, logger.schedules.INSTANTANEOUSLY)
-logger.config(logger.levels.WARNING, logger.schedules.INSTANTANEOUSLY)
-logger.config(logger.levels.ERROR, logger.schedules.INSTANTANEOUSLY)
+>>> logger.config(logger.levels.DEBUG, logger.schedules.SILENTLY)
+>>> logger.config(logger.levels.INFO, logger.schedules.DAILY)
+>>> logger.config(logger.levels.ALERT, logger.schedules.INSTANTANEOUSLY)
+>>> logger.config(logger.levels.WARNING, logger.schedules.INSTANTANEOUSLY)
+>>> logger.config(logger.levels.ERROR, logger.schedules.INSTANTANEOUSLY)
 
 """
 from enum import Enum
@@ -78,6 +78,7 @@ class LoggerClient:
         }
         
     def clone(self):
+        """Returns a deep copy of the caller object."""
         other = LoggerClient(self.__name, self.__transport)
         self.__lock.acquire()
         for k,v in self.__level2schedule.iteritems():
