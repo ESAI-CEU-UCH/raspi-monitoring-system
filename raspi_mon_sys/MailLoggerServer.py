@@ -21,8 +21,6 @@ calling directly `start()` function:
 >>> import raspi_mon_sys.MailLoggerServer as server
 >>> server.start()
 """
-from uuid import getnode as get_mac
-
 import datetime
 import json
 import Queue
@@ -37,7 +35,7 @@ import raspi_mon_sys.Utils as Utils
 
 __transport = MailLoggerClient.default_transport
 __mail_credentials_path = "/etc/mail_credentials.json"
-__mac_addr  = hex(get_mac()).replace('0x','')
+__mac_addr  = Utils.getmac()
 
 # Queues of pending messages.
 __hourly_queue = Queue.PriorityQueue()
