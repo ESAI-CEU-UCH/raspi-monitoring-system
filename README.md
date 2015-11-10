@@ -18,3 +18,5 @@ The monitoring system developed for raspberry-pi under the project GV/2015/088.
 - [Adding RTC to Rpi](http://thepihut.com/blogs/raspberry-pi-tutorials/17209332-adding-a-real-time-clock-to-your-raspberry-pi).
 
 - [Adding RTC to emonPi](http://openenergymonitor.blogspot.com.es/2015/07/adding-rtc-to-emonpi.html).
+
+- [Configure Raspberry Pi without cables](http://blog.self.li/post/63281257339/raspberry-pi-part-1-basic-setup-without-cables).
