@@ -34,7 +34,7 @@ def sendmail(credentials, subject, msg):
     smtpserver.sendmail(credentials["from"], credentials["to"], msg.as_string())
     smtpserver.quit()
 
-def getmac(): return hex(getnode()).replace('0x','')
+def getmac(): return hex(getnode()).replace('0x','').replace('L','')
 
 def getpahoclient():
     # Configure logger.
