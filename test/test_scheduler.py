@@ -8,6 +8,7 @@ sched.start()
 
 a = sched.repeat_every(5, say, "Hello", "World")
 b = sched.repeat_o_clock(60, say, "One", "Minute")
+b = sched.repeat_o_clock_with_offset(60, 5, say, "One", "Minute")
 
 time.sleep(31)
 

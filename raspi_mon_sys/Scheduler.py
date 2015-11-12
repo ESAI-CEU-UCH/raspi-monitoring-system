@@ -38,6 +38,7 @@ Another Example:
 >>> Scheduler.start()
 >>> Scheduler.repeat_every(5, say, "Hello", "World")
 >>> Scheduler.repeat_o_clock(60, say, "One", "Minute")
+>>> Scheduler.repeat_o_clock_with_offset(60, 5, say, "One", "Minute")
 >>> Scheduler.loop_forever()
 
 """
@@ -134,12 +135,12 @@ def __repeated_job(seconds, expected_when, uuid, func, *args, **kwargs):
     __once_after(amount, uuid, __repeated_job, seconds, expected_when, uuid,
                  func, *args, **kwargs)
 
-def __repeated_o_clock(seconds, uuid, func, *args, **kwargs):
-    """Repeats execution of job function at next time multiple of the given seconds."""
+def __repeated_o_clock_with_offset(seconds, offset, uuid, func, *args, **kwargs):
+    """Repeats execution of job function at next time multiple of the given seconds plus the given offset."""
     func(*args, **kwargs)
     now  = time.time()
-    when = now + (seconds - (now % seconds))
-    __once_after(when - now, uuid, __repeated_o_clock, seconds, uuid,
+    when = now + (seconds - (now % seconds)) + offset
+    __once_after(when - now, uuid, __repeated_o_clock_with_offset, seconds, uuid,
                  func, *args, **kwargs)
 
 ####################
@@ -184,14 +185,19 @@ def once_o_clock(seconds, func, *args, **kwargs):
     __once_after(when - now, uuid, func, *args, **kwargs)
     return uuid
 
-def repeat_o_clock(seconds, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given seconds and returns a UUID."""
+def repeat_o_clock_with_offset(seconds, offset, func, *args, **kwargs):
+    """Repeated execution of job function at every next time multiple of the given seconds plus the given offset and returns a UUID."""
+    if offset >= seconds: raise Exception("Offset should be less than seconds")
     uuid = uuid4()
     now  = time.time()
-    when = now + (seconds - (now % seconds))
-    __once_after(when - now, uuid, __repeated_o_clock, seconds, uuid,
-                 func, *args, **kwargs)
+    when = now + (seconds - (now % seconds)) + offset
+    __once_after(when - now, uuid, __repeated_o_clock_with_offset,
+                 seconds, offset, uuid, func, *args, **kwargs)
     return uuid
+
+def repeat_o_clock(seconds, func, *args, **kwargs):
+    """Repeated execution of job function at every next time multiple of the given seconds and returns a UUID."""
+    return repeat_o_clock_with_offset(seconds, 0, func, *args, **kwargs)
 
 def start():
     """Executes the scheduler."""
