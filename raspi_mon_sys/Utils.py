@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 """Several utilities shared between different modules."""
 from email.mime.text import MIMEText
-from uuid import getnode as get_mac
+from uuid import getnode
 import smtplib
 
 def sendmail(credentials, subject, msg):
@@ -29,4 +29,4 @@ def sendmail(credentials, subject, msg):
     smtpserver.sendmail(credentials["from"], credentials["to"], msg.as_string())
     smtpserver.quit()
 
-def getmac(): return hex(get_mac()).replace('0x','')
+def getmac(): return hex(getnode()).replace('0x','')
