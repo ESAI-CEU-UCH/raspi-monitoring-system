@@ -2,7 +2,12 @@
 """Several utilities shared between different modules."""
 from email.mime.text import MIMEText
 from uuid import getnode
+import paho.mqtt.client as paho
 import smtplib
+
+__PAHO_HOST     = "localhost"
+__PAHO_PORT     = 1883
+__PAHO_TIMEOUT  = 60
 
 def sendmail(credentials, subject, msg):
     """Sends an email using the given credentials dictionary, subject and message
@@ -30,3 +35,18 @@ def sendmail(credentials, subject, msg):
     smtpserver.quit()
 
 def getmac(): return hex(getnode()).replace('0x','')
+
+def getpahoclient():
+    # Configure logger.
+    logger = MailLoggerClient.open("GetPahoClient")
+    try:
+        # Configure Paho.
+        client = paho.Client()
+        client.connect(__PAHO_HOST, __PAHO_PORT, __PAHO_TIMEOUT)
+        client.loop_start()
+    except:
+        logger.alert("Unable to connect with Paho server")
+        raise
+    logger.info("Paho initialized at %s:%d with timeout=%d",
+                __PAHO_HOST, __PAHO_PORT, __PAHO_TIMEOUT)
+    return client

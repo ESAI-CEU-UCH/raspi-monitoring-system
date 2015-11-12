@@ -144,6 +144,9 @@ def start(mail_credentials_path=__mail_credentials_path,
                 msg   = s.recv_pyobj()
                 __process_message(mail_credentials_path, msg)
         except:
+            __queue_handler(mail_credentials_path, "HOURLY", __hourly_queue)
+            __queue_handler(mail_credentials_path, "DAILY", __daily_queue)
+            __queue_handler(mail_credentials_path, "WEEKLY", __weekly_queue)
             __process_message(mail_credentials_path, {
                 "name" : "MailLoggerServer",
                 "level" : "ALERT",

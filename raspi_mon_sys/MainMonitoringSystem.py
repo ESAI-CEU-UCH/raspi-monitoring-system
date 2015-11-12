@@ -3,8 +3,6 @@
 
 It should be executed from command line without arguments.
 """
-import paho.mqtt.client as paho
-
 import time
 import traceback
 
@@ -20,26 +18,10 @@ if __name__ == "__main__":
     T1_MINUTE      = 60
     T1_HOUR        = 3600
 
-    PAHO_HOST     = "localhost"
-    PAHO_PORT     = 1883
-    PAHO_TIMEOUT  = 60
-
     # Configure logger.
     logger = MailLoggerClient.open("MainMonitoringSystem")
 
     logger.info("Initializing main monitoring system")
-
-    try:
-        # Configure Paho.
-        client = paho.Client()
-        client.connect(PAHO_HOST, PAHO_PORT, PAHO_TIMEOUT)
-        client.loop_start()
-    except:
-        logger.alert("Unable to connect with Paho server")
-        raise
-
-    logger.info("Paho initialized at %s:%d with timeout=%d",
-                PAHO_HOST, PAHO_PORT, PAHO_TIMEOUT)
 
     # Configure Scheduler.
     Scheduler.start()
