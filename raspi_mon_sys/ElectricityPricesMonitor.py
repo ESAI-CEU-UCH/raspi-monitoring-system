@@ -21,7 +21,7 @@ import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.Utils as Utils
 
 logger = MailLogger.open("ElectricityPricesMonitor")
-channel = "/raspimon/" + Utils.getmac() + "/electricityprices/values"
+topic = Utils.gettopic("electricity_prices")
 url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
 
 def __on_connect(client, userdata, rc):
@@ -74,7 +74,7 @@ def publish():
         if n < len(prices):
             for k,v in prices.iteritems(): prices[k] = v[0:n]
         message = { 'timestamp' : time.time(), 'data' : prices }
-        client.publish(channel, json.dumps(message))
+        client.publish(topic, json.dumps(message))
         logger.info("Electricity price published")
     except:
         print "Unexpected error:", traceback.format_exc()

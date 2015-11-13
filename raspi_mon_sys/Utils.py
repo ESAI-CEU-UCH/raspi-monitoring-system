@@ -56,3 +56,6 @@ def getpahoclient(configure=__dummy_configure):
     logger.info("Paho initialized at %s:%d with timeout=%d",
                 __PAHO_HOST, __PAHO_PORT, __PAHO_KEEPALIVE)
     return client
+
+def gettopic(name):
+    return "raspimon/" + Utils.getmac() + "/" + name + "/value"
