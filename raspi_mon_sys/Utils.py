@@ -5,6 +5,8 @@ from uuid import getnode
 import paho.mqtt.client as paho
 import smtplib
 
+import raspi_mon_sys.MailLoggerClient as MailLogger
+
 __PAHO_HOST      = "localhost"
 __PAHO_PORT      = 1883
 __PAHO_KEEPALIVE = 60
@@ -40,9 +42,7 @@ def getmac(): return hex(getnode()).replace('0x','').replace('L','')
 def __dummy_configure(client):
     pass
     
-def getpahoclient(configure=__dummy_configure):
-    # Configure logger.
-    logger = MailLoggerClient.open("GetPahoClient")
+def getpahoclient(logger,configure=__dummy_configure):
     try:
         # Configure Paho.
         client = paho.Client()

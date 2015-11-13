@@ -21,7 +21,7 @@ import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.Utils as Utils
 
 logger = MailLogger.open("ElectricityPricesMonitor")
-topic = Utils.gettopic("electricity_prices")
+topic = Utils.gettopic("electricity_prices/{0}")
 url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
 
 def __on_connect(client, userdata, rc):
@@ -33,7 +33,7 @@ def __configure(client):
 def publish(day_offset):
     """Publishes the electricity prices for next day."""
     try:
-        client = Utils.getpahoclient(__configure)
+        client = Utils.getpahoclient(logger, __configure)
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Error when connecting with MQTT broker")
@@ -43,9 +43,9 @@ def publish(day_offset):
         dt=datetime.date.today() + datetime.timedelta(days=day_offset)
         tomorrow_url = url.format(dt.strftime("%Y%m%d"))
         # http request
-        response_string = urllib2.urlopen(tomrrow_url)
+        response_string = urllib2.urlopen(tomorrow_url)
         response = json.load(response_string)
-        pvpc = response.PVPC
+        pvpc = response['PVPC']
         # PVPC is an array of dictionaries where every dictionary is:
         # {"Dia":"13/11/2015","Hora":"00-01",
         # "GEN":"126,08","NOC":"75,81","VHC":"79,94",
@@ -71,10 +71,10 @@ def publish(day_offset):
                 prices[k][h] = float( res[k].replace(',','.') ) # replace commas by dots
             n = n + 1
         # shrink prices to n length in case it is necessary
-        if n < len(prices):
-            for k,v in prices.iteritems(): prices[k] = v[0:n]
-        message = { 'timestamp' : time.time(), 'data' : prices }
-        client.publish(topic, json.dumps(message))
+        for k,v in prices.iteritems():
+            if n < len(prices['GEN']): v = v[0:n]
+            message = { 'timestamp' : time.time(), 'data' : v }
+            client.publish(topic.format(k), json.dumps(message))
         logger.info("Electricity price published")
     except:
         print "Unexpected error:", traceback.format_exc()

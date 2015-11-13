@@ -144,7 +144,7 @@ class LoggerClient:
         This function implements kind of printf(), so it receives a string
         format and a variadic list of values.
         """
-        self.write(levels.error, strfmt, *args)
+        self.write(levels.ERROR, strfmt, *args)
 
     def close(self):
         """Terminates connection with MailLoggerServer.."""
