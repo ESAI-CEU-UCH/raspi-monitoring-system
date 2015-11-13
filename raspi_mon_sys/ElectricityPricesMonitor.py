@@ -9,13 +9,12 @@ the price at 21:00 UTC in order to be sure they are available.
 # Copyright (C) 2015 Miguel Lorenzo
 # Use of this source code is governed by the MIT license found in the LICENSE file.
 
-from datetime import date, timedelta
-import time
 import datetime
-import paho.mqtt.client as mqtt
 import json
-import urllib2
+import paho.mqtt.client as mqtt
+import time
 import traceback
+import urllib2
 
 import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.Utils as Utils
@@ -41,6 +40,7 @@ def publish(day_offset):
     try:
         # take the date for tomorrow
         dt=datetime.date.today() + datetime.timedelta(days=day_offset)
+        ref_time = time.mktime(dt.timetuple())
         tomorrow_url = url.format(dt.strftime("%Y%m%d"))
         # http request
         response_string = urllib2.urlopen(tomorrow_url)
@@ -73,7 +73,8 @@ def publish(day_offset):
         # shrink prices to n length in case it is necessary
         for k,v in prices.iteritems():
             if n < len(prices['GEN']): v = v[0:n]
-            message = { 'timestamp' : time.time(), 'data' : v }
+            
+            message = { 'timestamp' : ref_time, 'data' : v }
             client.publish(topic.format(k), json.dumps(message))
         logger.info("Electricity price published")
     except:
