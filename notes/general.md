@@ -1,3 +1,29 @@
+# Mensajes MQTT
+
+Todos los mensajes están pensados para series temporales, con lo que su
+contenido es un diccionario JSON con dos cosas:
+
+- `timestamp` momento en que se generó el mensaje.
+- `data` dato asociado, puede ser cualquier objeto válido en JSON.
+
+La fuente del emisor se encontrará asociada al *topic*, de manera que
+normalmente serán algo del tipo `raspimon/MACADDRESS/source1/source2/.../value`
+y la concatenación de todos los sources usando ':' en lugar de '/' será el
+nombre usado en la base de datos de MongoDB.
+
+Los mensajes enviados por *open Energy Monitor* difieren de este estándar ya que
+publican en sus propios *topics*.
+
+Mensajes enviados por cada uno de los módulos Python.
+
+## ElectrictyPrices
+
+Publica en los *topics*:
+
+- `raspimon/MACADDRESS/electricity_prices/GEN`
+- `raspimon/MACADDRESS/electricity_prices/VHC`
+- `raspimon/MACADDRESS/electricity_prices/NOC`
+
 # Más sobre base de datos
 
 Después de mucho investigar, parece que la opción más razonable es utilizar
