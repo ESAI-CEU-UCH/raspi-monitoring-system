@@ -58,4 +58,4 @@ def getpahoclient(configure=__dummy_configure):
     return client
 
 def gettopic(name):
-    return "raspimon/" + Utils.getmac() + "/" + name + "/value"
+    return "raspimon/" + getmac() + "/" + name + "/value"
