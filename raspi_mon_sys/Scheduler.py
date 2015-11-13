@@ -141,8 +141,8 @@ def __repeated_o_clock_with_offset(seconds, offset, uuid, func, *args, **kwargs)
     func(*args, **kwargs)
     now  = time.time()
     when = now + (seconds - ((now-offset) % seconds))
-    __once_after(when - now, uuid, __repeated_o_clock_with_offset, seconds, uuid,
-                 func, *args, **kwargs)
+    __once_after(when - now, uuid, __repeated_o_clock_with_offset,
+                 seconds, offset, uuid, func, *args, **kwargs)
 
 ####################
 ## PUBLIC SECTION ##
