@@ -29,12 +29,15 @@ if __name__ == "__main__":
     Scheduler.start()
 
     logger.info("Scheduler started")
+    
+    # publish current electricity prices
+    ElectricityPrices.publish(0)
 
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
-    # repeat every day at 21:00 UTC
+    # repeat every day at 21:00 UTC with prices for next day
     Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
-                                         ElectricityPrices.publish)
+                                         ElectricityPrices.publish, 1)
 
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")

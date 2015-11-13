@@ -30,7 +30,7 @@ def __on_connect(client, userdata, rc):
 def __configure(client):
     client.on_connect = __on_connect
 
-def publish():
+def publish(day_offset):
     """Publishes the electricity prices for next day."""
     try:
         client = Utils.getpahoclient(__configure)
@@ -40,7 +40,7 @@ def publish():
         return
     try:
         # take the date for tomorrow
-        dt=datetime.date.today() + datetime.timedelta(days=1)
+        dt=datetime.date.today() + datetime.timedelta(days=day_offset)
         tomorrow_url = url.format(dt.strftime("%Y%m%d"))
         # http request
         response_string = urllib2.urlopen(tomrrow_url)
