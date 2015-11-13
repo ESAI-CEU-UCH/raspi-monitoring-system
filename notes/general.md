@@ -3,7 +3,9 @@
 Todos los mensajes están pensados para series temporales, con lo que su
 contenido es un diccionario JSON con dos cosas:
 
-- `timestamp` momento en que se generó el mensaje.
+- `timestamp` momento al que se refiere el mensaje. Algunos mensajes pueden ser
+  generados en dicho tiempo, otros simplemente indican un valor temporal
+  independiente de cuando se genere el mensaje.
 - `data` dato asociado, puede ser cualquier objeto válido en JSON.
 
 La fuente del emisor se encontrará asociada al *topic*, de manera que
@@ -23,6 +25,11 @@ Publica en los *topics*:
 - `raspimon/MACADDRESS/electricity_prices/GEN`
 - `raspimon/MACADDRESS/electricity_prices/VHC`
 - `raspimon/MACADDRESS/electricity_prices/NOC`
+
+En este tipo de mensajes el `timestamp` indica el tiempo base al que hacen
+referencia las estimaciones dadas. El campo `data` es un array JSON con la
+estimación para el día indicado en `timestamp`. **Recuerda** que `timestamp`
+es en UTC.
 
 # Más sobre base de datos
 
