@@ -139,7 +139,7 @@ def __repeated_o_clock_with_offset(seconds, offset, uuid, func, *args, **kwargs)
     """Repeats execution of job function at next time multiple of the given seconds plus the given offset."""
     func(*args, **kwargs)
     now  = time.time()
-    when = now + (seconds - (now % seconds)) + offset
+    when = now + (seconds - ((now-offset) % seconds))
     __once_after(when - now, uuid, __repeated_o_clock_with_offset, seconds, uuid,
                  func, *args, **kwargs)
 
@@ -190,7 +190,7 @@ def repeat_o_clock_with_offset(seconds, offset, func, *args, **kwargs):
     if offset >= seconds: raise Exception("Offset should be less than seconds")
     uuid = uuid4()
     now  = time.time()
-    when = now + (seconds - (now % seconds)) + offset
+    when = now + (seconds - ((now-offset) % seconds))
     __once_after(when - now, uuid, __repeated_o_clock_with_offset,
                  seconds, offset, uuid, func, *args, **kwargs)
     return uuid

@@ -7,6 +7,7 @@ import time
 import traceback
 
 import raspi_mon_sys.CheckIP as CheckIP
+import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
 import raspi_mon_sys.MailLoggerClient as MailLoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
 
@@ -17,6 +18,7 @@ if __name__ == "__main__":
     T1_SECOND      = 1
     T1_MINUTE      = 60
     T1_HOUR        = 3600
+    T1_DAY         = 24 * T1_HOUR
 
     # Configure logger.
     logger = MailLoggerClient.open("MainMonitoringSystem")
@@ -28,7 +30,11 @@ if __name__ == "__main__":
 
     logger.info("Scheduler started")
 
+    # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
+    # repeat every day at 21:00 UTC
+    Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
+                                         ElectricityPrices.publish)
 
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")

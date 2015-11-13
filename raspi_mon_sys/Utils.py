@@ -5,9 +5,10 @@ from uuid import getnode
 import paho.mqtt.client as paho
 import smtplib
 
-__PAHO_HOST     = "localhost"
-__PAHO_PORT     = 1883
-__PAHO_TIMEOUT  = 60
+__PAHO_HOST      = "localhost"
+__PAHO_PORT      = 1883
+__PAHO_KEEPALIVE = 60
+__PAHO_BIND_ADDRESS = "127.0.0.1"
 
 def sendmail(credentials, subject, msg):
     """Sends an email using the given credentials dictionary, subject and message
@@ -36,17 +37,22 @@ def sendmail(credentials, subject, msg):
 
 def getmac(): return hex(getnode()).replace('0x','').replace('L','')
 
-def getpahoclient():
+def __dummy_configure(client):
+    pass
+    
+def getpahoclient(configure=__dummy_configure):
     # Configure logger.
     logger = MailLoggerClient.open("GetPahoClient")
     try:
         # Configure Paho.
         client = paho.Client()
-        client.connect(__PAHO_HOST, __PAHO_PORT, __PAHO_TIMEOUT)
+        configure(client)
+        client.connect(__PAHO_HOST, __PAHO_PORT, __PAHO_KEEPALIVE,
+                       __PAHO_BIND_ADDRESS)
         client.loop_start()
     except:
         logger.alert("Unable to connect with Paho server")
         raise
     logger.info("Paho initialized at %s:%d with timeout=%d",
-                __PAHO_HOST, __PAHO_PORT, __PAHO_TIMEOUT)
+                __PAHO_HOST, __PAHO_PORT, __PAHO_KEEPALIVE)
     return client
