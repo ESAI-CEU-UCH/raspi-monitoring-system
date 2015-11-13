@@ -34,9 +34,8 @@ def publish(day_offset):
     try:
         client = Utils.getpahoclient(logger, __configure)
     except:
-        print "Unexpected error:", traceback.format_exc()
         logger.error("Error when connecting with MQTT broker")
-        return
+        raise
     try:
         # take the date for tomorrow
         dt=datetime.date.today() + datetime.timedelta(days=day_offset)
@@ -44,39 +43,38 @@ def publish(day_offset):
         tomorrow_url = url.format(dt.strftime("%Y%m%d"))
         # http request
         response_string = urllib2.urlopen(tomorrow_url)
-        response = json.load(response_string)
-        pvpc = response['PVPC']
-        # PVPC is an array of dictionaries where every dictionary is:
-        # {"Dia":"13/11/2015","Hora":"00-01",
-        # "GEN":"126,08","NOC":"75,81","VHC":"79,94",
-        # "COFGEN":"0,000075326953000000","COFNOC":"0,000158674625000000",
-        # "COFVHC":"0,000134974129000000","PMHGEN":"66,35","PMHNOC":"63,98",
-        # "PMHVHC":"66,63","SAHGEN":"6,14","SAHNOC":"5,92","SAHVHC":"6,17",
-        # "FOMGEN":"0,03","FOMNOC":"0,03","FOMVHC":"0,03","FOSGEN":"0,13",
-        # "FOSNOC":"0,12","FOSVHC":"0,13","INTGEN":"2,46","INTNOC":"2,37",
-        # "INTVHC":"2,47","PCAPGEN":"6,94","PCAPNOC":"1,16","PCAPVHC":"1,64",
-        # "TEUGEN":"44,03","TEUNOC":"2,22","TEUVHC":"2,88"}
-
-        # Looking here: http://tarifaluzhora.es/ it seems that GEN is the main
-        # electricity price, and it comes in thousandth of an euro.
-        
-        # 25 hours because of CEST to CET transition day.
-        prices = { 'GEN' : [0]*25, 'NOC' : [0]*25, 'VHC' : [0]*25 }
-        n = 0
-        # for every hour data in pvpc
-        for res in pvpc:
-            # TODO: check day value
-            h = int( res['Hora'].split('-')[0] )
-            for k in prices.keys():
-                prices[k][h] = float( res[k].replace(',','.') ) # replace commas by dots
-            n = n + 1
-        # shrink prices to n length in case it is necessary
-        for k,v in prices.iteritems():
-            if n < len(prices['GEN']): v = v[0:n]
-            
-            message = { 'timestamp' : ref_time, 'data' : v }
-            client.publish(topic.format(k), json.dumps(message))
-        logger.info("Electricity price published")
     except:
-        print "Unexpected error:", traceback.format_exc()
         logger.error("Unable to retrieve electricity prices")
+        raise
+    response = json.load(response_string)
+    pvpc = response['PVPC']
+    # PVPC is an array of dictionaries where every dictionary is:
+    # {"Dia":"13/11/2015","Hora":"00-01",
+    # "GEN":"126,08","NOC":"75,81","VHC":"79,94",
+    # "COFGEN":"0,000075326953000000","COFNOC":"0,000158674625000000",
+    # "COFVHC":"0,000134974129000000","PMHGEN":"66,35","PMHNOC":"63,98",
+    # "PMHVHC":"66,63","SAHGEN":"6,14","SAHNOC":"5,92","SAHVHC":"6,17",
+    # "FOMGEN":"0,03","FOMNOC":"0,03","FOMVHC":"0,03","FOSGEN":"0,13",
+    # "FOSNOC":"0,12","FOSVHC":"0,13","INTGEN":"2,46","INTNOC":"2,37",
+    # "INTVHC":"2,47","PCAPGEN":"6,94","PCAPNOC":"1,16","PCAPVHC":"1,64",
+    # "TEUGEN":"44,03","TEUNOC":"2,22","TEUVHC":"2,88"}
+
+    # Looking here: http://tarifaluzhora.es/ it seems that GEN is the main
+    # electricity price, and it comes in thousandth of an euro.
+        
+    # 25 hours because of CEST to CET transition day.
+    prices = { 'GEN' : [0]*25, 'NOC' : [0]*25, 'VHC' : [0]*25 }
+    n = 0
+    # for every hour data in pvpc
+    for res in pvpc:
+        # TODO: check day value
+        h = int( res['Hora'].split('-')[0] )
+        for k in prices.keys():
+            prices[k][h] = float( res[k].replace(',','.') ) # replace commas by dots
+        n = n + 1
+    # shrink prices to n length in case it is necessary
+    for k,v in prices.iteritems():
+        if n < len(prices['GEN']): v = v[0:n]
+        message = { 'timestamp' : ref_time, 'data' : v }
+        client.publish(topic.format(k), json.dumps(message))
+    logger.info("Electricity price published")

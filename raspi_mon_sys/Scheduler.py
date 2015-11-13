@@ -45,6 +45,7 @@ Another Example:
 import sys
 import time
 import threading
+import traceback
 from uuid import uuid4
 
 import Queue
@@ -71,7 +72,7 @@ def __run_threaded(job_func, *args, **kwargs):
     try:
         job_thread.start()
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print "Unexpected error:", traceback.format_exc()
     return job_thread
 
 def __check_running_threads(timeout=0.0):
