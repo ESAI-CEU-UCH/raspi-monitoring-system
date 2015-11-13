@@ -71,7 +71,8 @@ def publish():
                 prices[k][h] = float( res[k].replace(',','.') ) # replace commas by dots
             n = n + 1
         # shrink prices to n length in case it is necessary
-        if n < len(prices): for k,v in prices.iteritems(): prices[k] = v[0:n]
+        if n < len(prices):
+            for k,v in prices.iteritems(): prices[k] = v[0:n]
         message = { 'timestamp' : time.time(), 'data' : prices }
         client.publish(channel, json.dumps(message))
         logger.info("Electricity price published")
