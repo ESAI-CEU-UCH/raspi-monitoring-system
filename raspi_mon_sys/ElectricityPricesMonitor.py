@@ -45,6 +45,7 @@ def publish(day_offset):
         response_string = urllib2.urlopen(tomorrow_url)
     except:
         logger.error("Unable to retrieve electricity prices")
+        client.disconnect()
         raise
     response = json.load(response_string)
     pvpc = response['PVPC']
@@ -78,3 +79,4 @@ def publish(day_offset):
         message = { 'timestamp' : ref_time, 'data' : v }
         client.publish(topic.format(k), json.dumps(message))
     logger.info("Electricity price published")
+    client.disconnect()
