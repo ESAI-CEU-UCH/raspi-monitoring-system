@@ -3,6 +3,7 @@
 from email.mime.text import MIMEText
 from uuid import getnode
 import paho.mqtt.client as paho
+import pymongo
 import smtplib
 
 import raspi_mon_sys.MailLoggerClient as MailLogger
@@ -11,6 +12,9 @@ __PAHO_HOST      = "localhost"
 __PAHO_PORT      = 1883
 __PAHO_KEEPALIVE = 60
 __PAHO_BIND_ADDRESS = "127.0.0.1"
+
+__MONGO_HOST = "localhost"
+__MONGO_PORT = 27018
 
 def sendmail(credentials, subject, msg):
     """Sends an email using the given credentials dictionary, subject and message
@@ -59,3 +63,21 @@ def getpahoclient(logger,configure=__dummy_configure):
 
 def gettopic(name):
     return "raspimon/" + getmac() + "/" + name + "/value"
+
+def getmongoclient(logger):
+    try:
+        client = pymongo.MongoClient(__MONGO_HOST, __MONGO_PORT)
+    except:
+        logger.alert("Unable to connect with MongoDB server")
+        raise
+    logger.info("MongoDB initialized at %s:%d", __MONGO_HOST, __MONGO_PORT)
+    return client
+
+def getconfig(source, logger):
+    client = getmongoclient(logger)
+    collection = client["raspimon"]["GVA2015_config"]
+    config = collection.find_one({ "raspi":getmac(), "source":source })
+    client.close()
+    assert config is not None
+    logger.debug("Configuration retrieved properly for source %s", source)
+    return config
