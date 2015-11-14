@@ -9,7 +9,7 @@ import serial
 import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.MailLoggerClient as MailLogger
 
-com_port = /dev/ttyAMA0
+com_port = "/dev/ttyAMA0"
 com_baud = 38400
 timeout = 0
 
