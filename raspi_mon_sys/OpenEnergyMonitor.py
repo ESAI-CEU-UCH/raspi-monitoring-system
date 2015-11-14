@@ -21,9 +21,9 @@ iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
 
 
 # Execute run method
-I.run()
+iface.run()
 # Read socket
-values = I.read()
+values = iface.read()
 # If complete and valid data was received
 if values is not None:
     # Place a copy of the values in a queue for each reporter
