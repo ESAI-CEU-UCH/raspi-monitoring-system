@@ -6,7 +6,7 @@ This code is an adaptation of [emonhub](https://github.com/emonhub/emonhub).
 
 import serial
 
-import raspi_mon_sys.emonhub/emonhub_interfacer as emonhub_interfacer
+import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.MailLoggerClient as MailLogger
 
 com_port = /dev/ttyAMA0
