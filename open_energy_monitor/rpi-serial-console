@@ -2,35 +2,40 @@
 # Script by AndrewS to make it easier to enable/disable the serial console
 # (which allows the UART to be used by other programs)
 # version 1.1 - better error handling
+#
+# Updated by Francisco Zamora-Martinez (Universidad CEU Cardenal Herrera, 2015)
+# to allow it working with Raspbian Jessy. List of changes:
+#
+# 1. Raspbian Jessy uses systemd instead of sysvinit scripts.
 ACTION=$1
 BAUDRATE=${2:-115200}
 UART=ttyAMA0
 CMDLINE=/boot/cmdline.txt
-INITTAB=/etc/inittab
+SYSTEMCTL=$(which systemctl)
 if [[ ! -f "$CMDLINE" ]]; then
   echo "$CMDLINE is missing" 1>&2
   exit 1
 fi
-if [[ ! -f "$INITTAB" ]]; then
-  echo "$INITTAB is missing" 1>&2
+if [[ -z "$SYSTEMCTL" ]]; then
+  echo "$SYSTEMCTL is missing" 1>&2
   exit 1
 fi
 CMDLINE_STATUS=disabled
 if [[ $(grep $UART "$CMDLINE") ]]; then
   CMDLINE_STATUS=enabled
 fi
-INITTAB_STATUS=disabled
-if [[ $(grep -v ^# "$INITTAB" | grep $UART) ]]; then
-  INITTAB_STATUS=enabled
-fi
+#SYSTEMD_STATUS=disabled
+#if [[ $(grep -v ^# "$INITTAB" | grep $UART) ]]; then
+#  SYSTEMD_STATUS=enabled
+#fi
 LIVE_STATUS=disabled
 if [[ $(grep $UART /proc/cmdline) ]]; then
   LIVE_STATUS=enabled
 fi
-if [[ $CMDLINE_STATUS != $INITTAB_STATUS ]]; then
-  echo "Inconsistent status! $CMDLINE is $CMDLINE_STATUS, but $INITTAB is $INITTAB_STATUS" 1>&2
-  exit 1
-fi
+#if [[ $CMDLINE_STATUS != $INITTAB_STATUS ]]; then
+#  echo "Inconsistent status! $CMDLINE is $CMDLINE_STATUS, but $INITTAB is $INITTAB_STATUS" 1>&2
+#  exit 1
+#fi
 if [[ "$ACTION" != "enable" && "$ACTION" != "disable" && "$ACTION" != "status" ]]; then
   echo "Missing / incorrect command-line argument. Use enable, disable or status" 1>&2
   exit 1
@@ -53,19 +58,23 @@ else
     if [[ ! -f "${CMDLINE}.bak" ]]; then
       cp "$CMDLINE" "${CMDLINE}.bak"
     fi
-    if [[ ! -f "${INITTAB}.bak" ]]; then
-      cp "$INITTAB" "${INITTAB}.bak"
-    fi
+    #if [[ ! -f "${INITTAB}.bak" ]]; then
+    #  cp "$INITTAB" "${INITTAB}.bak"
+    #fi
     CMDLINE_CONTENTS=$(cat "$CMDLINE")
-    TMPFILE="${INITTAB}.tmp"
-    grep -v $UART "$INITTAB" > "$TMPFILE"
+    #TMPFILE="${INITTAB}.tmp"
+    #grep -v $UART "$INITTAB" > "$TMPFILE"
     if [[ $ACTION == enable ]]; then
-      echo "T0:23:respawn:/sbin/getty -L $UART $BAUDRATE vt100" >> "$TMPFILE"
-      mv "$TMPFILE" "$INITTAB"
+      #echo "T0:23:respawn:/sbin/getty -L $UART $BAUDRATE vt100" >> "$TMPFILE"
+      #mv "$TMPFILE" "$INITTAB"
+      $SYSTEMCTL enable serial-getty@ttyAMA0.service
+      $SYSTEMCTL start serial-getty@ttyAMA0.service
       echo "$CMDLINE_CONTENTS console=$UART,$BAUDRATE kgdboc=$UART,$BAUDRATE" > "$CMDLINE"
     else
-      echo "#serial getty on $UART removed by "$(basename $0) >> "$TMPFILE"
-      mv "$TMPFILE" "$INITTAB"
+      #echo "#serial getty on $UART removed by "$(basename $0) >> "$TMPFILE"
+      #mv "$TMPFILE" "$INITTAB"
+      $SYSTEMCTL stop serial-getty@ttyAMA0.service
+      $SYSTEMCTL disable serial-getty@ttyAMA0.service
       NEW_CMDLINE_CONTENTS=
       for p in $CMDLINE_CONTENTS; do
         if [[ ${p%%=*} == console || ${p%%=*} == kgdboc ]]; then
