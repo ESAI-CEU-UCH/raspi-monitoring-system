@@ -20,7 +20,6 @@ logger.info("Opening connection")
 iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                 com_port, com_baud)
 
-
 while True:
     # Execute run method
     iface.run()
