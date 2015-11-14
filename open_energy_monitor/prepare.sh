@@ -4,4 +4,3 @@
 #     chmod +x rpi-serial-console
 # fi
 sudo ./rpi-serial-console disable
-echo "Remember, this software needs to reboot raspimon"
