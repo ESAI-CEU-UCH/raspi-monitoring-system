@@ -28,13 +28,6 @@ while True:
     values = iface.read()
     # If complete and valid data was received
     if values is not None:
-        # Place a copy of the values in a queue for each reporter
-        for name in self._reporters:
-            # discard if reporter 'pause' set to 'all' or 'in'
-            if 'pause' in self._reporters[name]._settings \
-               and str(self._reporters[name]._settings['pause']).lower() in \
-               ['all', 'in']:
-                continue
-            print(values)
+        print(values)
     time.sleep(0.1)
     print("EO")

@@ -104,7 +104,7 @@ def __process_message(mail_credentials_path, msg):
         except:
             print "Unexpected error:", traceback.format_exc()
             
-    elif sched != __schedules.SILENTLY:
+    elif sched != str(__schedules.SILENTLY):
         __schedule2queue[ sched ].put( (msg["datetime"],txt) )
 
 
