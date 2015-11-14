@@ -5,6 +5,7 @@ This code is an adaptation of [emonhub](https://github.com/emonhub/emonhub).
 """
 
 import serial
+import time
 
 import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.MailLoggerClient as MailLogger
@@ -20,17 +21,20 @@ iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                 com_port, com_baud)
 
 
-# Execute run method
-iface.run()
-# Read socket
-values = iface.read()
-# If complete and valid data was received
-if values is not None:
-    # Place a copy of the values in a queue for each reporter
-    for name in self._reporters:
-        # discard if reporter 'pause' set to 'all' or 'in'
-        if 'pause' in self._reporters[name]._settings \
-           and str(self._reporters[name]._settings['pause']).lower() in \
-           ['all', 'in']:
-            continue
-        print(values)
+while True:
+    # Execute run method
+    iface.run()
+    # Read socket
+    values = iface.read()
+    # If complete and valid data was received
+    if values is not None:
+        # Place a copy of the values in a queue for each reporter
+        for name in self._reporters:
+            # discard if reporter 'pause' set to 'all' or 'in'
+            if 'pause' in self._reporters[name]._settings \
+               and str(self._reporters[name]._settings['pause']).lower() in \
+               ['all', 'in']:
+                continue
+            print(values)
+    time.sleep(0.1)
+    print("EO")
