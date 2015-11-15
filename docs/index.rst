@@ -6,8 +6,6 @@
 Welcome to Raspi Monitoring System's documentation!
 ===================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 4
 
