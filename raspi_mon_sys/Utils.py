@@ -82,9 +82,9 @@ def getmongoclient(logger):
     try:
         client = pymongo.MongoClient(__MONGO_HOST, __MONGO_PORT)
     except:
-        logger.alert("Unable to connect with MongoDB server")
+        if logger is not None: logger.alert("Unable to connect with MongoDB server")
         raise
-    logger.info("MongoDB initialized at %s:%d", __MONGO_HOST, __MONGO_PORT)
+    if logger is not None: logger.info("MongoDB initialized at %s:%d", __MONGO_HOST, __MONGO_PORT)
     return client
 
 def getconfig(source, logger):
@@ -95,5 +95,5 @@ def getconfig(source, logger):
     config = collection.find_one({ "raspi":getmac(), "source":source })
     client.close()
     assert config is not None
-    logger.debug("Configuration retrieved properly for source %s", source)
+    if logger is not None: logger.debug("Configuration retrieved properly for source %s", source)
     return config
