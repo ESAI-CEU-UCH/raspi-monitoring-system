@@ -41,12 +41,23 @@ def sendmail(credentials, subject, msg):
     smtpserver.sendmail(credentials["from"], credentials["to"], msg.as_string())
     smtpserver.quit()
 
-def getmac(): return hex(getnode()).replace('0x','').replace('L','')
+def getmac():
+    """Returns MAC address of eth0 in a hexadecimal string."""
+    return hex(getnode()).replace('0x','').replace('L','')
 
 def __dummy_configure(client):
     pass
     
 def getpahoclient(logger,configure=__dummy_configure):
+    """Connects to MQTT broker using python paho client.
+    
+    This function receives a logger instance for info and alert messages, and an
+    optional configure function. The client is instantiated and configure
+    function is called as `configure(client)`. Next, `client.connect()` is
+    called. Usually configure function is used to initialize `on_connect` and
+    `on_message` fields.
+
+    """
     try:
         # Configure Paho.
         client = paho.Client()
@@ -62,9 +73,12 @@ def getpahoclient(logger,configure=__dummy_configure):
     return client
 
 def gettopic(name):
+    """Returns a MQTT topic as `raspimon/MACADDRESS/name/value` where name is given
+    as argument to this function."""
     return "raspimon/" + getmac() + "/" + name + "/value"
 
 def getmongoclient(logger):
+    """Returns a client connected to Mongo DB."""
     try:
         client = pymongo.MongoClient(__MONGO_HOST, __MONGO_PORT)
     except:
@@ -74,6 +88,8 @@ def getmongoclient(logger):
     return client
 
 def getconfig(source, logger):
+    """Returns the configuration for `source` as stored at Mongo DB in our
+    servers."""
     client = getmongoclient(logger)
     collection = client["raspimon"]["GVA2015_config"]
     config = collection.find_one({ "raspi":getmac(), "source":source })
