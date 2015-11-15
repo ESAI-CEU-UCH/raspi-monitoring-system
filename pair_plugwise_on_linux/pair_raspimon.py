@@ -121,7 +121,7 @@ def pair_circles(slaves, device):
         print
 
 def main():
-    config  = getconfig("plugwise", None)
+    config  = Utils.getconfig("plugwise", None)
     stick   = config["stick"]
     pairing = config["pairing"]
     device  = "/dev/ttyUSB0"

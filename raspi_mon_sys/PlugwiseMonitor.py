@@ -55,7 +55,7 @@ def start():
     global circles_config
     global circles
     logger  = MailLogger.open("PlugwiseMonitor")
-    config  = getconfig("plugwise", logger)
+    config  = Utils.getconfig("plugwise", logger)
     client  = Utils.getpahoclient(logger, __configure)
     assert config is not None
     device  = plugwise.api.Stick(DEFAULT_SERIAL_PORT)
