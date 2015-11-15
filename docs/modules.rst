@@ -5,3 +5,5 @@ raspi_mon_sys
    :maxdepth: 4
 
    raspi_mon_sys
+   emonhub
+   plugwise

@@ -29,6 +29,10 @@ if __name__ == "__main__":
     Scheduler.start()
 
     logger.info("Scheduler started")
+
+    # Start all modules.
+    CheckIP.start()
+    ElectricityPrices.start()
     
     # publish current electricity prices
     ElectricityPrices.publish(0)

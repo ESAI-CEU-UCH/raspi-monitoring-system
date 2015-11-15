@@ -1,0 +1,3 @@
+[submodule "raspi_mon_sys/external/Plugwise2py"]
+	path = raspi_mon_sys/external/Plugwise2py
+	url = https://github.com/SevenW/Plugwise-2-py.git

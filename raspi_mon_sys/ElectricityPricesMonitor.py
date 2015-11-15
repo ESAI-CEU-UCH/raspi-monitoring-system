@@ -1,20 +1,19 @@
 #!/usr/bin/env python2.7
 """Recovers electricity prices and publish them using MQTT.
 
-Following this [press notice](http://www.ree.es/es/sala-de-prensa/notas-de-prensa/2014/03/red-electrica-empieza-publicar-los-nuevos-precios-horarios-de-la-electricidad)
+Following this `press notice <http://www.ree.es/es/sala-de-prensa/notas-de-prensa/2014/03/red-electrica-empieza-publicar-los-nuevos-precios-horarios-de-la-electricidad>`_
 the prices for next day will be available every day at 20:15, so we can check
 the price at 21:00 UTC in order to be sure they are available. This module
-publishes a sequence of messages as:
+publishes a sequence of messages as::
 
-```
-BASETOPIC/electricity_prices/GEN  {"timestamp":REF+0,"data":10}
-BASETOPIC/electricity_prices/NOC  {"timestamp":REF+0,"data":66}
-BASETOPIC/electricity_prices/VHC  {"timestamp":REF+0,"data":70}
-BASETOPIC/electricity_prices/GEN  {"timestamp":REF+3600,"data":12}
-BASETOPIC/electricity_prices/NOC  {"timestamp":REF+3600,"data":69}
-BASETOPIC/electricity_prices/VHC  {"timestamp":REF+3600,"data":80}
-...
-```
+    BASETOPIC/electricity_prices/GEN/value {"timestamp":REF+0,"data":10}
+    BASETOPIC/electricity_prices/NOC/value {"timestamp":REF+0,"data":66}
+    BASETOPIC/electricity_prices/VHC/value {"timestamp":REF+0,"data":70}
+    ...
+    BASETOPIC/electricity_prices/GEN/value {"timestamp":REF+3600,"data":12}
+    BASETOPIC/electricity_prices/NOC/value {"timestamp":REF+3600,"data":69}
+    BASETOPIC/electricity_prices/VHC/value {"timestamp":REF+3600,"data":80}
+    ...
 
 This sequence can be interpreted as a time series of electricity prices for a
 given day offset (current if `offset=0`, next if `offset=1`).
@@ -25,7 +24,6 @@ given day offset (current if `offset=0`, next if `offset=1`).
 
 import datetime
 import json
-import paho.mqtt.client as mqtt
 import time
 import traceback
 import urllib2
@@ -33,7 +31,6 @@ import urllib2
 import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.Utils as Utils
 
-logger = MailLogger.open("ElectricityPricesMonitor")
 topic = Utils.gettopic("electricity_prices/{0}")
 url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
 
@@ -43,17 +40,19 @@ def __on_connect(client, userdata, rc):
 def __configure(client):
     client.on_connect = __on_connect
 
+def start():
+    """Opens logger connection."""
+    global logger
+    logger = MailLogger.open("ElectricityPricesMonitor")
+    pass
+    
 def publish(day_offset):
     """Publishes the electricity prices for a given day offset.
     
     If `offset=0` prices will be for current day, if `offset=1` prices will be
     for next day, and so on.
     """
-    try:
-        client = Utils.getpahoclient(logger, __configure)
-    except:
-        logger.error("Error when connecting with MQTT broker")
-        raise
+    client = Utils.getpahoclient(logger, __configure)
     try:
         # take the date for tomorrow
         dt=datetime.date.today() + datetime.timedelta(days=day_offset)

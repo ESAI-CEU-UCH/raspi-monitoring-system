@@ -12,6 +12,8 @@ Contents:
    :maxdepth: 4
 
    raspi_mon_sys
+   emonhub
+   plugwise
 
 
 Indices and tables

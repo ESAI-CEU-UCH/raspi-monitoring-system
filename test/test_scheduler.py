@@ -15,6 +15,7 @@ time.sleep(31)
 sched.remove(a)
 print("Removed ", time.time())
 
+c = sched.repeat_o_clock_with_offset("500ms", "5ms", say, "something", "funny")
 time.sleep(31)
 print("Stopping", time.time())
 

@@ -11,31 +11,34 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.Utils as Utils
 
-com_port = "/dev/ttyAMA0"
-com_baud = 38400
-timeout = 0
+def start():
+    com_port = "/dev/ttyAMA0"
+    com_baud = 38400
+    timeout = 0
 
-logger = MailLogger.open("OpenEnergyMonitor")
-logger.info("Opening connection")
+    logger = MailLogger.open("OpenEnergyMonitor")
+    logger.info("Opening connection")
 
-iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
-                                                com_port, com_baud)
+    iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
+                                                    com_port, com_baud)
 
-# config is a dictionary with:
-# devices : [ { id, desc, name  } ]
-# keys : [ { nodeId, key, desc, name } ]
-config  = Utils.getconfig("open_energy_monitor", logger)
-house   = config.house
-devices = config.devices
-keys    = config.keys
+    # config is a dictionary with:
+    # devices : [ { id, desc, name  } ]
+    # keys : [ { nodeId, key, desc, name } ]
+    config  = Utils.getconfig("open_energy_monitor", logger)
+    house   = config.house
+    devices = config.devices
+    keys    = config.keys
 
-while True:
-    # Execute run method
-    iface.run()
-    # Read socket
-    values = iface.read()
-    # If complete and valid data was received
-    if values is not None:
-        print(values)
-    time.sleep(0.1)
-    print("EO")
+    while True:
+        # Execute run method
+        iface.run()
+        # Read socket
+        values = iface.read()
+        # If complete and valid data was received
+        if values is not None:
+            print(values)
+            time.sleep(0.1)
+            print("EO")
+
+if __name__ == "__main__": start()

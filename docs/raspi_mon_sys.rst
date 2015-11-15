@@ -9,6 +9,14 @@ CheckIP module
     :undoc-members:
     :show-inheritance:
 
+ElectricityPricesMonitor module
+-------------------------------
+
+.. automodule:: ElectricityPricesMonitor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+       
 MailLoggerClient module
 -------------------------------------
 
@@ -29,6 +37,22 @@ MainMonitoringSystem module
 -----------------------------------------
 
 .. automodule:: MainMonitoringSystem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+OpenEnergyMonitor module
+----------------------------
+
+.. automodule:: OpenEnergyMonitor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+PlugwiseMonitor module
+----------------------------
+
+.. automodule:: PlugwiseMonitor
     :members:
     :undoc-members:
     :show-inheritance:
