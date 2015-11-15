@@ -131,11 +131,11 @@ def start(mail_credentials_path=__mail_credentials_path,
         s.bind(transport_string)
         
         Scheduler.start()
-        Scheduler.repeat_o_clock(3600, __queue_handler,
+        Scheduler.repeat_o_clock(3600*1000, __queue_handler,
                                  mail_credentials_path, "HOURLY", __hourly_queue)
-        Scheduler.repeat_o_clock(3600*24, __queue_handler,
+        Scheduler.repeat_o_clock(3600*24*1000, __queue_handler,
                                  mail_credentials_path, "DAILY", __daily_queue)
-        Scheduler.repeat_o_clock(3600*24*7, __queue_handler,
+        Scheduler.repeat_o_clock(3600*24*7*1000, __queue_handler,
                                  mail_credentials_path, "WEEKLY", __weekly_queue)
         
         print("Running server at ZMQ transport: " + transport_string)

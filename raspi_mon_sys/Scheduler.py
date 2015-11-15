@@ -4,9 +4,9 @@ functions.
 
 This module allow to execute functions delayed in time. The functions are able
 to receive many positional and/or keyword arguments. A function can be executed
-once delayed a given number of seconds, or repeated every N seconds. Similarly,
+once delayed a given number of mili-seconds, or repeated every N mili-seconds. Similarly,
 a function can be called once the next timestamp multiple of a given number of
-seconds, or repeated every timestamp multiple of a given number of seconds. For
+mili-seconds, or repeated every timestamp multiple of a given number of mili-seconds. For
 this purpose, you can use the functions `once_after()`, `repeat_every()`,
 `once_o_clock()` and `repeat_o_clock()`.
 
@@ -24,8 +24,8 @@ Example:
 >>> import Scheduler
 >>> def say(something, more): print(time.time(), something, more)
 >>> Scheduler.start()
->>> a = Scheduler.repeat_every(5, say, "Hello", "World")
->>> b = Scheduler.repeat_o_clock(60, say, "One", "Minute")
+>>> a = Scheduler.repeat_every(5000, say, "Hello", "World")
+>>> b = Scheduler.repeat_o_clock(60000, say, "One", "Minute")
 >>> DO_STUFF()
 >>> Scheduler.remove(a)
 >>> DO_STUFF()
@@ -36,19 +36,12 @@ Another Example:
 >>> import Scheduler
 >>> def say(something, more): print(time.time(), something, more)
 >>> Scheduler.start()
->>> Scheduler.repeat_every(5, say, "Hello", "World")
->>> Scheduler.repeat_o_clock(60, say, "One", "Minute")
->>> Scheduler.repeat_o_clock_with_offset(60, 5, say, "One", "Minute")
+>>> Scheduler.repeat_every(5000, say, "Hello", "World")
+>>> Scheduler.repeat_o_clock(60000, say, "One", "Minute")
+>>> Scheduler.repeat_o_clock_with_offset(60000, 5000, say, "One", "Minute")
 >>> Scheduler.loop_forever()
 
-All functions schedule by default using second resolution (integer values). You
-can change it to mili-seconds using strings instead of numbers and adding the
-suffix `ms` at the end:
-
->>> Scheduler.repeat_o_clock_with_offset("60ms", "5ms", say, "something", "funny")
-
-In this cases the offset should be given in mili-seconds also.
-
+All functions receive mili-second resolution as integer values.
 """
 import sys
 import time
@@ -74,12 +67,7 @@ __running = []
 __main_thread = None
 __main_thread_running = False
 
-def __string2ms(seconds):
-    if seconds == 0: return 0
-    assert type(seconds) == str
-    assert seconds[-2:] == "ms"
-    mseconds = int(seconds[:-2])
-    return mseconds
+def __gettime(): return time.time()*1000
 
 def __run_threaded(job_func, *args, **kwargs):
     """Executes the given function with args and kwargs in a thread."""
@@ -112,78 +100,52 @@ def __main_loop():
         if uuid in __removed:
             __removed.discard(uuid)
             continue
-        amount = when - time.time()
+        amount = when - __gettime()
         if amount > 0:
             __jobs.put( (when,uuid,data) )
-            amount = when - time.time()
+            amount = when - __gettime()
             if amount > 0:
-                __awake.wait(amount)
+                __awake.wait(amount/1000.0)
                 __awake.clear()
         else:
             job,args,kwargs = data
             __running.append( __run_threaded(job, *args, **kwargs) )
 
-def __once_after(seconds, uuid, func, *args, **kwargs):
-    """Executes the given job function after given seconds amount."""
+def __once_after(mili_seconds, uuid, func, *args, **kwargs):
+    """Executes the given job function after given mili-seconds amount."""
     if __main_thread_running:
-        now  = time.time()
-        when = now + seconds
+        now  = __gettime()
+        when = now + mili_seconds
         __jobs.put( (when, uuid, (func,args,kwargs)) )
         __awake.set()
     else:
         raise Exception("Unable to enqueue any job while Scheduler is stopped.")
 
-def __repeated_job(seconds, expected_when, uuid, func, *args, **kwargs):
-    """Repeats execution of a function every seconds.
-    
-    This function uses expected_when in order to improve precision of next
-    repetition.
-    """
-    func(*args, **kwargs)
-    now = time.time()
-    diff = now - expected_when
-    amount = seconds - diff
-    if amount < 0:
-        amount = amount % seconds
-        expected_when = now + amount
-    else:
-        expected_when += seconds
-    __once_after(amount, uuid, __repeated_job, seconds, expected_when, uuid,
-                 func, *args, **kwargs)
-
-def __repeated_job_in_ms(mseconds, expected_when, uuid, func, *args, **kwargs):
+def __repeated_job(mili_seconds, expected_when, uuid, func, *args, **kwargs):
     """Repeats execution of a function every mili-seconds.
     
     This function uses expected_when in order to improve precision of next
     repetition.
     """
     func(*args, **kwargs)
-    now = time.time()
+    now = __gettime()
     diff = now - expected_when
-    amount = seconds - diff
+    amount = mili_seconds - diff
     if amount < 0:
-        amount = ( (amount*1000) % mseconds ) / 1000.0
+        amount = amount % mili_seconds
         expected_when = now + amount
     else:
-        expected_when += mseconds/1000.0
-    __once_after(amount, uuid, __repeated_job_in_ms, mseconds, expected_when, uuid,
+        expected_when += mili_seconds
+    __once_after(amount, uuid, __repeated_job, mili_seconds, expected_when, uuid,
                  func, *args, **kwargs)
 
-def __repeated_o_clock_with_offset(seconds, offset, uuid, func, *args, **kwargs):
-    """Repeats execution of job function at next time multiple of the given seconds plus the given offset."""
-    func(*args, **kwargs)
-    now  = time.time()
-    when = now + (seconds - ((now-offset) % seconds))
-    __once_after(when - now, uuid, __repeated_o_clock_with_offset,
-                 seconds, offset, uuid, func, *args, **kwargs)
-
-def __repeated_o_clock_in_ms_with_offset(mseconds, moffset, uuid, func, *args, **kwargs):
+def __repeated_o_clock_with_offset(mili_seconds, offset, uuid, func, *args, **kwargs):
     """Repeats execution of job function at next time multiple of the given mili-seconds plus the given offset."""
     func(*args, **kwargs)
-    now  = time.time()
-    when = now + (mseconds - ((now*1000 - moffset) % mseconds)) / 1000.0
-    __once_after(when - now, uuid, __repeated_o_clock_in_ms_with_offset,
-                 mseconds, moffset, uuid, func, *args, **kwargs)
+    now  = __gettime()
+    when = now + (mili_seconds - ((now-offset) % mili_seconds))
+    __once_after(when - now, uuid, __repeated_o_clock_with_offset,
+                 mili_seconds, offset, uuid, func, *args, **kwargs)
 
 ####################
 ## PUBLIC SECTION ##
@@ -198,67 +160,54 @@ def remove(uuid):
     """
     __removed.add(uuid)
 
-def once_after(seconds, func, *args, **kwargs):
-    """Executes the given job function after given seconds amount and returns a UUID."""
+def once_after(mili_seconds, func, *args, **kwargs):
+    """Executes the given job function after given mili-seconds amount and returns a UUID."""
+    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
-    __once_after(seconds, uuid, func, *args, **kwargs)
+    __once_after(mili_seconds, uuid, func, *args, **kwargs)
     return uuid
 
-def repeat_every(seconds, func, *args, **kwargs):
-    """Repeats execution of given job function after every seconds and returns a UUID."""
+def repeat_every(mili_seconds, func, *args, **kwargs):
+    """Repeats execution of given job function after every mili-seconds and returns a UUID."""
+    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
-    if type(seconds) == str:
-        mseconds = __string2ms(seconds)
-        __once_after(seconds, uuid, __repeated_job_in_ms, mseconds, time.time() + mseconds/1000.0, uuid,
-                     func, *args, **kwargs)
-    else:
-        __once_after(seconds, uuid, __repeated_job, seconds, time.time() + seconds, uuid,
-                     func, *args, **kwargs)
+    __once_after(mili_seconds, uuid, __repeated_job, mili_seconds, __gettime() + mili_seconds, uuid,
+                 func, *args, **kwargs)
     return uuid
 
-def once_when(timestamp, func, *args, **kwargs):
-    """Executes job function at the given timestamp and returns a UUID."""
+def once_when(ms_timestamp, func, *args, **kwargs):
+    """Executes job function at the given timestamp in mili-seconds and returns a UUID."""
+    assert type(ms_timestamp) is int, "Needs an integer as ms_timestamp parameter"
     uuid = uuid4()
-    seconds = timestamp - time.time()
-    if seconds > 0: __once_after(seconds, uuid, func, *args, **kwargs)
+    mili_seconds = ms_timestamp - __gettime()
+    if mili_seconds > 0: __once_after(mili_seconds, uuid, func, *args, **kwargs)
     else: raise Exception("Unable to schedule functions in the past")
     return uuid
 
-def once_o_clock(seconds, func, *args, **kwargs):
-    """Executes job function at next time multiple of the given seconds and returns a UUID."""
+def once_o_clock(mili_seconds, func, *args, **kwargs):
+    """Executes job function at next time multiple of the given mili-seconds and returns a UUID."""
+    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
-    now  = time.time()
-    if type(seconds) == str:
-        mseconds = __string2ms(seconds)
-        when = now + (mseconds - (now*1000 % mseconds)) / 1000.0
-    else:
-        when = now + (seconds - (now % seconds))
+    now  = __gettime()
+    when = now + (mili_seconds - (now % mili_seconds))
     __once_after(when - now, uuid, func, *args, **kwargs)
     return uuid
 
-def repeat_o_clock_with_offset(seconds, offset, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given seconds plus the given offset and returns a UUID."""
-    if type(seconds) == str:
-        if __string2ms(offset) >= __string2ms(seconds): raise Exception("Offset should be less than seconds")
-    else:
-        if offset >= seconds: raise Exception("Offset should be less than seconds")
+def repeat_o_clock_with_offset(mili_seconds, offset, func, *args, **kwargs):
+    """Repeated execution of job function at every next time multiple of the given mili-seconds plus the given offset and returns a UUID."""
+    if offset >= mili_seconds: raise Exception("Offset should be less than mili_seconds")
+    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
+    assert type(offset) is int, "Needs an integer as offset parameter"
     uuid = uuid4()
-    now  = time.time()
-    if type(seconds) == str:
-        mseconds = __string2ms(seconds)
-        moffset  = __string2ms(offset)
-        when = now + (mseconds - ((now*1000 - moffset) % mseconds)) / 1000.0
-        __once_after(when - now, uuid, __repeated_o_clock_in_ms_with_offset,
-                     mseconds, moffset, uuid, func, *args, **kwargs)
-    else:
-        when = now + (seconds - ((now-offset) % seconds))
-        __once_after(when - now, uuid, __repeated_o_clock_with_offset,
-                     seconds, offset, uuid, func, *args, **kwargs)
+    now  = __gettime()
+    when = now + (mili_seconds - ((now-offset) % mili_seconds))
+    __once_after(when - now, uuid, __repeated_o_clock_with_offset,
+                 mili_seconds, offset, uuid, func, *args, **kwargs)
     return uuid
 
-def repeat_o_clock(seconds, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given seconds and returns a UUID."""
-    return repeat_o_clock_with_offset(seconds, 0, func, *args, **kwargs)
+def repeat_o_clock(mili_seconds, func, *args, **kwargs):
+    """Repeated execution of job function at every next time multiple of the given mili-seconds and returns a UUID."""
+    return repeat_o_clock_with_offset(mili_seconds, 0, func, *args, **kwargs)
 
 def start():
     """Executes the scheduler."""

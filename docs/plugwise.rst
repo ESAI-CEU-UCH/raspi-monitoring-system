@@ -24,12 +24,3 @@ plugwise.protocol module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: plugwise
-    :members:
-    :undoc-members:
-    :show-inheritance:

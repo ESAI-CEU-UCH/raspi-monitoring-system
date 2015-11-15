@@ -12,12 +12,12 @@ import raspi_mon_sys.MailLoggerClient as MailLoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
 
 if __name__ == "__main__":
-    T1_MILISECOND  = 0.001
-    T1_CENTISECOND = 0.01
-    T1_DECISECOND  = 0.1
-    T1_SECOND      = 1
-    T1_MINUTE      = 60
-    T1_HOUR        = 3600
+    T1_MILISECOND  = 1
+    T1_CENTISECOND = 10
+    T1_DECISECOND  = 100
+    T1_SECOND      = 1000
+    T1_MINUTE      = 60000
+    T1_HOUR        = 3600000
     T1_DAY         = 24 * T1_HOUR
 
     # Configure logger.

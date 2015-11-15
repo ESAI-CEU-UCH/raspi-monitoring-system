@@ -16,12 +16,3 @@ emonhub.emonhub_interfacer module
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: emonhub
-    :members:
-    :undoc-members:
-    :show-inheritance:

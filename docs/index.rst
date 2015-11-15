@@ -14,12 +14,3 @@ Contents:
    raspi_mon_sys
    emonhub
    plugwise
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
