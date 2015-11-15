@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 """This module publishes the data related with Open Energy Monitor devices.
 
-This code is an adaptation of [emonhub](https://github.com/emonhub/emonhub).
+This code is an adaptation of `emonhub <https://github.com/emonhub/emonhub>`_.
 """
 
 import serial
