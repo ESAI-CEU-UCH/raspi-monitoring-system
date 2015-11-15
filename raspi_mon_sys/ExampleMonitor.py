@@ -6,6 +6,9 @@ implemented.
 # Do module configuration stuff.
 __channel = "emonhub/rx/{0}/values"
 
+def start():
+    pass
+
 # This function SHOULD BE implemented always.
 def publish(client):
     """Publishes dummy value at a dummy channel."""
