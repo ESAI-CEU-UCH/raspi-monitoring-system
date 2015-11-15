@@ -20,20 +20,20 @@ class Plugwise:
     def InitialisationCirclePlus(self):
 	time = ['0','1']
         for x in time :
-		if x == '0':
-        		self.SendCommandInit("0001CAAB")
-        		self.GetResult(self.RESPONSEStick)
-			self.SendCommandInit("000AB43C")
-			self.SendCommand("000400010000000000000000" + self.macaddressidentity)
-			self.GetResult(self.RESPONSEMaster)
-			print "Linking to Circle+..."
-			sleep(35)
-	        if x == '1':
-			self.SendCommand("000401010000000000000000" + self.macaddressidentity)
-        	        self.GetResult(self.RESPONSEMaster)
-			self.SendCommand("0023"+ self.macaddressidentity)
-			self.GetResult(self.RESPONSEVar)
-			print "Connected to Circle+" 
+	    if x == '0':
+        	self.SendCommandInit("0001CAAB")
+        	self.GetResult(self.RESPONSEStick)
+		self.SendCommandInit("000AB43C")
+		self.SendCommand("000400010000000000000000" + self.macaddressidentity)
+		self.GetResult(self.RESPONSEMaster)
+		print "Linking to Circle+..."
+		sleep(35)
+	    if x == '1':
+		self.SendCommand("000401010000000000000000" + self.macaddressidentity)
+        	self.GetResult(self.RESPONSEMaster)
+		self.SendCommand("0023"+ self.macaddressidentity)
+		self.GetResult(self.RESPONSEVar)
+		print "Connected to Circle+" 
 
     def InitialisationCircle(self):
         self.SendCommandInit("0008014068")
@@ -125,7 +125,8 @@ def main():
     stick   = config["stick"]
     pairing = config["pairing"]
     device  = "/dev/ttyUSB0"
-    
+
+    print
     print "**************************************************************"
     print "*                          Menu :                            *"
     print "*                                                            *"
@@ -138,26 +139,21 @@ def main():
     print "Enter a letter from the menu above :"
     arg = raw_input()
     print
-
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "m:s:q:",
-                     ['master', 'slave', 'quit'])
-    except getopt.error, why:
-        print_help()
-
+    opts, args = getopt.getopt(sys.argv[1:], "m:s:q:",
+                               ['master', 'slave', 'quit'])
+    
     if arg == "m":
         for circle_plus in pairing.keys():
             pair_circle_plus(circle_plus, device)
     elif arg == "i":
         for master,slaves in pairing.iteritems():
-            pair_circles(master, slaves, device)
+            pair_circles(slaves, device)
     elif arg == "q":
 	sys.exit(0)
-    else : 
+    else:
 	print "Command Error ! Select only one letter below !"
 
 def init():
-    print
     print
     print "**************************************************************"
     print "*                                                            *"
@@ -169,6 +165,7 @@ def init():
     print "*    francisco (dot) zamora (at) uch (dot) ceu (dot) es      *"
     print "*                                                            *"
     print "**************************************************************"
+    print
 	
 init()
 while True: main()
