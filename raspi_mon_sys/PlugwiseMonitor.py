@@ -47,6 +47,8 @@ def __configure(client):
     client.on_message = __on_message
 
 def start():
+    """Connects with logging server, loads plugwise network configuration and
+    connects with MQTT broker."""
     global logger
     global client
     global device
@@ -71,6 +73,7 @@ def start():
     client.loop_start()
 
 def publish():
+    """Publishes circle messages via MQTT."""
     try:
         # All circles messages are generated together and before sending data
         # via MQTT. This way sending data overhead is ignored and we expect

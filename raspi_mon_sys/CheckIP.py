@@ -10,10 +10,15 @@ from urllib2 import urlopen
 
 import raspi_mon_sys.MailLoggerClient as MailLogger
 
-logger = MailLogger.open("CheckIP")
+logger = None
 last_private_ip = None
 last_public_ip  = None
 failure = False
+
+def start():
+    """Connects with logging server."""
+    global logger
+    logger = MailLogger.open("CheckIP")
 
 # This function SHOULD BE implemented always.
 def publish():
