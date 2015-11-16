@@ -1,4 +1,4 @@
-﻿# Pair Plugwise on Linux
+# Pair Plugwise on Linux
 
 **ATTENTION** we were unable to pair using Linux, so we recommended Windows for
 pairing :(
