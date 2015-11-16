@@ -23,7 +23,7 @@ it seems that 1 second sampling period is allowed.
 import time
 
 import raspi_mon_sys.MailLoggerClient as MailLogger
-import raspi_mon_sys.plugwise as plugwise
+import raspi_mon_sys.plugwise.api as plugwise_api
 import raspi_mon_sys.Utils as Utils
 
 # Plugwise connection configuration.
@@ -59,7 +59,7 @@ def start():
     config  = Utils.getconfig("plugwise", logger)
     client  = Utils.getpahoclient(logger, __configure)
     assert config is not None
-    device  = plugwise.api.Stick(DEFAULT_SERIAL_PORT)
+    device  = plugwise_api.Stick(DEFAULT_SERIAL_PORT)
 
     # circles_config is a list of dictionaries: name, mac, desc.
     # state field is added in next loop to track its value so it can be used to
@@ -68,7 +68,7 @@ def start():
     circles = []
     for circle_data in circles_config:
         mac = circle_data["mac"]
-        circles.append( plugwise.api.Circle(mac, device) )
+        circles.append( plugwise_api.Circle(mac, device) )
         circle_data["state"] = "NA"
 
     client.loop_start()
