@@ -64,7 +64,7 @@ def start():
     # circles_config is a list of dictionaries: name, mac, desc.
     # state field is added in next loop to track its value so it can be used to
     # only send messages in state transitions.
-    circles_config = config.circles
+    circles_config = config["circles"]
     circles = []
     for circle_data in circles_config:
         mac = circle_data["mac"]
