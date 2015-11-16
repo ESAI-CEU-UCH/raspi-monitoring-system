@@ -22,6 +22,7 @@ it seems that 1 second sampling period is allowed.
 
 import time
 
+import raspi_mon_sys.MailLoggerClient as MailLogger
 import raspi_mon_sys.plugwise as plugwise
 import raspi_mon_sys.Utils as Utils
 
