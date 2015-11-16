@@ -20,6 +20,7 @@ it seems that 1 second sampling period is allowed.
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
 # Use of this source code is governed by the GPLv3 license found in the LICENSE file.
 
+import json
 import time
 
 import raspi_mon_sys.MailLoggerClient as MailLogger
@@ -101,8 +102,8 @@ def publish():
                 state_message = { 'timestamp' : t, 'data' : state }
                 messages.append( (topic.format(mac, name, "state"), state_message) )
                 config["state"] = state # track current state value
-        for topic,message in messages:
-            client.publish(topic, message)
+        for top,message in messages:
+            client.publish(top, json.dumps(message))
     except:
         logger.error("Error happened while processing circles data")
         raise
