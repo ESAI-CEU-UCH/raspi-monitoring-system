@@ -282,7 +282,7 @@ class Circle(object):
     """provides interface to the Plugwise Plug & Plug+ devices
     """
 
-    def __init__(self, mac, comchan, attr=dict()):
+    def __init__(self, mac, comchan, attr):
         """
         will raise ValueError if mac doesn't look valid
         """
