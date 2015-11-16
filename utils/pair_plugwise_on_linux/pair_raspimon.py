@@ -65,10 +65,10 @@ class Plugwise:
         return format % value
 
     def SendCommandInit(self, command):
-        self.serial.write(self.HEADER + command + \ self.ENDLINE)
+        self.serial.write(self.HEADER + command + self.ENDLINE)
 
     def SendCommand(self, command):
-        self.serial.write(self.HEADER + command + self.GetCRC16(command) + \ self.ENDLINE)
+        self.serial.write(self.HEADER + command + self.GetCRC16(command) + self.ENDLINE)
 
     def GetResult(self, responsecode):
         readbytes = 0
@@ -92,7 +92,7 @@ class Plugwise:
                 data = self.serial.read(readbytes)
                 return data[16:]
 
-def pair_circle_plus(circle_plus, device):
+def pair_circle_plus(stick, circle_plus, device):
     print
     print "Installation Circle+"
     print "Stick macaddress :",stick
@@ -144,7 +144,7 @@ def main():
     
     if arg == "m":
         for circle_plus in pairing.keys():
-            pair_circle_plus(circle_plus, device)
+            pair_circle_plus(stick, circle_plus, device)
     elif arg == "i":
         for master,slaves in pairing.iteritems():
             pair_circles(slaves, device)
