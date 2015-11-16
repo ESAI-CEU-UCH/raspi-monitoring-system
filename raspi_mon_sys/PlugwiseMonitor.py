@@ -68,7 +68,12 @@ def start():
     circles = []
     for circle_data in circles_config:
         mac = circle_data["mac"]
-        circles.append( plugwise_api.Circle(mac, device) )
+        circles.append( plugwise_api.Circle(mac, device, {
+            "name" : circle_data["name"],
+            "location" : circle_data["desc"],
+            "always_on" : "False",
+            "production" : "True"
+        }) )
         circle_data["state"] = "NA"
 
     client.loop_start()
