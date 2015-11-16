@@ -26,9 +26,8 @@ def start():
     # devices : [ { id, desc, name  } ]
     # keys : [ { nodeId, key, desc, name } ]
     config  = Utils.getconfig("open_energy_monitor", logger)
-    house   = config.house
-    devices = config.devices
-    keys    = config.keys
+    devices = config["devices"]
+    keys    = config["keys"]
 
     while True:
         # Execute run method
