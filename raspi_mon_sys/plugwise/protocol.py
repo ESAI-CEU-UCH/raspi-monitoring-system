@@ -75,7 +75,7 @@ class CompositeType(BaseType):
             myval = val[:len(p)]
             #debug("PARS      "+repr(str(myval)))
             p.unserialize(myval)
-            debug("PARS      "+repr(str(myval)) + " EVAL "+repr(str(p.value)))
+            self.logger.debug("PARS      "+repr(str(myval)) + " EVAL "+repr(str(p.value)))
             val = val[len(myval):]
         return val
         
@@ -98,7 +98,7 @@ class StringVal(BaseType):
         try:
             self.value = int(val)
         except ValueError:
-            debug('value error while attempting to construct StringVal object. val = %s' % val)
+            self.logger.debug('value error while attempting to construct StringVal object. val = %s' % val)
             self.value = 0
 
 class SInt(BaseType):
@@ -171,7 +171,7 @@ class DateTime(CompositeType):
         try:
             self.value = datetime.datetime(self.year.value, self.month.value, days+1, hours, minutes)
         except ValueError:
-            debug('value error while attempting to construct datetime object')
+            self.logger.debug('value error while attempting to construct datetime object')
             self.value = None
 
 class Time(CompositeType):
@@ -203,7 +203,7 @@ class DateStr(CompositeType):
         try:
             self.value = datetime.date(self.year.value+PLUGWISE_EPOCH, self.month.value, self.day.value)
         except ValueError:
-            debug('value error while attempting to construct DateStr object')
+            self.logger.debug('value error while attempting to construct DateStr object')
             self.value = None
        
 class TimeStr(CompositeType):
@@ -264,8 +264,9 @@ class PlugwiseMessage(object):
 class PlugwiseResponse(PlugwiseMessage):
     ID = b'FFFF'
     
-    def __init__(self, seqnr = None):
+    def __init__(self, logger, seqnr = None):
         PlugwiseMessage.__init__(self)
+        self.logger = logger
         self.params = []
 
         self.mac = None
@@ -304,7 +305,7 @@ class PlugwiseResponse(PlugwiseMessage):
                 header = '--->'
         if crc != self.calculate_checksum(response[4:-6]):
             protocol_error = "checksum error!"
-        debug("STRU      "+repr(header)+" "+repr(self.function_code)+" "+repr(self.command_counter)+" <data> "+repr(crc)+" "+repr(footer))
+        self.logger.debug("STRU      "+repr(header)+" "+repr(self.function_code)+" "+repr(self.command_counter)+" <data> "+repr(crc)+" "+repr(footer))
         if len(protocol_error) > 0:
             raise ProtocolError(protocol_error)
             
@@ -314,10 +315,10 @@ class PlugwiseResponse(PlugwiseMessage):
         else:
             self.mac = response[12:28]
             response = response[28:-6]
-        debug("DATA %4d %s" % (len(response), repr(response)))
+        self.logger.debug("DATA %4d %s" % (len(response), repr(response)))
         
         if self.function_code in ['0006', '0061']:
-            error("response.unserialize: detected %s expected %s" % (self.function_code, self.ID))
+            self.logger.error("response.unserialize: detected %s expected %s" % (self.function_code, self.ID))
         
         if self.ID != 'FFFF' and self.function_code != self.ID:
             raise UnexpectedResponse("expected response code %s, received code %s" % (self.ID, self.function_code))
@@ -349,9 +350,9 @@ class PlugwiseResponse(PlugwiseMessage):
     def _parse_params(self, response):
         for p in self.params:
             myval = response[:len(p)]
-            #debug("PARS      "+repr(str(myval)))
+            #self.logger.debug("PARS      "+repr(str(myval)))
             p.unserialize(myval)
-            debug("PARS      "+repr(str(myval)) + " EVAL "+repr(str(p.value)))
+            self.logger.debug("PARS      "+repr(str(myval)) + " EVAL "+repr(str(p.value)))
             response = response[len(myval):]
         return response
 
@@ -362,8 +363,8 @@ class PlugwiseResponse(PlugwiseMessage):
 class PlugwiseAckResponse(PlugwiseResponse):
     ID = b'0000'
     
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.status = Int(0, 4)
         self.params += [self.status]
 
@@ -391,8 +392,8 @@ class PlugwiseAckResponse(PlugwiseResponse):
 class PlugwiseAckMacResponse(PlugwiseAckResponse):
     ID = b'0000'
 
-    def __init__(self, seqnr = None):
-        PlugwiseAckResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseAckResponse.__init__(self, logger, seqnr)
         self.acqmac = String(None, length=16)
         self.params += [self.acqmac]
         
@@ -403,8 +404,8 @@ class PlugwiseAckMacResponse(PlugwiseAckResponse):
 class PlugwiseCalibrationResponse(PlugwiseResponse):
     ID = b'0027'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.gain_a = Float(0, 8)
         self.gain_b = Float(0, 8)
         self.off_tot = Float(0, 8)
@@ -414,8 +415,8 @@ class PlugwiseCalibrationResponse(PlugwiseResponse):
 class PlugwiseClockInfoResponse(PlugwiseResponse):
     ID = b'003F'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.time = Time()
         self.day_of_week = Int(0, 2)
         self.unknown = Int(0, 2)
@@ -427,8 +428,8 @@ class PlugwisePowerUsageResponse(PlugwiseResponse):
     """
     ID = b'0013'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.pulse_1s = SInt(0, 4)
         self.pulse_8s = SInt(0, 4)
         self.pulse_hour = Int(0, 8)
@@ -442,8 +443,8 @@ class PlugwisePowerBufferResponse(PlugwiseResponse):
     """
     ID = b'0049'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.logdate1 = DateTime()
         self.pulses1 = SInt(0, 8)
         self.logdate2 = DateTime()
@@ -463,8 +464,8 @@ class PlugwisePowerBufferResponseRaw(PlugwiseResponse):
     """
     ID = b'0049'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.raw = String(None, length=64)
         self.logaddr = LogAddr(0, length=8)
         self.params += [self.raw, self.logaddr
@@ -473,8 +474,8 @@ class PlugwisePowerBufferResponseRaw(PlugwiseResponse):
 class PlugwiseInfoResponse(PlugwiseResponse):
     ID = b'0024'
     
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.datetime = DateTime()
         self.last_logaddr = LogAddr(0, length=8)
         self.relay_state = Int(0, length=2)
@@ -491,8 +492,8 @@ class PlugwiseInfoResponse(PlugwiseResponse):
 class PlugwiseStatusResponse(PlugwiseResponse):
     ID = b'0011'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.unknown = Int(0, length=2)
         self.network_is_online = Int(0, length=2)
         self.network_id = Int(0, length=16)
@@ -511,16 +512,16 @@ class PlugwiseFeatureSetResponse(PlugwiseResponse):
     """
     ID = b'0060'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.features = Int(0, 16)
         self.params += [self.features]
         
 class PlugwiseDateTimeInfoResponse(PlugwiseResponse):
     ID = b'003A'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.time = TimeStr()
         self.day_of_week = Int(0, 2)
         self.date = DateStr()
@@ -529,16 +530,16 @@ class PlugwiseDateTimeInfoResponse(PlugwiseResponse):
 class PlugwiseSendScheduleResponse(PlugwiseResponse):
     ID = b'003D'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.idx = Int(0, 2)
         self.params += [self.idx]
               
 class PlugwisePingResponse(PlugwiseResponse):
     ID = b'000E'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.qin = Int(0, 2)
         self.qout = Int(0, 2)
         self.pingtime = Int(0, 4)
@@ -547,8 +548,8 @@ class PlugwisePingResponse(PlugwiseResponse):
 class PlugwiseAssociatedNodesResponse(PlugwiseResponse):
     ID = b'0019'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.node_mac_id = String(None, length=16)
         self.idx = Int(0, 2)
         self.params += [self.node_mac_id, self.idx]
@@ -556,14 +557,14 @@ class PlugwiseAssociatedNodesResponse(PlugwiseResponse):
 class PlugwiseAdvertiseNodeResponse(PlugwiseResponse):
     ID = b'0006'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
               
 class PlugwiseQueryCirclePlusResponse(PlugwiseResponse):
     ID = b'0002'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.channel = String(None, length=2)
         self.source_mac_id = String(None, length=16)
         self.extended_pan_id = String(None, length=16)
@@ -585,8 +586,8 @@ class PlugwiseQueryCirclePlusResponse(PlugwiseResponse):
 class PlugwiseQueryCirclePlusEndResponse(PlugwiseResponse):
     ID = b'0003'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.status = Int(0, 4)
         self.params += [self.status]
        
@@ -597,8 +598,8 @@ class PlugwiseQueryCirclePlusEndResponse(PlugwiseResponse):
 class PlugwiseConnectCirclePlusResponse(PlugwiseResponse):
     ID = b'0005'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.exsisting = Int(0, 2)
         self.allowed = Int(0, 2)
         self.params += [self.exsisting, self.allowed]
@@ -610,8 +611,8 @@ class PlugwiseConnectCirclePlusResponse(PlugwiseResponse):
 class PlugwiseRemoveNodeResponse(PlugwiseResponse):
     ID = b'001D'
 
-    def __init__(self, seqnr = None):
-        PlugwiseResponse.__init__(self, seqnr)
+    def __init__(self, logger, seqnr = None):
+        PlugwiseResponse.__init__(self, logger, seqnr)
         self.node_mac_id = String(None, length=16)
         self.status = Int(0, 2)
         self.params += [self.node_mac_id, self.status]  
@@ -619,9 +620,9 @@ class PlugwiseRemoveNodeResponse(PlugwiseResponse):
 class PlugwiseAckAssociationResponse(PlugwiseResponse):
     ID = b'0061'
 
-    def __init__(self, seqnr = None):
+    def __init__(self, logger, seqnr = None):
         #sequence number is always FFFD
-        PlugwiseResponse.__init__(self, 0xFFFD)       
+        PlugwiseResponse.__init__(self, logger, 0xFFFD)       
         
 class PlugwiseRequest(PlugwiseMessage):
     def __init__(self, mac):
