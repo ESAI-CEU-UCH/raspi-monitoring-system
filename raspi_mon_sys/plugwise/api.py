@@ -282,7 +282,7 @@ class Circle(object):
     """provides interface to the Plugwise Plug & Plug+ devices
     """
 
-    def __init__(self, mac, comchan, attr=None):
+    def __init__(self, mac, comchan, attr=dict()):
         """
         will raise ValueError if mac doesn't look valid
         """
@@ -314,7 +314,7 @@ class Circle(object):
         self.relay_state = '?'
         self.switch_state = '?'
         self.schedule_state = '?'
-        if self.attr['always_on'] != 'False':
+        if self.attr.get('always_on','False') != 'False':
             #self.relay_state = 'on'
             self.schedule_state = 'off'
         self.last_seen = calendar.timegm(datetime.datetime.utcnow().utctimetuple())
