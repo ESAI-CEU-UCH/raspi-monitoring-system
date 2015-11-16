@@ -9,6 +9,7 @@ import traceback
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
 import raspi_mon_sys.MailLoggerClient as MailLoggerClient
+import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 
 if __name__ == "__main__":
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     # Start all modules.
     CheckIP.start()
     ElectricityPrices.start()
+    PlugwiseMonitor.start()
     
     # publish current electricity prices
     ElectricityPrices.publish(0)
@@ -42,6 +44,8 @@ if __name__ == "__main__":
     # repeat every day at 21:00 UTC with prices for next day
     Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
                                          ElectricityPrices.publish, 1)
+    # repeat every second lectures from plugwise circles
+    Scheduler.repeat_o_clock(T1_SECOND, PlugwiseMonitor.publish)
 
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")
