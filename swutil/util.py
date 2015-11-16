@@ -77,7 +77,7 @@ def init_logger(logfname, appname='plugwise2py'):
     pw_logger.info("logging started")
    
 def log_level(level=logging.DEBUG):
-    pw_logger.setLevel(level)
+    if pw_logger is not None: pw_logger.setLevel(level)
 
 def log_comm(enable):
     global LOG_COMMUNICATION
@@ -87,16 +87,16 @@ def debug(msg):
     #if __debug__ and DEBUG_PROTOCOL:
         #print("%s: %s" % (datetime.datetime.now().isoformat(), msg,))
         #print(msg)
-    pw_logger.debug(msg)
+    if pw_logger is not None: pw_logger.debug(msg)
 
 def error(msg, level=1):
     #if level <= LOG_LEVEL:
         #print("%s: %s" % (datetime.datetime.now().isoformat(), msg,))
-    pw_logger.error(msg)
+    if pw_logger is not None: pw_logger.error(msg)
         
 def info(msg):
     #print("%s: %s" % (datetime.datetime.now().isoformat(), msg,))
-    pw_logger.info(msg)
+    if pw_logger is not None: pw_logger.info(msg)
 
 def open_logcomm(filename):
     global pw_comm_logger
@@ -118,7 +118,7 @@ def close_logcomm():
 def logcomm(msg):
     if LOG_COMMUNICATION:
         #logcommfile.write("%s %s \n" % (datetime.datetime.now().isoformat(), msg,))
-        pw_comm_logger.info(msg)
+        if pw_comm_logger is not None: pw_comm_logger.info(msg)
 
 class SerialComChannel(object):
     """simple wrapper around serial module"""
