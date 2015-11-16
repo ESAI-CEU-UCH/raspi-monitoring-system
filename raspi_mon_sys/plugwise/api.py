@@ -51,7 +51,8 @@ DEFAULT_TIMEOUT = 1
 class Stick(SerialComChannel):
     """provides interface to the Plugwise Stick"""
 
-    def __init__(self, port=0, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, logger, port=0, timeout=DEFAULT_TIMEOUT):
+        self.logger = logger
         SerialComChannel.__init__(self, port=port, timeout=timeout)
         self.unjoined = set()
         self.init()
@@ -61,11 +62,11 @@ class Stick(SerialComChannel):
         msg = PlugwiseStatusRequest().serialize()
         self.send_msg(msg)
         resp = self.expect_response(PlugwiseStatusResponse)
-        debug(str(resp))
+        self.logger.debug(str(resp))
 
     def send_msg(self, cmd):
         #log communication done in serialize function of message object. Could be too early!
-        debug("SEND %4d %s" % (len(cmd), repr(cmd)))
+        self.logger.debug("SEND %4d %s" % (len(cmd), repr(cmd)))
         self.write(cmd)
         resp = self.expect_response(PlugwiseAckResponse)
         success = False
@@ -133,7 +134,7 @@ class Stick(SerialComChannel):
         
     def is_in_sequence(self, resp, seqnr):
         if not seqnr is None and resp.command_counter != seqnr:
-            error("Out of sequence message. Expected seqnr %s, received seqnr %s" % (seqnr, resp.command_counter))
+            self.logger.error("Out of sequence message. Expected seqnr %s, received seqnr %s" % (seqnr, resp.command_counter))
             return False
         else:
             return True
@@ -153,18 +154,18 @@ class Stick(SerialComChannel):
             except ProtocolError as reason:
                 #retry to receive the response
                 logcomm("RERR %4d %s - <!> protocol error: %s" % ( len(msg), repr(msg), str(reason)))
-                error("protocol error [1]:"+str(reason))
+                self.logger.error("protocol error [1]:"+str(reason))
             except OutOfSequenceException as reason:
                 #retry to receive the response
                 logcomm("RERR %4d %s - <!> out of sequence: %s" % ( len(msg), repr(msg), str(reason)))
-                error("protocol error [2]:"+str(reason))
+                self.logger.error("protocol error [2]:"+str(reason))
             except UnexpectedResponse as reason:
                 #response could be an error status message
                 #suppress error logging when expecting a response to ping in case circle is offline
                 if str(reason) != "'expected response code 000E, received code 0000'":
-                    error("unexpected response [1]:"+str(reason))
+                    self.logger.error("unexpected response [1]:"+str(reason))
                 else:
-                    debug("unexpected response [1]:"+str(reason))
+                    self.logger.debug("unexpected response [1]:"+str(reason))
                 if not issubclass(resp.__class__, PlugwiseAckResponse):
                     #Could be an Ack or AckMac or AcqAssociation error code response when same seqnr
                     try:
@@ -186,16 +187,16 @@ class Stick(SerialComChannel):
                     except ProtocolError as reason:
                         #retry to receive the response
                         logcomm("RERR %4d %s - <!> protocol error while interpreting as Ack: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("protocol error [3]:"+str(reason))
+                        self.logger.error("protocol error [3]:"+str(reason))
                     except OutOfSequenceException as reason:
                         #retry to receive the response
                         logcomm("RERR %4d %s - <!> out of sequence while interpreting as Ack: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("protocol error [4]:"+str(reason))
+                        self.logger.error("protocol error [4]:"+str(reason))
                     except UnexpectedResponse as reason:
                         #response could be an error status message
                         logcomm("RERR %4d %s - <!> unexpected response error while interpreting as Ack: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("unexpected response [2]:"+str(reason))
-                error("TEST: %s" % (resp.function_code,))
+                        self.logger.error("unexpected response [2]:"+str(reason))
+                self.logger.error("TEST: %s" % (resp.function_code,))
                 if resp.function_code in ['0006', '0061']:
                     #Could be an unsolicited AdvertiseNode or AcqAssociation response
                     try:
@@ -218,18 +219,18 @@ class Stick(SerialComChannel):
                     except ProtocolError as reason:
                         #retry to receive the response
                         logcomm("RERR %4d %s - <!> protocol error while interpreting as Advertise: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("protocol error [5]:"+str(reason))
+                        self.logger.error("protocol error [5]:"+str(reason))
                     except OutOfSequenceException as reason:
                         #retry to receive the response
                         logcomm("RERR %4d %s - <!> out of sequence while interpreting as Advertise: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("protocol error [6]:"+str(reason))
+                        self.logger.error("protocol error [6]:"+str(reason))
                     except UnexpectedResponse as reason:
                         #response could be an error status message
                         logcomm("RERR %4d %s - <!> unexpected response error while interpreting as Advertise: %s" % ( len(msg), repr(msg), str(reason)))
-                        error("unexpected response [3]:"+str(reason))
+                        self.logger.error("unexpected response [3]:"+str(reason))
                 else:
                     logcomm("RERR %4d %s - <!> unexpected response error while expecting Ack: %s" % ( len(msg), repr(msg), str(reason)))                    
-                    error("unexpected response [4]:"+str(reason))
+                    self.logger.error("unexpected response [4]:"+str(reason))
 
     def enable_joining(self, enabled):
         req = PlugwiseEnableJoiningRequest('', enabled)
@@ -269,7 +270,7 @@ class Stick(SerialComChannel):
             success=True
             circleplusmac = resp.new_node_mac_id.value
         except (TimeoutException, SerialException) as reason:
-            error("Error: %s, %s" % (datetime.datetime.now().isoformat(), str(reason),))        
+            self.logger.error("Error: %s, %s" % (datetime.datetime.now().isoformat(), str(reason),))        
         return success,circleplusmac
 
     def connect_circleplus(self):
@@ -282,10 +283,11 @@ class Circle(object):
     """provides interface to the Plugwise Plug & Plug+ devices
     """
 
-    def __init__(self, mac, comchan, attr=None):
+    def __init__(self, logger, mac, comchan, attr=None):
         """
         will raise ValueError if mac doesn't look valid
         """
+        self.logger = logger
         mac = str(mac).upper()
         if self._validate_mac(mac) == False:
             raise ValueError("MAC address is in unexpected format: "+str(mac))
@@ -340,7 +342,7 @@ class Circle(object):
         except (ValueError, TimeoutException, SerialException, AttributeError) as reason:
             self.online = False
             self.initialized = False
-            error("OFFLINE Circle '%s' during initialization Error: %s" % (self.attr['name'], str(reason)))       
+            self.logger.error("OFFLINE Circle '%s' during initialization Error: %s" % (self.attr['name'], str(reason)))       
 
     def get_status(self):
         retd = {}
@@ -419,10 +421,10 @@ class Circle(object):
             if not isinstance(resp, response_class):
                 #error status returned
                 if resp.status.value == 0xE1:
-                    debug("Received an error status '%04X' from circle '%s' - Network slow or circle offline - Retry receive ..." % (resp.status.value, self.attr['name']))
+                    self.logger.debug("Received an error status '%04X' from circle '%s' - Network slow or circle offline - Retry receive ..." % (resp.status.value, self.attr['name']))
                     retry_timeout = 1 #allow 1+1 seconds for timeout after an E1.
                 else:
-                    error("Received an error status '%04X' from circle '%s' with correct seqnr - Retry receive ..." % (resp.status.value, self.attr['name']))
+                    self.logger.error("Received an error status '%04X' from circle '%s' with correct seqnr - Retry receive ..." % (resp.status.value, self.attr['name']))
             else:
                 ts_now = calendar.timegm(datetime.datetime.utcnow().utctimetuple())
                 if not self.online:
@@ -464,8 +466,8 @@ class Circle(object):
 
         pulses /= float(seconds)
         corrected_pulses = seconds * (((((pulses + self.off_noise)**2) * self.gain_b) + ((pulses + self.off_noise) * self.gain_a)) + self.off_tot)
-        debug("PULSE:   corrected: %.3f" % (pulses/seconds,))
-        debug("PULSE: t corrected: %.3f" % (pulses,))
+        self.logger.debug("PULSE:   corrected: %.3f" % (pulses/seconds,))
+        self.logger.debug("PULSE: t corrected: %.3f" % (pulses,))
         if (pulses > 0.0 and corrected_pulses < 0.0 or pulses < 0.0 and corrected_pulses > 0.0):
             return 0.0
         return corrected_pulses
@@ -528,13 +530,13 @@ class Circle(object):
         """
         pulse_1s, pulse_8s, pulse_1h, pulse_prod_1h = self.get_pulse_counters()
         kw_1s = 1000*self.pulses_to_kWs(self.pulse_correction(pulse_1s))
-        debug("POWER:          1s: %.3f" % (kw_1s,))
+        self.logger.debug("POWER:          1s: %.3f" % (kw_1s,))
         kw_8s = 1000*self.pulses_to_kWs(self.pulse_correction(pulse_8s, 8))/8.0
-        debug("POWER:          8s: %.3f" % (kw_8s,))
+        self.logger.debug("POWER:          8s: %.3f" % (kw_8s,))
         kw_1h = 1000*self.pulses_to_kWs(self.pulse_correction(pulse_1h, 3600))/3600.0
-        debug("POWER:          1h: %.3f" % (kw_1h,))
+        self.logger.debug("POWER:          1h: %.3f" % (kw_1h,))
         kw_p_1h = 1000*self.pulses_to_kWs(self.pulse_correction(pulse_prod_1h, 3600))/3600.0
-        debug("POWER:     prod 1h: %.3f" % (kw_p_1h,))
+        self.logger.debug("POWER:     prod 1h: %.3f" % (kw_p_1h,))
         self.power = [kw_1s, kw_8s, kw_1h, kw_p_1h]
         self.power_ts = calendar.timegm(datetime.datetime.utcnow().utctimetuple())
         #just return negative values. It is production
@@ -574,13 +576,13 @@ class Circle(object):
         _, seqnr  = self._comchan.send_msg(msg)
         resp = self._expect_response(PlugwiseClockInfoResponse, seqnr)
         self.scheduleCRC = resp.scheduleCRC.value
-        debug("Circle %s get clock to %s" % (self.attr['name'], resp.time.value.isoformat()))
+        self.logger.debug("Circle %s get clock to %s" % (self.attr['name'], resp.time.value.isoformat()))
         return resp.time.value
 
     def set_clock(self, dt):
         """set clock to the value indicated by the datetime object dt
         """
-        debug("Circle %s set clock to %s" % (self.attr['name'], dt.isoformat()))
+        self.logger.debug("Circle %s set clock to %s" % (self.attr['name'], dt.isoformat()))
         msg = PlugwiseClockSetRequest(self.mac, dt).serialize()
         _, seqnr  = self._comchan.send_msg(msg)
         resp = self._expect_response(PlugwiseAckMacResponse, seqnr)
@@ -601,13 +603,13 @@ class Circle(object):
         resp = self._expect_response(PlugwiseAckMacResponse, seqnr)
         if on == True:
             if resp.status.value != 0xD8:
-                error("Wrong switch status reply when  switching on. expected '00D8', received '%04X'" % (resp.status.value,))
+                self.logger.error("Wrong switch status reply when  switching on. expected '00D8', received '%04X'" % (resp.status.value,))
             self.switch_state = 'on'
             self.relay_state = 'on'
             self.schedule_state = 'off'
         else:
             if resp.status.value != 0xDE:
-                error("Wrong switch status reply when switching off. expected '00DE', received '%04X'" % (resp.status.value,))
+                self.logger.error("Wrong switch status reply when switching off. expected '00DE', received '%04X'" % (resp.status.value,))
             self.switch_state = 'off'
             self.relay_state = 'off'
             self.schedule_state = 'off'
@@ -657,7 +659,7 @@ class Circle(object):
         else:
             prev_dt = start_dt
         if prev_dt is None:
-            error("get_power_usage_history: empty first entry in power buffer")
+            self.logger.error("get_power_usage_history: empty first entry in power buffer")
             return []
         prev2_dt = prev_dt
         both = False
@@ -759,7 +761,7 @@ class Circle(object):
         
     def define_schedule(self, name, scheddata, dst=0):
         info("circle.define_schedule.")
-        self.schedule = Schedule(name, scheddata, self.watt_to_pulses)
+        self.schedule = Schedule(self.logger, name, scheddata, self.watt_to_pulses)
         self.schedule._dst_shift(dst)
 
     def undefine_schedule(self):
@@ -794,13 +796,13 @@ class Circle(object):
         resp = self._expect_response(PlugwiseAckMacResponse, seqnr)
         if on == True:
             if resp.status.value != 0xE4:
-                error("Wrong schedule status reply when setting schedule on. expected '00E4', received '%04X'" % (resp.status.value,))
+                self.logger.error("Wrong schedule status reply when setting schedule on. expected '00E4', received '%04X'" % (resp.status.value,))
             self.schedule_state = 'on'
             #update self.relay_state
             self.get_info()
         else:
             if resp.status.value != 0xE5:
-                error("Wrong schedule status reply when setting schedule off. expected '00E5', received '%04X'" % (resp.status.value,))
+                self.logger.error("Wrong schedule status reply when setting schedule off. expected '00E5', received '%04X'" % (resp.status.value,))
             self.schedule_state = 'off'  
         return 
 
@@ -836,7 +838,7 @@ class Circle(object):
         if len(log)<3:
             log = self.get_power_usage_history(cur_idx-1) + log
         if len(log)<3:
-            error("_get_interval: to few entries in power buffer to determine interval")
+            self.logger.error("_get_interval: to few entries in power buffer to determine interval")
             return
         #debug(log)
         interval = log[-1][0]-log[-2][0]
@@ -894,10 +896,11 @@ class Schedule(object):
     calibration data is required for conversion to pulses and CRC calculation
     """
     
-    def __init__(self, name, scheddata, convertor):
+    def __init__(self, logger, name, scheddata, convertor):
         """
         ......
         """
+        self.logger = logger
         self.name = str(name)
         self.dst = 0
         self._watt = scheddata
