@@ -145,7 +145,7 @@ def main():
     if arg == "m":
         for circle_plus in pairing.keys():
             pair_circle_plus(stick, circle_plus, device)
-    elif arg == "i":
+    elif arg == "s":
         for master,slaves in pairing.iteritems():
             pair_circles(slaves, device)
     elif arg == "q":
