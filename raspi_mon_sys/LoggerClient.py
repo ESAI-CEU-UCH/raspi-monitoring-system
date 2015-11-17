@@ -102,7 +102,7 @@ class LoggerClient:
         """
         self.__lock.acquire()
         schedule = self.__level2schedule[str(level)]
-        if schedule != schedule.SILENTLY:
+        if schedule != schedules.SILENTLY:
             text = strfmt % args
             msg = self.__generate_message(self.__name, level, schedule, text)
             self.__s.send_pyobj(msg)
