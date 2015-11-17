@@ -64,7 +64,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 def __process(logger, client, iface, nodes, node2keys):
-    topic = Utils.gettopic("rfemon")
+    topic = Utils.gettopic("rfemon/{0}")
     while True:
         # Execute run method
         iface.run()
