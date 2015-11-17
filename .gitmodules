@@ -1,0 +1,27 @@
+[submodule "utils/emontxv3_firmware/libraries/jeelib"]
+	path = utils/emontxv3_firmware/libraries/jeelib
+	url = https://github.com/jcw/jeelib.git
+[submodule "utils/emontxv3_firmware/libraries/RFu_jeelib"]
+	path = utils/emontxv3_firmware/libraries/RFu_jeelib
+	url = https://github.com/openenergymonitor/RFu_jeelib.git
+[submodule "utils/emontxv3_firmware/libraries/rtclib"]
+	path = utils/emontxv3_firmware/libraries/rtclib
+	url = https://github.com/jcw/rtclib.git
+[submodule "utils/emontxv3_firmware/libraries/glcdlib"]
+	path = utils/emontxv3_firmware/libraries/glcdlib
+	url = https://github.com/jcw/glcdlib.git
+[submodule "utils/emontxv3_firmware/libraries/ethercard"]
+	path = utils/emontxv3_firmware/libraries/ethercard
+	url = https://github.com/jcw/ethercard.git
+[submodule "utils/emontxv3_firmware/libraries/OneWire"]
+	path = utils/emontxv3_firmware/libraries/OneWire
+	url = https://github.com/PaulStoffregen/OneWire.git
+[submodule "utils/emontxv3_firmware/libraries/DHT_sensor_library"]
+	path = utils/emontxv3_firmware/libraries/DHT_sensor_library
+	url = https://github.com/adafruit/DHT-sensor-library.git
+[submodule "utils/emontxv3_firmware/libraries/Arduino_Temperature_Control_Library"]
+	path = utils/emontxv3_firmware/libraries/Arduino_Temperature_Control_Library
+	url = https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+[submodule "utils/emontxv3_firmware/libraries/TimerOne"]
+	path = utils/emontxv3_firmware/libraries/TimerOne
+	url = https://github.com/PaulStoffregen/TimerOne.git
