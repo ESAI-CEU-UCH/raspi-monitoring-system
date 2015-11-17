@@ -22,7 +22,7 @@ from raspi_mon_sys.plugwise.api import *
 transport = "ipc:///tmp/zmq_plugwise_util_server.ipc"
 ScreenLoggerServer.start_thread(transport)
 logger = LoggerClient.open("plugwise_util", transport)
-logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
+# logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
 
 log_comm(False)
 #init_logger("/dev/stderr")

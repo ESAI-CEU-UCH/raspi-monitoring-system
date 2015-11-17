@@ -14,7 +14,7 @@ transport. Messages would be shown at screen using stderr output or ignored.
 Alternatively, it is possible to import the module from another Python script
 calling directly `start_thread()` function:
 
->>> import raspi_mon_sys.MailLoggerServer as server
+>>> import raspi_mon_sys.ScreenLoggerServer as server
 >>> server.start_thread()
 
 """
@@ -79,7 +79,7 @@ def start(transport_string=__transport):
             __process_message(msg)
     except:
         __process_message({
-            "name" : "MailLoggerServer",
+            "name" : "ScreenLoggerServer",
             "level" : "ALERT",
             "schedule" : "INSTANTANEOUSLY",
             "text" : "Logging service STOPPED",
