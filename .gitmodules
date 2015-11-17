@@ -25,3 +25,6 @@
 [submodule "utils/emontxv3_firmware/libraries/TimerOne"]
 	path = utils/emontxv3_firmware/libraries/TimerOne
 	url = https://github.com/PaulStoffregen/TimerOne.git
+[submodule "utils/emontxv3_firmware/libraries/EmonLib"]
+	path = utils/emontxv3_firmware/libraries/EmonLib
+	url = https://github.com/openenergymonitor/EmonLib.git
