@@ -9,6 +9,7 @@ import traceback
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
 import raspi_mon_sys.LoggerClient as LoggerClient
+import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
 import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     # Start all modules.
     CheckIP.start()
     ElectricityPrices.start()
+    OpenEnergyMonitor.start()
     PlugwiseMonitor.start()
     
     # publish current electricity prices

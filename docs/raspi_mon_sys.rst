@@ -65,6 +65,14 @@ Scheduler module
     :undoc-members:
     :show-inheritance:
 
+ScreenLoggerServer module
+-------------------------------------
+
+.. automodule:: ScreenLoggerServer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Utils module
 --------------------------
 
