@@ -38,6 +38,10 @@ if __name__ == "__main__":
     
     # publish current electricity prices
     ElectricityPrices.publish(0)
+    if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
+        # publish next day electricity prices when starting the software at
+        # night
+        ElectricityPrices.publish(1)
 
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)

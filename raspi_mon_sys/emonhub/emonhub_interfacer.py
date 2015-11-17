@@ -91,7 +91,7 @@ class EmonHubInterfacer(object):
         ref = self._packet_counter
 
         # Log data
-        self._log.debug(str(ref) + " NEW FRAME : " + str(timestamp) + " " + frame)
+        # self._log.debug(str(ref) + " NEW FRAME : " + str(timestamp) + " " + frame)
         
         # Get an array out of the space separated string
         frame = frame.strip().split(' ')
@@ -108,13 +108,13 @@ class EmonHubInterfacer(object):
             frame = self._decode_frame(ref, validated)
 
         if frame:
-            self._log.debug(str(ref) + " Timestamp : " + str(timestamp))
-            self._log.debug(str(ref) + "      Node : " + str(frame[0]))
-            self._log.debug(str(ref) + "    Values : " + str(frame[1:]))
+            # self._log.debug(str(ref) + " Timestamp : " + str(timestamp))
+            # self._log.debug(str(ref) + "      Node : " + str(frame[0]))
+            # self._log.debug(str(ref) + "    Values : " + str(frame[1:]))
             frame = [timestamp] + frame
             # Append RSSI only if value is not 'False'
             if self.rssi:
-                self._log.debug(str(ref) + "      RSSI : " + str(self.rssi))
+                # self._log.debug(str(ref) + "      RSSI : " + str(self.rssi))
                 frame += [self.rssi]
             frame += [ref]
         else:
@@ -272,7 +272,7 @@ class EmonHubInterfacer(object):
                 self._log.warning("'%s' is not a valid setting for %s: %s" % (str(setting), self.name, key))
                 continue
             self._settings[key] = setting
-            self._log.debug("Setting " + self.name + " " + key + ": " + str(setting))
+            # self._log.debug("Setting " + self.name + " " + key + ": " + str(setting))
 
     def run(self):
         """Placeholder for background tasks. 
@@ -296,7 +296,7 @@ class EmonHubInterfacer(object):
 
         try:
             s = serial.Serial(com_port, com_baud, timeout=0)
-            self._log.debug("Opening serial port: " + str(com_port) + " @ "+ str(com_baud) + " bits/s")
+            # self._log.debug("Opening serial port: " + str(com_port) + " @ "+ str(com_baud) + " bits/s")
         except serial.SerialException as e:
             self._log.error(e)
             raise EmonHubInterfacerInitError('Could not open COM port %s' %
@@ -311,7 +311,7 @@ class EmonHubInterfacer(object):
 
         """
 
-        self._log.debug('Opening socket on port %s', port_nb)
+        # self._log.debug('Opening socket on port %s', port_nb)
         
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -354,7 +354,7 @@ class EmonHubSerialInterfacer(EmonHubInterfacer):
         
         # Close serial port
         if self._ser is not None:
-            self._log.debug("Closing serial port")
+            # self._log.debug("Closing serial port")
             self._ser.close()
 
     def read(self):
@@ -488,11 +488,11 @@ class EmonHubJeeInterfacer(EmonHubSerialInterfacer):
 
         # Discard information messages
         if (f[0] == '>'):
-            self._log.debug(self.name + " acknowledged command: " + str(f))
+            # self._log.debug(self.name + " acknowledged command: " + str(f))
             return
 
         if (len(f)>2 and f[0:3] == ' ->'):
-            self._log.debug(self.name + " confirmed sent packet size: " + str(f))
+            # self._log.debug(self.name + " confirmed sent packet size: " + str(f))
             return
 
         if f[0] == '\x01':
@@ -501,7 +501,7 @@ class EmonHubJeeInterfacer(EmonHubSerialInterfacer):
 
         if " i" and " g" and " @ " and " MHz" in f:
             self.info[1] = f
-            self._log.debug( self.name + " device settings updated: " + str(self.info[1]))
+            # self._log.debug( self.name + " device settings updated: " + str(self.info[1]))
             return
 
         # unix timestamp
@@ -617,7 +617,7 @@ class EmonHubJeeInterfacer(EmonHubSerialInterfacer):
 
         now = datetime.datetime.now()
 
-        self._log.debug(self.name + " broadcasting time: %02d:%02d" % (now.hour, now.minute))
+        # self._log.debug(self.name + " broadcasting time: %02d:%02d" % (now.hour, now.minute))
 
         self._ser.write("00,%02d,%02d,00,s" % (now.hour, now.minute))
 
@@ -651,7 +651,7 @@ class EmonHubSocketInterfacer(EmonHubInterfacer):
         
         # Close socket
         if self._socket is not None:
-            self._log.debug('Closing socket')
+            # self._log.debug('Closing socket')
             self._socket.close()
 
     def read(self):

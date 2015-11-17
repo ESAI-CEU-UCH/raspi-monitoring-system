@@ -12,13 +12,15 @@ import logging
 
 from serial.serialutil import SerialException
 
+import raspi_mon_sys.MailLoggerClient as MailLogger
 from raspi_mon_sys.plugwise import *
 from swutil.util import *
 from raspi_mon_sys.plugwise.api import *
 
+logger = MailLogger.open("plugwise_util")
 log_comm(False)
-init_logger("/dev/stderr")
-log_level(logging.INFO)
+#init_logger("/dev/stderr")
+#log_level(logging.INFO)
 
 DEFAULT_SERIAL_PORT = "/dev/ttyUSB0"
 
@@ -120,10 +122,10 @@ def set_time(c, time_opt):
     c.set_clock(set_ts)
 
 try:
-    device = Stick(device)
+    device = Stick(logger, device)
 	
     conf['mac'] = options.mac
-    c = Circle(options.mac, device, conf)
+    c = Circle(logger, options.mac, device, conf)
 
     
     if options.time:
