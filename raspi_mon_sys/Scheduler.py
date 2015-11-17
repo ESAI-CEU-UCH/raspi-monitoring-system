@@ -127,7 +127,10 @@ def __repeated_job(mili_seconds, expected_when, uuid, func, *args, **kwargs):
     This function uses expected_when in order to improve precision of next
     repetition.
     """
-    func(*args, **kwargs)
+    try:
+        func(*args, **kwargs)
+    except:
+        print "Unexpected error:", traceback.format_exc()
     now = __gettime()
     diff = now - expected_when
     amount = mili_seconds - diff
@@ -141,7 +144,10 @@ def __repeated_job(mili_seconds, expected_when, uuid, func, *args, **kwargs):
 
 def __repeated_o_clock_with_offset(mili_seconds, offset, uuid, func, *args, **kwargs):
     """Repeats execution of job function at next time multiple of the given mili-seconds plus the given offset."""
-    func(*args, **kwargs)
+    try:
+        func(*args, **kwargs)
+    except:
+        print "Unexpected error:", traceback.format_exc()
     now  = __gettime()
     when = now + (mili_seconds - ((now-offset) % mili_seconds))
     __once_after(when - now, uuid, __repeated_o_clock_with_offset,
