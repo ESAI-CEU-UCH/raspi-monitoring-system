@@ -28,7 +28,7 @@ import time
 import traceback
 import urllib2
 
-import raspi_mon_sys.MailLoggerClient as MailLogger
+import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 topic = Utils.gettopic("electricity_prices/{0}")
@@ -43,7 +43,7 @@ def __configure(client):
 def start():
     """Opens logger connection."""
     global logger
-    logger = MailLogger.open("ElectricityPricesMonitor")
+    logger = LoggerClient.open("ElectricityPricesMonitor")
     pass
     
 def publish(day_offset):

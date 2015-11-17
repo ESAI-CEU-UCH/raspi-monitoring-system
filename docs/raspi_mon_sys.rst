@@ -17,10 +17,10 @@ ElectricityPricesMonitor module
     :undoc-members:
     :show-inheritance:
        
-MailLoggerClient module
+LoggerClient module
 -------------------------------------
 
-.. automodule:: MailLoggerClient
+.. automodule:: LoggerClient
     :members:
     :undoc-members:
     :show-inheritance:

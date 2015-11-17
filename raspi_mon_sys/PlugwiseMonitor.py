@@ -23,7 +23,7 @@ it seems that 1 second sampling period is allowed.
 import json
 import time
 
-import raspi_mon_sys.MailLoggerClient as MailLogger
+import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.plugwise.api as plugwise_api
 import raspi_mon_sys.Utils as Utils
 
@@ -56,7 +56,7 @@ def start():
     global device
     global circles_config
     global circles
-    logger  = MailLogger.open("PlugwiseMonitor")
+    logger  = LoggerClient.open("PlugwiseMonitor")
     config  = Utils.getconfig("plugwise", logger)
     client  = Utils.getpahoclient(logger, __configure)
     assert config is not None

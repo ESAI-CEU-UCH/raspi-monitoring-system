@@ -12,12 +12,17 @@ import logging
 
 from serial.serialutil import SerialException
 
-import raspi_mon_sys.MailLoggerClient as MailLogger
+import raspi_mon_sys.LoggerClient as LoggerClient
+import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
+
 from raspi_mon_sys.plugwise import *
 from swutil.util import *
 from raspi_mon_sys.plugwise.api import *
 
-logger = MailLogger.open("plugwise_util")
+transport = "ipc:///tmp/zmq_plugwise_util_server.ipc"
+ScreenLoggerServer.open(transport)
+logger = MailLogger.open("plugwise_util", transport)
+
 log_comm(False)
 #init_logger("/dev/stderr")
 #log_level(logging.INFO)

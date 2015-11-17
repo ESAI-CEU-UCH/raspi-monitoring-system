@@ -6,8 +6,6 @@ import paho.mqtt.client as paho
 import pymongo
 import smtplib
 
-import raspi_mon_sys.MailLoggerClient as MailLogger
-
 __PAHO_HOST      = "localhost"
 __PAHO_PORT      = 1883
 __PAHO_KEEPALIVE = 60

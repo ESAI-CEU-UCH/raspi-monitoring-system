@@ -8,7 +8,7 @@ import traceback
 
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
-import raspi_mon_sys.MailLoggerClient as MailLoggerClient
+import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     T1_DAY         = 24 * T1_HOUR
 
     # Configure logger.
-    logger = MailLoggerClient.open("MainMonitoringSystem")
+    logger = LoggerClient.open("MainMonitoringSystem")
 
     logger.info("Initializing main monitoring system")
 

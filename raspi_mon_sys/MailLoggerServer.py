@@ -16,24 +16,25 @@ be enqueued for delayed mail delivery, ignored from mail, or sended
 instantaneously.
 
 Alternatively, it is possible to import the module from another Python script
-calling directly `start()` function:
+calling directly `start_thread()` function:
 
 >>> import raspi_mon_sys.MailLoggerServer as server
->>> server.start()
+>>> server.start_thread()
 """
 import datetime
 import json
 import Queue
 import Scheduler
 import socket
+import threading
 import traceback
 import sys
 import zmq
 
-import raspi_mon_sys.MailLoggerClient as MailLoggerClient
+import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
-__transport = MailLoggerClient.default_transport
+__transport = LoggerClient.default_transport
 __mail_credentials_path = "/etc/mail_credentials.json"
 __mac_addr  = Utils.getmac()
 
@@ -43,8 +44,8 @@ __daily_queue  = Queue.PriorityQueue()
 __weekly_queue = Queue.PriorityQueue()
 
 # Enums.
-__levels    = MailLoggerClient.levels
-__schedules = MailLoggerClient.schedules
+__levels    = LoggerClient.levels
+__schedules = LoggerClient.schedules
 
 # Mapping between schedule options and python queues.
 __schedule2queue = {
@@ -107,7 +108,6 @@ def __process_message(mail_credentials_path, msg):
     elif sched != str(__schedules.SILENTLY):
         __schedule2queue[ sched ].put( (msg["datetime"],txt) )
 
-
 def start(mail_credentials_path=__mail_credentials_path,
           transport_string=__transport):
     """Starts the execution of the server.
@@ -157,6 +157,14 @@ def start(mail_credentials_path=__mail_credentials_path,
             print("Stopping server")
             Scheduler.stop()
             raise
+
+def start_thread(mail_credentials_path=__mail_credentials_path,
+                 transport_string=__transport):
+    """Starts the sever in a python thread."""
+    thread = threading.Thread(target=start, args=(mail_credentials_path,
+                                                  transport_string))
+    thread.setDaemon()
+    thread.start()
 
 ##############################################################################
 

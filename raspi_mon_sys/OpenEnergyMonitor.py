@@ -8,7 +8,7 @@ import serial
 import time
 
 import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
-import raspi_mon_sys.MailLoggerClient as MailLogger
+import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 def start():
@@ -16,7 +16,7 @@ def start():
     com_baud = 38400
     timeout = 0
 
-    logger = MailLogger.open("OpenEnergyMonitor")
+    logger = LoggerClient.open("OpenEnergyMonitor")
     logger.info("Opening connection")
 
     iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,

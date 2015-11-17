@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-"""This module publishes the IP address using MailLogger.
+"""This module publishes the IP address using LoggerClient.
 """
 
 import socket
@@ -8,7 +8,7 @@ import traceback
 
 from urllib2 import urlopen
 
-import raspi_mon_sys.MailLoggerClient as MailLogger
+import raspi_mon_sys.LoggerClient as LoggerClient
 
 logger = None
 last_private_ip = None
@@ -18,7 +18,7 @@ failure = False
 def start():
     """Connects with logging server."""
     global logger
-    logger = MailLogger.open("CheckIP")
+    logger = LoggerClient.open("CheckIP")
 
 # This function SHOULD BE implemented always.
 def publish():

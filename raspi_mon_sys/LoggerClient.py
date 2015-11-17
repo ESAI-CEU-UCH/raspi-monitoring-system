@@ -14,14 +14,14 @@ local time zone.
 
 :Example:
 
->>> import raspi_mon_sys.MailLoggerClient as MailLoggerClient
->>> logger = MailLoggerClient.open("name") # it can receive a transport string
+>>> import raspi_mon_sys.LoggerClient as LoggerClient
+>>> logger = LoggerClient.open("name") # it can receive a transport string
 >>> logger.debug("Program traces and related stuff.")
 >>> logger.info("Any useful information.")
 >>> logger.warning("Be careful, error incoming.")
 >>> logger.error("Something bad happened but the system still working.")
 >>> logger.alert("Something really bad happened.")
->>> logger.write(MailLoggerClient.levels.DEBUG, "Another debug info.")
+>>> logger.write(LoggerClient.levels.DEBUG, "Another debug info.")
 
 
 The default configuration is as follows:
@@ -39,12 +39,13 @@ import datetime
 import threading
 import zmq
 
-default_transport = "ipc:///tmp/zmq_mail_logger_server.ipc"
+default_transport = "ipc:///tmp/zmq_logger_server.ipc"
 levels = Enum('DEBUG', 'INFO', 'ALERT', 'WARNING', 'ERROR')
 schedules = Enum('SILENTLY', 'INSTANTANEOUSLY', 'HOURLY', 'DAILY', 'WEEKLY')
 
 class LoggerClient:
-    """This class implements the interface to communicate with MailLoggerServer."""
+    """This class implements the interface to communicate with a MailLoggerServer or
+    ScreenLoggerServer."""
 
     def __init__(self, name, transport):
         """Initializes connection with server using the given transport and
@@ -147,7 +148,7 @@ class LoggerClient:
         self.write(levels.ERROR, strfmt, *args)
 
     def close(self):
-        """Terminates connection with MailLoggerServer.."""
+        """Terminates connection with MailLoggerServer or ScreenLoggerServer."""
         self.__lock.acquire()
         if self.__s is not None:
             self.__s.close()
