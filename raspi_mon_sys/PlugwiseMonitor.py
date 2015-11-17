@@ -28,6 +28,7 @@ import raspi_mon_sys.plugwise.api as plugwise_api
 import raspi_mon_sys.Utils as Utils
 
 # Plugwise connection configuration.
+POWER_TOLERANCE = 0.005 # 0.5% difference in power
 DEFAULT_SERIAL_PORT = "/dev/ttyUSB0" # USB port used by Plugwise receiver
 topic = Utils.gettopic("plugwise/{0}/{1}/{2}")
 logger = None
@@ -35,6 +36,8 @@ client = None
 device = None
 circles_config = None
 circles = None
+
+def __compute_relative_difference(a, b): return abs(b - a) / (a + 1e-20)
 
 def __on_connect(client, userdata, rc):
     # We will use this topic to send on/off commands to our circles.
@@ -64,7 +67,8 @@ def start():
 
     # circles_config is a list of dictionaries: name, mac, desc.
     # state field is added in next loop to track its value so it can be used to
-    # only send messages in state transitions.
+    # only send messages in state transitions. power1s field is used to check
+    # the relative difference in power in order to reduce the network overhead.
     circles_config = config["circles"]
     circles = []
     for circle_data in circles_config:
@@ -76,6 +80,7 @@ def start():
             "production" : "True"
         }) )
         circle_data["state"] = "NA"
+        circle_data["power1s"] = 0.0
 
     client.loop_start()
 
@@ -91,12 +96,15 @@ def publish():
             t    = time.time()
             mac  = config["mac"]
             name = config["name"]
+            last_power1s = config["power1s"]
             last_state = config["state"]
             power   = c.get_power_usage()
             power1s = power[0]
             state   = c.get_info()['relay_state']
-            power1s_usage_message = { 'timestamp' : t, 'data': power1s }
-            messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
+            if __compute_relative_difference(last_power1s, power1s) > POWER_TOLERANCE:
+                power1s_usage_message = { 'timestamp' : t, 'data': power1s }
+                messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
+                config["power1s"] = power1s
             # check state transition before message is appended
             if state != last_state:
                 state_message = { 'timestamp' : t, 'data' : state }
