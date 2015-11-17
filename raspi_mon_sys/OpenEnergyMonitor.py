@@ -54,6 +54,7 @@ values list (`key`), the `name` used to publish this data, and an optional
 linear transformation applied to the data (`mul` and `add`).
 """
 
+import json
 import serial
 import time
 import threading
