@@ -163,7 +163,7 @@ def start_thread(mail_credentials_path=__mail_credentials_path,
     """Starts the sever in a python thread."""
     thread = threading.Thread(target=start, args=(mail_credentials_path,
                                                   transport_string))
-    thread.setDaemon()
+    thread.setDaemon(True)
     thread.start()
 
 ##############################################################################

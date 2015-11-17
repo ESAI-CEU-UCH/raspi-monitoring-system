@@ -91,7 +91,7 @@ def start(transport_string=__transport):
 def start_thread(transport_string=__transport):
     """Starts the sever in a python thread."""
     thread = threading.Thread(target=start, args=transport_string)
-    thread.setDaemon()
+    thread.setDaemon(True)
     thread.start()
 
 ##############################################################################
