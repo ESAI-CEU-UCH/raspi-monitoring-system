@@ -20,7 +20,7 @@ from swutil.util import *
 from raspi_mon_sys.plugwise.api import *
 
 transport = "ipc:///tmp/zmq_plugwise_util_server.ipc"
-ScreenLoggerServer.open(transport)
+ScreenLoggerServer.start_thread(transport)
 logger = MailLogger.open("plugwise_util", transport)
 logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
 
