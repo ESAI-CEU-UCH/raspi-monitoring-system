@@ -100,11 +100,12 @@ class LoggerClient:
         This function implements kind of printf(), so it receives a string
         format and a variadic list of values.
         """
-        text = strfmt % args
         self.__lock.acquire()
         schedule = self.__level2schedule[str(level)]
-        msg = self.__generate_message(self.__name, level, schedule, text)
-        self.__s.send_pyobj(msg)
+        if schedule != schedule.SILENTLY:
+            text = strfmt % args
+            msg = self.__generate_message(self.__name, level, schedule, text)
+            self.__s.send_pyobj(msg)
         self.__lock.release()
 
     def debug(self, strfmt, *args):

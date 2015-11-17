@@ -92,8 +92,9 @@ def __queue_handler(mail_credentials_path, frequency, queue):
 def __process_message(mail_credentials_path, msg):
     sched = msg["schedule"]
     txt   = __generate_message_line(msg)
-    
-    sys.stderr.write(txt + "\n")
+
+    if sched != str(__schedules.SILENTLY):
+        sys.stderr.write(txt + "\n")
     
     if sched == str(__schedules.INSTANTANEOUSLY):
         subject = __generate_subject(__schedules.INSTANTANEOUSLY,
