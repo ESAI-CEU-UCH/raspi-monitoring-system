@@ -8,7 +8,7 @@ schedule configured at open energy monitor devices.
 
 Open energy monitor data is published under topics::
 
-    BASETOPIC/rfemon/NAME/value {"timestamp":timestamp,"data":data}
+    BASETOPIC/rfemon/NODE_ID/KEY/NAME/value {"timestamp":timestamp,"data":data}
 
 EmonTxV3 sends the following data list::
 
@@ -64,7 +64,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 def __process(logger, client, iface, nodes, node2keys):
-    topic = Utils.gettopic("rfemon/{0}")
+    topic = Utils.gettopic("rfemon/{0}/{1}/{2}")
     while True:
         # Execute run method
         iface.run()
@@ -82,7 +82,7 @@ def __process(logger, client, iface, nodes, node2keys):
                 add     = conf.get("add", 0.0)
                 v       = (values[key] + add) * mul
                 message = { 'timestamp' : t, 'data' : v }
-                client.publish(topic.format(name), json.dumps(message))
+                client.publish(topic.format(nodeId, key, name), json.dumps(message))
         time.sleep(0.05)
 
 def start():
