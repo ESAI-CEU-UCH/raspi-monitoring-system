@@ -41,13 +41,15 @@ def __on_mqtt_message(client, userdata, msg):
     global message_queues
     topic = msg.topic
     message = json.loads(msg.payload)
-    basetime = int(message.timestamp // PERIOD * PERIOD)
+    timestamp = message["timestamp"]
+    data = message["data"]
+    basetime = int(timestamp // PERIOD * PERIOD)
     lock.acquire()
     q = message_queues.setdefault( (topic,basetime), Queue.Queue() )
     lock.release()
-    delta_time = message.timestamp - basetime
-    q.put( (delta_time, message.data) )
-    print(topic, message.timestamp, message.data)
+    delta_time = timestamp - basetime
+    q.put( (delta_time, data) )
+    print(topic, basetime, timestamp, delta_time, data)
 
 def __configure_mqtt(client):
     client.on_connect = __on_mqtt_connect
