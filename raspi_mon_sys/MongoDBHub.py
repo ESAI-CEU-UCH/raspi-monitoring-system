@@ -94,7 +94,7 @@ def stop():
     # close MQTT broker connection
     mqtt_client.disconnect()
     # force sending data to MongoDB
-    insert_batch = [ __process(x) for x in keys ]
+    insert_batch = [ __process(x) for x in message_queues.keys() ]
     db.GVA2015_data.insert(insert_batch)
     logger.info("Inserted %d documents", len(insert_batch))
     # close rest of pending connections

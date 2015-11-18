@@ -63,11 +63,12 @@ if __name__ == "__main__":
     try:
         while True: time.sleep(60)
     except:
+        logger.info("Stopping scheduler")
+        Scheduler.stop()
+        logger.info("Stopping modules")
         CheckIP.stop()
         ElectricityPrices.stop()
         OpenEnergyMonitor.stop()
         PlugwiseMonitor.stop()
         MongoDBHub.stop()
-        logger.info("Stopping scheduler")
-        Scheduler.stop()
         logger.info("Bye!")
