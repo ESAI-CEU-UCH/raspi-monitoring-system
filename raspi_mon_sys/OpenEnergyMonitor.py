@@ -64,7 +64,9 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 client = None
+iface = None
 is_running = False
+logger = None
 
 def __process(logger, client, iface, nodes, node2keys):
     topic = Utils.gettopic("rfemon/{0}/{1}/{2}")
@@ -93,13 +95,15 @@ def start():
     com_port = "/dev/ttyAMA0"
     com_baud = 38400
     timeout = 0
-
+    
+    global logger
     logger = LoggerClient.open("OpenEnergyMonitor")
     logger.info("Opening connection")
     
     global client
     client = Utils.getpahoclient(logger)
     
+    global iface
     iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                     com_port, com_baud)
 
