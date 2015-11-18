@@ -15,11 +15,6 @@ normalmente serán algo del tipo `raspimon/MACADDRESS/source1/source2/.../value`
 y la concatenación de todos los sources usando ':' en lugar de '/' será el
 nombre usado en la base de datos de MongoDB.
 
-Los mensajes enviados por *open Energy Monitor* difieren de este estándar ya que
-publican en sus propios *topics*.
-
-Mensajes enviados por cada uno de los módulos Python.
-
 ## ElectrictyPrices
 
 Publica en los *topics*:
@@ -52,9 +47,9 @@ colección será una tabla JSON similar a esto:
 ```javascript
 {
   "id" : un uuid dado por mongodb?,
-  "basetime" : timestamp base al que hace referencia este documento,
-  "source" : identificador de la fuente de estos datos,
-  "times" : [ time0, time1, time2, ...],
+  "basetime" : Date base al que hace referencia este documento,
+  "topic" : identificador de la fuente de estos datos (topic de MQTT usando ':' como separador,
+  "delta_times" : [ time0, time1, time2, ...],
   "values" : [ value0, value1, value2, ...],
 }
 ```
@@ -63,9 +58,6 @@ Cada hora se insertará un documento nuevo por cada `fuente` que tengamos en la
 casa. Distinguiremos diferentes espacios de nombres:
 
 - `GVA2015_data`: contendrá las colecciones con los datos anteriores.
-- `GVA2015_sources`: contendrá una descripción de las `fuentes` de cada
-  casa. Estas fuentes estarán descritas en colecciones indexadas por el
-  identificador de cada casa.
 - `GVA2015_houses`: contendrá colecciones con información de cada casa. Aquí
   tendremos la relación entre MAC de la raspberry pi y casa donde fue colocada.
 - `GVA2015_config`: contendrá colecciones indexadas por la MAC de la raspberry

@@ -1,3 +1,5 @@
+# Following this document:
+# http://www.maartendamen.com/wp-content/uploads/downloads/2010/08/Plugwise-unleashed-0.1.pdf
 from CrcMoose import *
 import serial
 import getopt, sys, os
@@ -6,34 +8,68 @@ from time import sleep
 
 import raspi_mon_sys.Utils as Utils
 
+SOURCE_MAC = "Source MAC: "
+DESTINATION_MAC = "Destination MAC: "
+HEADER = '\x05\x05\x03\x03'
+ENDLINE = '\x0d\x0a'
+CIRCLE_PLUS_MARK = '\x83'
+RESPONSEMac = '0019'
+RESPONSEVar = '00'
+RESPONSEStick = 'A'
+RESPONSEMaster = '00'
+DEVICE_FILE = "/dev/ttyUSB0"
+
+def Take(array,n):
+    return (array[0:n],array[n:])
+
+def GetCRC16(value):
+    value = CRC16X.calcString(value)
+    format = ("%%0%dX" % ((CRC16X.width + 3) // 4))
+    return format % value
+
+def SendCommandNoCRC(s, cmd):
+    print "\t","CMD:",cmd[0:-4],cmd[-4:]
+    s.write(HEADER + cmd + ENDLINE)
+
+def SendCommand(s, cmd):
+    SendCommandNoCRC(s, cmd + GetCRC16(cmd))
+
+def ReadMark(s, mark):
+    assert s.read(1) == mark
+
+def Read(s, n):
+    result = []
+    while n>0:
+        c = s.read(1)
+        if c != chr(131) and c != chr(165)  and c != chr(135):
+            result.append(c)
+            n -= 1
+    return ''.join(result)
+
+def ReadLine(s, n):
+    header = Read(s, len(HEADER))
+    assert header == HEADER
+    
+    line = Read(s, n)
+    crc16 = Read(s, 4)
+    print "\t\t","REP:",line,crc16
+    assert crc16 == GetCRC16(line)
+    assert Read(s, 2) == ENDLINE
+    
+    return line
+
+def ReadAndCheckACK(s):
+    ack = ReadLine(s,12)
+    start = ack[:4]
+    message_number = ack[4:8]
+    ack_code = ack[8:12]
+    assert start == "0000"
+    assert ack_code == "00C1"
+
 class Plugwise:
     def __init__(self, port, macaddressidentity):
-        self.serial = serial.Serial(port, "115200")
-        self.HEADER = '\x05\x05\x03\x03'
-        self.ENDLINE = '\x0d\x0a'
-        self.RESPONSEMac = '0019'
-        self.RESPONSEVar = '00'
-	self.RESPONSEStick = '00'
-	self.RESPONSEMaster = '00'
         self.macaddressidentity = macaddressidentity
 
-    def InitialisationCirclePlus(self):
-	time = ['0','1']
-        for x in time :
-	    if x == '0':
-        	self.SendCommandInit("0001CAAB")
-        	self.GetResult(self.RESPONSEStick)
-		self.SendCommandInit("000AB43C")
-		self.SendCommand("000400010000000000000000" + self.macaddressidentity)
-		self.GetResult(self.RESPONSEMaster)
-		print "Linking to Circle+..."
-		sleep(35)
-	    if x == '1':
-		self.SendCommand("000401010000000000000000" + self.macaddressidentity)
-        	self.GetResult(self.RESPONSEMaster)
-		self.SendCommand("0023"+ self.macaddressidentity)
-		self.GetResult(self.RESPONSEVar)
-		print "Connected to Circle+" 
 
     def InitialisationCircle(self):
         self.SendCommandInit("0008014068")
@@ -59,46 +95,108 @@ class Plugwise:
 	else:
 	    return 1
 
-    def GetCRC16(self, value):
-        value = CRC16X.calcString(value)
-        format = ("%%0%dX" % ((CRC16X.width + 3) // 4))
-        return format % value
 
-    def SendCommandInit(self, command):
-        self.serial.write(self.HEADER + command + self.ENDLINE)
 
     def SendCommand(self, command):
         self.serial.write(self.HEADER + command + self.GetCRC16(command) + self.ENDLINE)
 
-    def GetResult(self, responsecode):
-        readbytes = 0
+def InitStick(s, stick, circle_plus):
+    # Init command
+    SendCommandNoCRC(s, "000AB43C") # 000A is the command B43C is the CRC16
+    
+    ReadAndCheckACK(s)
+    
+    response = ReadLine(s,28)
+    ReadMark(s,chr(131))
+    
+    code,response = Take(response,4)
+    message_number,response = Take(response,4)
+    MC,response = Take(response,16)
+    UNK1,response = Take(response,2)
+    is_online,response = Take(response,2)
+    # NC,response = Take(response,16)
+    # network_id,UNK2 = Take(response,4)
+    
+    # assert len(UNK2) == 2
+    assert code == "0011"
+    assert MC == stick
+    # assert NC == circle_plus
+    # assert UNK2 == "FF"
 
-        if responsecode == self.RESPONSEMac:
-            readbytes = 38
-	elif responsecode == self.RESPONSEStick:
-	    readbytes = 100  
-	elif responsecode == self.RESPONSEMaster:
-	    readbytes = 100
-        elif responsecode == self.RESPONSEVar:
-            readbytes = 190
-        elif responsecode == "0000":
-            readbytes = 0
+    SendCommandNoCRC(s, "0001CAAB")
 
-        data = ''
+    ReadAndCheckACK(s)
+    
+    response = ReadLine(s,80)
+    assert response[0:4] == "0002"
+    response = ReadLine(s,12)
+    assert response[0:4] == "0003"
+    assert response[8:12] == "00CE"
 
-        while 1:
-            data += self.serial.read(1)
-            if data.endswith(responsecode):
-                data = self.serial.read(readbytes)
-                return data[16:]
+def CirclePlusLink(s, stick, circle_plus):
+    SendCommand(s, "000400000000000000000000" + circle_plus)
+    #SendCommand(s, "000400010000000000000000" + circle_plus)
+    
+    ReadAndCheckACK(s)
+    
+    response = ReadLine(s,24)
+    code1,response = Take(response,4)
+    code2,response = Take(response,4)
+    MC,response = Take(response,16)
+    assert code1 == "0061"
+    assert code2 == "FFFD"
+    assert MC == stick
+    
+    response = ReadLine(s,12)
+    code,response = Take(response,4)
+    message_number,response = Take(response,4)
+    UNK,response = Take(response,4)
+    assert code == "0005"
+    assert UNK == "0001"
+    
+def GetInfoCommand(s, stick, circle_plus):
+    SendCommand(s, "0023"+ circle_plus)
+    ReadAndCheckACK(s)
+    response = s.read(110)
+    print "\t\t",response.replace("\r\n","").replace("#","\n#")[:-1]
+    
+    idx = response.find(SOURCE_MAC)
+    assert idx != -1
+    start = idx+len(SOURCE_MAC)
+    source_mac = response[start:(start+16)]
+    assert source_mac == stick
 
-def pair_circle_plus(stick, circle_plus, device):
+    idx = response.find(DESTINATION_MAC)
+    assert idx != -1
+    start = idx+len(DESTINATION_MAC)+2
+    dest_mac = response[start:(start+16)]
+    assert dest_mac == circle_plus
+
+def CirclePlusConnect(s, stick, circle_plus):
+    SendCommand(s, "000401010000000000000000" + circle_plus)
+    ReadLine(s,12)
+    ReadMark(s,chr(131))
+
+    GetInfoCommand(s, stick, circle_plus)
+
+def PairCirclePlus(device, stick, circle_plus):
     print
     print "Installation Circle+"
-    print "Stick macaddress :",stick
-    print "Circle+ macaddress :",circle_plus
-    plugwise = Plugwise(device, circle_plus)
-    plugwise.InitialisationCirclePlus()
+    print "Attention: In case of failure you would need to reset your Circle+"
+    print "Stick macaddress: ",stick
+    print "Circle+ macaddress: ",circle_plus
+    print "Dialog sequence"
+    s = serial.Serial(DEVICE_FILE, "115200")
+    
+    InitStick(s, stick, circle_plus)
+
+    CirclePlusLink(s, stick, circle_plus)
+    print "Linking to Circle+... you should hear some noise..."
+    sleep(35)
+    print "Noise should be heared before this message ;)"
+    
+    CirclePlusConnect(s, stick, circle_plus)
+    print "Connected to Circle+" 
 
 def pair_circles(slaves, device):
     print 
@@ -144,7 +242,7 @@ def main():
     
     if arg == "m":
         for circle_plus in pairing.keys():
-            pair_circle_plus(stick, circle_plus, device)
+            PairCirclePlus(device, stick, circle_plus)
     elif arg == "s":
         for master,slaves in pairing.iteritems():
             pair_circles(slaves, device)
