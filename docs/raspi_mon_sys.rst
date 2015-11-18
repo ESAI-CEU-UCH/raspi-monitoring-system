@@ -41,6 +41,14 @@ MainMonitoringSystem module
     :undoc-members:
     :show-inheritance:
 
+MongoDBHub module
+-----------------------------------------
+
+.. automodule:: MongoDBHub
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 OpenEnergyMonitor module
 ----------------------------
 
