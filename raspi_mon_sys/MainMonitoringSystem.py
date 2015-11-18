@@ -43,11 +43,15 @@ if __name__ == "__main__":
     # repeat every hour with a 1/12th part as offset
     Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
     # publish current electricity prices
-    ElectricityPrices.publish(0)
-    if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
-        # publish next day electricity prices when starting the software at
-        # night
-        ElectricityPrices.publish(1)
+    try:
+        ElectricityPrices.publish(0)
+        if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
+            # publish next day electricity prices when starting the software at
+            # night
+            ElectricityPrices.publish(1)
+    except:
+        print "Unexpected error:",traceback.format_exc()
+        logger.error("Unexpected error: %s", traceback.format_exc())
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
     # repeat every day at 21:00 UTC with prices for next day
@@ -69,21 +73,26 @@ if __name__ == "__main__":
         try:
             CheckIP.stop()
         except:
+            print "Unexpected error:",traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
         try:
             ElectricityPrices.stop()
         except:
+            print "Unexpected error:",traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
         try:
             OpenEnergyMonitor.stop()
         except:
+            print "Unexpected error:",traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
         try:
             PlugwiseMonitor.stop()
         except:
+            print "Unexpected error:",traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
         try:
             MongoDBHub.stop()
         except:
+            print "Unexpected error:",traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
         logger.info("Bye!")
