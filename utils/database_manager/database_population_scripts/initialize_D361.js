@@ -13,8 +13,8 @@ if (cursor.count() == 0) {
         "start_date": Timestamp(1447343054, 0),
         "name": house,
         "location": "Despacho 361 for debug purposes",
-        "mac": raspi_mac,
-        "older_macs": [],
+        "raspi": raspi_mac,
+        "older_rapis": [],
         "description": "None",
         "stop_date": null
     });

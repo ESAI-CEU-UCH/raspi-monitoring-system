@@ -24,7 +24,7 @@ import raspi_mon_sys.Utils as Utils
 
 PERIOD = 10 # every 3600 seconds (1 hour) we send data to hour server
 
-mac = Utils.getmac()
+raspi_mac = Utils.getmac()
 logger = None
 mongo_client = None
 mqtt_client = None
@@ -81,7 +81,7 @@ def start():
     mongo_client = Utils.getmongoclient(logger)
     db = mongo_client["raspimon"]
     col = db["GVA2015_houses"]
-    house_data = col.find_one({ "raspi":mac })
+    house_data = col.find_one({ "raspi":raspi_mac })
     assert house_data is not None
 
 def publish():
