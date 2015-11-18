@@ -9,6 +9,9 @@ __channel = "emonhub/rx/{0}/values"
 def start():
     pass
 
+def stop():
+    pass
+
 # This function SHOULD BE implemented always.
 def publish(client):
     """Publishes dummy value at a dummy channel."""

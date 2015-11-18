@@ -84,6 +84,10 @@ def start():
 
     client.loop_start()
 
+def stop():
+    client.disconnect()
+    logger.close()
+
 def publish():
     """Publishes circle messages via MQTT."""
     try:

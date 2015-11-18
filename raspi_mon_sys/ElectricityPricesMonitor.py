@@ -44,7 +44,9 @@ def start():
     """Opens logger connection."""
     global logger
     logger = LoggerClient.open("ElectricityPricesMonitor")
-    pass
+
+def stop():
+    logger.close()
     
 def publish(day_offset):
     """Publishes the electricity prices for a given day offset.

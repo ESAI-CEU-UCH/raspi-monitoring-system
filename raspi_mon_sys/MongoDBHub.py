@@ -86,6 +86,11 @@ def start():
     house_data = col.find_one({ "raspi":raspi_mac })
     assert house_data is not None
 
+def stop():
+    mqtt_client.disconnect()
+    mongo_client.close()
+    logger.close()
+
 def publish():
     t = time.time()
     lock.acquire()
@@ -95,7 +100,7 @@ def publish():
     for key in keys:
         topic,basetime = key
         if t - basetime > PERIOD: __process(key, insert_batch)
-    if len(insert_batch) > 0: db.GVA2015_data.insert_many(insert_batch)
+    if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
 
 if __name__ == "__main__":
     start()

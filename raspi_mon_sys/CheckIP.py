@@ -20,6 +20,9 @@ def start():
     global logger
     logger = LoggerClient.open("CheckIP")
 
+def stop():
+    logger.close()
+
 # This function SHOULD BE implemented always.
 def publish():
     """Publishes the IP using an ALERT message."""

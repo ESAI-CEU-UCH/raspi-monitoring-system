@@ -63,9 +63,11 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
+is_running = False
+
 def __process(logger, client, iface, nodes, node2keys):
     topic = Utils.gettopic("rfemon/{0}/{1}/{2}")
-    while True:
+    while is_running:
         # Execute run method
         iface.run()
         # Read socket
@@ -105,10 +107,18 @@ def start():
     config    = Utils.getconfig("open_energy_monitor", logger)
     nodes     = config["nodes"]
     node2keys = config["node2keys"]
-
+    global is_running
+    is_running = True
     thread = threading.Thread(target=__process,
                               args=(logger, client, iface, nodes, node2keys))
     thread.setDaemon(True)
     thread.start()
+
+def stop():
+    global is_running
+    is_running = False
+    client.disconnect()
+    logger.close()
+    iface.close()
 
 if __name__ == "__main__": start()
