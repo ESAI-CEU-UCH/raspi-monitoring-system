@@ -63,6 +63,7 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
+client = None
 is_running = False
 
 def __process(logger, client, iface, nodes, node2keys):
@@ -95,7 +96,8 @@ def start():
 
     logger = LoggerClient.open("OpenEnergyMonitor")
     logger.info("Opening connection")
-
+    
+    global client
     client = Utils.getpahoclient(logger)
     
     iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
