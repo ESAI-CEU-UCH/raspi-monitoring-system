@@ -107,7 +107,7 @@ def publish():
     lock.acquire()
     keys = message_queues.keys()
     lock.release()
-    insert_batch = [ __process(x) for x in keys if t - key[1] > PERIOD ]
+    insert_batch = [ __process(x) for x in keys if t - x[1] > PERIOD ]
     db.GVA2015_data.insert(insert_batch)
     logger.info("Inserted %d documents", len(insert_batch))
     
