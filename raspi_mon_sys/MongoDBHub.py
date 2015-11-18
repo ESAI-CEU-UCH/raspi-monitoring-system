@@ -6,7 +6,7 @@ structure::
 
     {
         "_id": ObjectID(...),
-        "basetime": Timestamp(1447343677, 0),
+        "basetime": DATE VALUE IN TIMESTAMP,
         "topic": MQTT TOPIC WITH / REPLACED BY :,
         "delta_times": AN ARRAY,
         "values": ANOTHER ARRAY
@@ -14,6 +14,7 @@ structure::
 """
 
 import bson
+import datetime
 import json
 import Queue
 import time
@@ -66,7 +67,7 @@ def __process(key):
     data_pairs.sort(key=lambda x: x[0])
     delta_times,values = zip(*data_pairs)
     document = {
-        "basetime" : bson.timestamp.Timestamp(basetime,0),
+        "basetime" : datetime.datetime.utcfromtimestamp(basetime),
         "topic" : topic,
         "delta_times" : delta_times,
         "values" : values
