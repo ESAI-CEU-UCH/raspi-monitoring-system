@@ -64,9 +64,9 @@ def getpahoclient(logger,configure=__dummy_configure):
                        __PAHO_BIND_ADDRESS)
         client.loop_start()
     except:
-        logger.alert("Unable to connect with Paho server")
+        logger.alert("Unable to connect with MQTT broker")
         raise
-    logger.info("Paho initialized at %s:%d with timeout=%d",
+    logger.info("MQTT client connected to %s:%d with keepalive=%d",
                 __PAHO_HOST, __PAHO_PORT, __PAHO_KEEPALIVE)
     return client
 
@@ -82,7 +82,7 @@ def getmongoclient(logger):
     except:
         if logger is not None: logger.alert("Unable to connect with MongoDB server")
         raise
-    if logger is not None: logger.info("MongoDB initialized at %s:%d", __MONGO_HOST, __MONGO_PORT)
+    if logger is not None: logger.info("MongoDB client connected to %s:%d", __MONGO_HOST, __MONGO_PORT)
     return client
 
 def getconfig(source, logger):
