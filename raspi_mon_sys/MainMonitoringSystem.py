@@ -66,9 +66,24 @@ if __name__ == "__main__":
         logger.info("Stopping scheduler")
         Scheduler.stop()
         logger.info("Stopping modules")
-        CheckIP.stop()
-        ElectricityPrices.stop()
-        OpenEnergyMonitor.stop()
-        PlugwiseMonitor.stop()
-        MongoDBHub.stop()
+        try:
+            CheckIP.stop()
+        except:
+            logger.error("Unexpected error: %s", traceback.format_exc())
+        try:
+            ElectricityPrices.stop()
+        except:
+            logger.error("Unexpected error: %s", traceback.format_exc())
+        try:
+            OpenEnergyMonitor.stop()
+        except:
+            logger.error("Unexpected error: %s", traceback.format_exc())
+        try:
+            PlugwiseMonitor.stop()
+        except:
+            logger.error("Unexpected error: %s", traceback.format_exc())
+        try:
+            MongoDBHub.stop()
+        except:
+            logger.error("Unexpected error: %s", traceback.format_exc())
         logger.info("Bye!")

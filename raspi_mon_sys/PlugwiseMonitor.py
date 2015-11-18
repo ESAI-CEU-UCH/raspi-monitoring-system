@@ -22,6 +22,7 @@ it seems that 1 second sampling period is allowed.
 
 import json
 import time
+import traceback
 
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.plugwise.api as plugwise_api
@@ -102,20 +103,25 @@ def publish():
             name = config["name"]
             last_power1s = config["power1s"]
             last_state = config["state"]
-            power   = c.get_power_usage()
-            power1s = power[0]
-            state   = c.get_info()['relay_state']
-            if __compute_relative_difference(last_power1s, power1s) > POWER_TOLERANCE:
-                power1s_usage_message = { 'timestamp' : t, 'data': power1s }
-                messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
-                config["power1s"] = power1s
-            # check state transition before message is appended
-            if state != last_state:
-                state_message = { 'timestamp' : t, 'data' : state }
-                messages.append( (topic.format(mac, name, "state"), state_message) )
-                config["state"] = state # track current state value
+            try:
+                power   = c.get_power_usage()
+                power1s = power[0]
+                state   = c.get_info()['relay_state']
+                if __compute_relative_difference(last_power1s, power1s) > POWER_TOLERANCE:
+                    power1s_usage_message = { 'timestamp' : t, 'data': power1s }
+                    messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
+                    config["power1s"] = power1s
+                    # check state transition before message is appended
+                if state != last_state:
+                    state_message = { 'timestamp' : t, 'data' : state }
+                    messages.append( (topic.format(mac, name, "state"), state_message) )
+                    config["state"] = state # track current state value
+            except:
+                print "Unexpected error:", traceback.format_exc()
+                logger.error("Error happened while processing circles data: %s", traceback.format_exc())
         for top,message in messages:
             client.publish(top, json.dumps(message))
     except:
+        print "Unexpected error:", traceback.format_exc()
         logger.error("Error happened while processing circles data")
         raise

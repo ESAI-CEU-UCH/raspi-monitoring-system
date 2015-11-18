@@ -14,7 +14,7 @@ if (cursor.count() == 0) {
         "name": house,
         "location": "Despacho 361 for debug purposes",
         "raspi": raspi_mac,
-        "older_rapis": [],
+        "older_raspis": [],
         "description": "None",
         "stop_date": null
     });

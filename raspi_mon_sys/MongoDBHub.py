@@ -19,6 +19,7 @@ import json
 import Queue
 import time
 import threading
+import traceback
 
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
@@ -28,10 +29,8 @@ PERIOD = 3600 # every 3600 seconds (1 hour) we send data to hour server
 
 raspi_mac = Utils.getmac()
 logger = None
-mongo_client = None
 mqtt_client = None
 house_data = None
-db = None
 lock = threading.RLock()
 
 message_queues = {}
@@ -67,6 +66,7 @@ def __process(key):
     data_pairs.sort(key=lambda x: x[0])
     delta_times,values = zip(*data_pairs)
     document = {
+        "house" : house_data["name"],
         "basetime" : datetime.datetime.utcfromtimestamp(basetime),
         "topic" : topic,
         "delta_times" : delta_times,
@@ -80,9 +80,7 @@ def start():
     """Opens connections with logger, MongoDB and MQTT broker."""
     global logger
     global mqtt_client
-    global mongo_client
     global house_data
-    global db
     logger = LoggerClient.open("MongoDBHub")
     mqtt_client = Utils.getpahoclient(logger, __configure_mqtt)
     mongo_client = Utils.getmongoclient(logger)
@@ -90,8 +88,11 @@ def start():
     col = db["GVA2015_houses"]
     house_data = col.find_one({ "raspi":raspi_mac })
     assert house_data is not None
+    mongo_client.close()
 
 def stop():
+    mongo_client = Utils.getmongoclient(logger)
+    db = mongo_client["raspimon"]
     # close MQTT broker connection
     mqtt_client.disconnect()
     # force sending data to MongoDB
@@ -103,13 +104,20 @@ def stop():
     logger.close()
 
 def publish():
-    t = time.time()
-    lock.acquire()
-    keys = message_queues.keys()
-    lock.release()
-    insert_batch = [ __process(x) for x in keys if t - x[1] > PERIOD ]
-    db.GVA2015_data.insert(insert_batch)
-    logger.info("Inserted %d documents", len(insert_batch))
+    try:
+        mongo_client = Utils.getmongoclient(logger)
+        db = mongo_client["raspimon"]
+        lock.acquire()
+        t = time.time()
+        keys = message_queues.keys()
+        lock.release()
+        insert_batch = [ __process(x) for x in keys if t - x[1] > PERIOD ]
+        db.GVA2015_data.insert(insert_batch)
+        logger.info("Inserted %d documents", len(insert_batch))
+        mongo_client.close()
+    except:
+        print "Unexpected error:", traceback.format_exc()
+        logger.error("Unexpected error: %s", traceback.format_exc())
     
 if __name__ == "__main__":
     Scheduler.start()
