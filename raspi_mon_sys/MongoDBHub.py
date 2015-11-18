@@ -22,7 +22,7 @@ import threading
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
-PERIOD = 10 # every 3600 seconds (1 hour) we send data to hour server
+PERIOD = 3600 # every 3600 seconds (1 hour) we send data to hour server
 
 raspi_mac = Utils.getmac()
 logger = None
@@ -49,13 +49,14 @@ def __on_mqtt_message(client, userdata, msg):
     lock.release()
     delta_time = timestamp - basetime
     q.put( (delta_time, data) )
-    print(topic, basetime, timestamp, delta_time, data)
+    logger.debug("%s %f %f %f %s", topic, float(basetime), float(timestamp),
+                 float(delta_time), str(data))
 
 def __configure_mqtt(client):
     client.on_connect = __on_mqtt_connect
     client.on_message = __on_mqtt_message
 
-def __process(key, insert_batch):
+def __process(key):
     global message_queues
     topic,basetime = key
     data_pairs = message_queues.pop(key)
@@ -69,7 +70,18 @@ def __process(key, insert_batch):
         "delta_times" : delta_times,
         "values" : values
     }
-    insert_batch.append(document)
+    logger.info("New document for topic= %s basetime= %d with n= %d",
+                topic, int(basetime), len(delta_times))
+    return document
+
+def __publish_thread():
+    t = time.time()
+    lock.acquire()
+    keys = message_queues.keys()
+    lock.release()
+    insert_batch = [ __process(x) for x in keys if t - key[1] > PERIOD ]
+    if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
+    logger.info("Inserted %d documents", len(insert_batch))
 
 def start():
     """Opens connections with logger, MongoDB and MQTT broker."""
@@ -92,16 +104,10 @@ def stop():
     logger.close()
 
 def publish():
-    t = time.time()
-    lock.acquire()
-    keys = message_queues.keys()
-    lock.release()
-    insert_batch = []
-    for key in keys:
-        topic,basetime = key
-        if t - basetime > PERIOD: __process(key, insert_batch)
-    if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
-
+    thread = threading.Thread(target=__publish_thread)
+    thread.setDaemon(True)
+    thread.start()
+    
 if __name__ == "__main__":
     start()
     while True:

@@ -9,6 +9,7 @@ import traceback
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
 import raspi_mon_sys.LoggerClient as LoggerClient
+import raspi_mon_sys.MongoDBHub as MongoDBHub
 import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
 import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
@@ -33,18 +34,20 @@ if __name__ == "__main__":
     logger.info("Scheduler started")
 
     # Start all modules.
+    MongoDBHub.start()
     CheckIP.start()
     ElectricityPrices.start()
     OpenEnergyMonitor.start()
     PlugwiseMonitor.start()
     
+    # repeat every hour with a 5 minutes offset
+    Scheduler.repeat_o_clock_with_offset(T1_HOUR, 5*T1_MINUTE, MongoDBHub.publish)
     # publish current electricity prices
     ElectricityPrices.publish(0)
     if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
         # publish next day electricity prices when starting the software at
         # night
         ElectricityPrices.publish(1)
-
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
     # repeat every day at 21:00 UTC with prices for next day
@@ -60,6 +63,11 @@ if __name__ == "__main__":
     try:
         while True: time.sleep(60)
     except:
+        CheckIP.stop()
+        ElectricityPrices.stop()
+        OpenEnergyMonitor.stop()
+        PlugwiseMonitor.stop()
+        MongoDBHub.stop()
         logger.info("Stopping scheduler")
         Scheduler.stop()
         logger.info("Bye!")
