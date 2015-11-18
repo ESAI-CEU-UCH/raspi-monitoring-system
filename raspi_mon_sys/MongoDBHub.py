@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+1#!/usr/bin/env python2.7
 """MongoDB hub for insertion of data into our servers.
 
 This module inserts into GVA2015_data collection documents with the following
@@ -7,7 +7,7 @@ structure::
     {
         "_id": ObjectID(...),
         "basetime": Timestamp(1447343677, 0),
-        "topic": MQTT TOPIC,
+        "topic": MQTT TOPIC WITH / REPLACED BY :,
         "delta_times": AN ARRAY,
         "values": ANOTHER ARRAY
     } 
@@ -40,7 +40,7 @@ def __on_mqtt_connect(client, userdata, rc):
 
 def __on_mqtt_message(client, userdata, msg):
     global message_queues
-    topic = msg.topic
+    topic = msg.topic.replace("/",":")
     message = json.loads(msg.payload)
     timestamp = message["timestamp"]
     data = message["data"]
