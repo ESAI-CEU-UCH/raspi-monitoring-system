@@ -80,7 +80,7 @@ def __publish_thread():
     keys = message_queues.keys()
     lock.release()
     insert_batch = [ __process(x) for x in keys if t - key[1] > PERIOD ]
-    if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
+    db.GVA2015_data.insert(insert_batch)
     logger.info("Inserted %d documents", len(insert_batch))
 
 def start():
@@ -99,7 +99,13 @@ def start():
     assert house_data is not None
 
 def stop():
+    # close MQTT broker connection
     mqtt_client.disconnect()
+    # force sending data to MongoDB
+    insert_batch = [ __process(x) for x in keys ]
+    db.GVA2015_data.insert(insert_batch)
+    logger.info("Inserted %d documents", len(insert_batch))
+    # close rest of pending connections
     mongo_client.close()
     logger.close()
 
