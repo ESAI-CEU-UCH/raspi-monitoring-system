@@ -6,7 +6,7 @@ waitpid(){
     done
 }
 
-for mask in "raspi_mon_sys/MailLoggerServer.py" "raspi_mon_sys/MainMonitoringSystem.py"; do
+for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/MailLoggerServer.py"; do
     pid=$(pgrep -f "python $mask")
     if [[ ! -z $pid ]]; then
         kill -2 $pid
