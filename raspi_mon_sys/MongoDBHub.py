@@ -20,6 +20,7 @@ import time
 import threading
 
 import raspi_mon_sys.LoggerClient as LoggerClient
+import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
 PERIOD = 3600 # every 3600 seconds (1 hour) we send data to hour server
@@ -74,15 +75,6 @@ def __process(key):
                 topic, int(basetime), len(delta_times))
     return document
 
-def __publish_thread():
-    t = time.time()
-    lock.acquire()
-    keys = message_queues.keys()
-    lock.release()
-    insert_batch = [ __process(x) for x in keys if t - key[1] > PERIOD ]
-    db.GVA2015_data.insert(insert_batch)
-    logger.info("Inserted %d documents", len(insert_batch))
-
 def start():
     """Opens connections with logger, MongoDB and MQTT broker."""
     global logger
@@ -110,12 +102,20 @@ def stop():
     logger.close()
 
 def publish():
-    thread = threading.Thread(target=__publish_thread)
-    thread.setDaemon(True)
-    thread.start()
+    t = time.time()
+    lock.acquire()
+    keys = message_queues.keys()
+    lock.release()
+    insert_batch = [ __process(x) for x in keys if t - key[1] > PERIOD ]
+    db.GVA2015_data.insert(insert_batch)
+    logger.info("Inserted %d documents", len(insert_batch))
     
 if __name__ == "__main__":
+    Scheduler.start()
     start()
-    while True:
-        publish()
-        time.sleep(PERIOD)
+    Scheduler.repeat_o_clock_with_offset(PERIOD*1000, PERIOD/12*1000, publish)
+    try:
+        while True: time.sleep(60)
+    except:
+        stop()
+        raise

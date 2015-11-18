@@ -40,8 +40,8 @@ if __name__ == "__main__":
     OpenEnergyMonitor.start()
     PlugwiseMonitor.start()
     
-    # repeat every hour with a 5 minutes offset
-    Scheduler.repeat_o_clock_with_offset(T1_HOUR, 5*T1_MINUTE, MongoDBHub.publish)
+    # repeat every hour with a 1/12th part as offset
+    Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
     # publish current electricity prices
     ElectricityPrices.publish(0)
     if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
