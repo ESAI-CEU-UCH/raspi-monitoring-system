@@ -118,7 +118,7 @@ def publish():
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
-    
+
 if __name__ == "__main__":
     Scheduler.start()
     start()

@@ -25,7 +25,6 @@ given day offset (current if `offset=0`, next if `offset=1`).
 import datetime
 import json
 import time
-import traceback
 import urllib2
 
 import raspi_mon_sys.LoggerClient as LoggerClient
