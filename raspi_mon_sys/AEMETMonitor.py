@@ -170,7 +170,7 @@ def __publish_daily_forecast(client):
         key = msg.pop("content_key")
         msg["timestamp"] = when
         client.publish(forecast_topic.format(valencia_forecast_id, "daily", key),
-                       json.dumps(message))
+                       json.dumps(msg))
 
 def start():
     """Opens logger connection."""
