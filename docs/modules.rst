@@ -7,3 +7,4 @@ raspi_mon_sys
    raspi_mon_sys
    emonhub
    plugwise
+   aemet
