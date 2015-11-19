@@ -4,7 +4,7 @@ from urllib import urlopen
 import datetime
 import time
 
-class __DatosFecha__:
+class DatosFecha:
         def __init__(self, url, rss, fecha):
                 self.rss = rss
 		self.fecha = fecha
@@ -176,7 +176,7 @@ class Localidad:
 
         def parse_datos_fecha(self, fecha):
                 __fecha = time.strftime("%Y-%m-%d", fecha.timetuple())
-                return __DatosFecha__(self.__url, self.rss, __fecha)
+                return DatosFecha(self.__url, self.rss, __fecha)
 
 	def get_fecha_actualizacion(self):
 		return self.__fecha_de_actualizacion
