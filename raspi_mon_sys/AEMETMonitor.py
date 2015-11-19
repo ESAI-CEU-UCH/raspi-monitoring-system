@@ -165,7 +165,7 @@ def __publish_daily_forecast(client):
     days_parsers = [ aemet_parser.parse_datos_fecha(x) for x in days ]
     pre_messages = [ x for st in week_forecast_info for x in __process_daily_forecast(days_parsers, *st) ]
     when = __datetimestr2time( aemet_parser.get_fecha_actualizacion() )
-        
+    
     for msg in pre_messages:
         key = msg.pop("content_key")
         msg["timestamp"] = when
