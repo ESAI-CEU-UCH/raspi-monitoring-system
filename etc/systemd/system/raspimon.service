@@ -11,4 +11,3 @@ ExecStart=/bin/su pi -c '/home/pi/raspi-monitoring-system/start.sh'
 ExecStop=/bin/su pi -c '/home/pi/raspi-monitoring-system/stop.sh'
 
 [Install]
-WantedBy=multi-user.target
