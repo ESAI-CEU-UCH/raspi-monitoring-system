@@ -96,6 +96,9 @@ def __try_number(x):
 def __datestr2time(s):
     return time.mktime(datetime.datetime.strptime(s, "%Y-%m-%d").timetuple())
 
+def __datetimestr2time(s):
+    return time.mktime(datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").timetuple())
+
 def __on_connect(client, userdata, rc):
     logger.info("Connected to MQTT broker")
 
@@ -161,7 +164,7 @@ def __publish_daily_forecast(client):
     days = [ now + datetime.timedelta(i) for i in range(NUM_DAYS) ]
     days_parsers = [ aemet_parser.parse_datos_fecha(x) for x in days ]
     pre_messages = [ x for st in week_forecast_info for x in __process_daily_forecast(days_parsers, *st) ]
-    when = __datestr2time( aemet_parser.get_fecha_actualizacion() )
+    when = __datetimestr2time( aemet_parser.get_fecha_actualizacion() )
         
     for msg in pre_messages:
         key = msg.pop("content_key")
@@ -172,7 +175,7 @@ def __publish_daily_forecast(client):
 def start():
     """Opens logger connection."""
     global logger
-    logger = LoggerClient.open("ElectricityPricesMonitor")
+    logger = LoggerClient.open("AEMETMonitor")
 
 def publish():
     try:
