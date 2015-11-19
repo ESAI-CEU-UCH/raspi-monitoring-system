@@ -37,6 +37,7 @@ client = None
 device = None
 circles_config = None
 circles = None
+verbose = False
 
 def __compute_relative_difference(a, b): return abs(b - a) / (a + 1e-20)
 
@@ -61,6 +62,7 @@ def start():
     global circles_config
     global circles
     logger  = LoggerClient.open("PlugwiseMonitor")
+    if not verbose: logger.config(logger.levels.WARNING, logger.schedules.DAILY)
     config  = Utils.getconfig("plugwise", logger)
     client  = Utils.getpahoclient(logger, __configure)
     assert config is not None
