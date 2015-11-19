@@ -13,6 +13,7 @@ import raspi_mon_sys.MongoDBHub as MongoDBHub
 import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
 import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
+import raspi_mon_sys.Utils as Utils
 
 if __name__ == "__main__":
     Utils.startup_wait()

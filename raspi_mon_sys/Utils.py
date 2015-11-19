@@ -106,5 +106,5 @@ def startup_wait():
         except:
             wait = 30.0
             # wait for device configuration during startup
-        print "Waiting "+wait+" seconds for device configuration..."
+        print "Waiting %f seconds for device configuration..."%(wait)
         time.sleep(wait)
