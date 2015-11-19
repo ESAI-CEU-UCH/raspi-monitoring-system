@@ -6,11 +6,12 @@ structure::
 
     {
         "_id": ObjectID(...),
+        "house": HOUSE_NAME,
         "basetime": DATE VALUE IN TIMESTAMP,
         "topic": MQTT TOPIC WITH / REPLACED BY :,
         "delta_times": AN ARRAY,
         "values": ANOTHER ARRAY
-    } 
+    }
 """
 
 import bson
