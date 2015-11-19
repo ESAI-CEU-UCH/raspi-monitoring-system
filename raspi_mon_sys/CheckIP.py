@@ -46,7 +46,9 @@ def publish():
     except:
         print "Unexpected error:", traceback.format_exc()
         if not failure:
-            logger.alert("Unable to retrieve IP addresses")
+            logger.alert("Unable to retrieve IP addresses: %s",
+                         traceback.format_exc())
             failure = True
             last_private_ip = None
             last_public_ip  = None
+        raise

@@ -27,6 +27,7 @@ import Queue
 import Scheduler
 import socket
 import threading
+import time
 import traceback
 import sys
 import zmq
@@ -118,6 +119,12 @@ def start(mail_credentials_path=__mail_credentials_path,
 
     """
     if not Scheduler.is_running():
+        ctx = zmq.Context.instance()
+        s   = ctx.socket(zmq.PULL)
+        s.bind(transport_string)
+        
+        Utils.startup_wait()
+        
         __process_message(mail_credentials_path, {
             "name" : "MailLoggerServer",
             "level" : str(__levels.ALERT),
@@ -127,9 +134,6 @@ def start(mail_credentials_path=__mail_credentials_path,
         })
         mail_credentials = json.loads( open(mail_credentials_path).read() )
         mail_credentials = None
-        ctx = zmq.Context.instance()
-        s   = ctx.socket(zmq.PULL)
-        s.bind(transport_string)
         
         Scheduler.start()
         Scheduler.repeat_o_clock(3600*1000, __queue_handler,

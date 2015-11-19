@@ -1,0 +1,6 @@
+# Default settings for raspi-monitoring-system (raspimon).
+
+# Indicates to scripts they have been started at boot.
+STARTED_AT_BOOT=yes
+# Seconds for sleeping during start of the system.
+STARTUP_SLEEP=30.0

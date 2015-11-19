@@ -2,9 +2,12 @@
 """Several utilities shared between different modules."""
 from email.mime.text import MIMEText
 from uuid import getnode
+
+import os
 import paho.mqtt.client as paho
 import pymongo
 import smtplib
+import time
 
 __PAHO_HOST      = "localhost"
 __PAHO_PORT      = 1883
@@ -95,3 +98,13 @@ def getconfig(source, logger):
     assert config is not None
     if logger is not None: logger.debug("Configuration retrieved properly for source %s", source)
     return config
+
+def startup_wait():
+    if os.getenv("STARTED_AT_BOOT") == "yes":
+        try:
+            wait = float(os.getenv("STARTUP_SLEEP"))
+        except:
+            wait = 30.0
+            # wait for device configuration during startup
+        print "Waiting "+wait+" seconds for device configuration..."
+        time.sleep(wait)

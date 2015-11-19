@@ -15,6 +15,8 @@ import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 
 if __name__ == "__main__":
+    Utils.startup_wait()
+    
     T1_MILISECOND  = 1
     T1_CENTISECOND = 10
     T1_DECISECOND  = 100
@@ -52,8 +54,10 @@ if __name__ == "__main__":
     except:
         print "Unexpected error:",traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
-    # force IP publication
-    CheckIP.publish()
+    try:
+        CheckIP.publish()
+    except:
+        pass
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
     # repeat every day at 21:00 UTC with prices for next day
