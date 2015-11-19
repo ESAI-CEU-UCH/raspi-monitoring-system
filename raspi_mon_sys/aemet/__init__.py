@@ -1,3 +1,20 @@
+"""This module is an adataption of `AEMET-Python <https://github.com/aariste/AEMET-Python>`_.
+
+The main purpose of this module is to load and parse data from AEMET daily
+forecasts retrieved in XML format. It should be use as following example:
+
+>>> import raspi_mon_sys.aemet as aemet
+>>> parser = aemet.Localidad("46250")
+>>> tomorrow = datetime.datetime.now() + datetime.timedelta(1)
+>>> date_forecast = parser.parse_datos_fecha(tomorrow)
+>>> date_forecast.get_temperatura_maxima()
+
+Class `DatosFecha` is described here for documentation purposes but it should
+never being instantiated from outside the module. You should use
+`Localidad.parse_datos_fecha()` method to instance `DatosFecha` class.
+
+"""
+
 from xml.etree.ElementTree import parse
 from urllib import urlopen
 
