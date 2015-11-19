@@ -108,3 +108,4 @@ def startup_wait():
             # wait for device configuration during startup
         print "Waiting %f seconds for device configuration..."%(wait)
         time.sleep(wait)
+        print "Starting"
