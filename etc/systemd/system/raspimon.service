@@ -7,8 +7,8 @@ After=network.target
 [Service]
 Type=idle
 PIDFile=/run/raspimon.pid
-ExecStart=su pi -c '/home/pi/raspi-monitoring-system/start.sh'
-ExecStop=su pi -c '/home/pi/raspi-monitoring-system/stop.sh'
+ExecStart=/bin/su pi -c '/home/pi/raspi-monitoring-system/start.sh'
+ExecStop=/bin/su pi -c '/home/pi/raspi-monitoring-system/stop.sh'
 
 [Install]
 WantedBy=multi-user.target
