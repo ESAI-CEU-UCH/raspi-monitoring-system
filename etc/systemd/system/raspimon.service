@@ -1,0 +1,14 @@
+# Using Type=idle to force this script to be executed AFTER all other jobs
+[Unit]
+Description=Starts raspimon at startup
+Wants=network.target
+After=network.target
+
+[Service]
+Type=idle
+PIDFile=/run/raspimon.pid
+ExecStart=/home/pi/raspi-monitoring-system/start.sh
+ExecStop=/home/pi/raspi-monitoring-system/stop.sh
+
+[Install]
+WantedBy=multi-user.target
