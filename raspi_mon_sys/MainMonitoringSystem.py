@@ -52,6 +52,8 @@ if __name__ == "__main__":
     except:
         print "Unexpected error:",traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
+    # force IP publication
+    CheckIP.publish()
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
     # repeat every day at 21:00 UTC with prices for next day
