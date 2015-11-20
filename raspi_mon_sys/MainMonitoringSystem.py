@@ -6,6 +6,7 @@ It should be executed from command line without arguments.
 import time
 import traceback
 
+import raspi_mon_sys.AEMETMonitor as AEMETMonitor
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
 import raspi_mon_sys.LoggerClient as LoggerClient
@@ -14,6 +15,13 @@ import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
 import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
+
+def __try_stop(logger, obj):
+    try:
+        obj.stop()
+    except:
+        print "Unexpected error:",traceback.format_exc()
+        logger.error("Unexpected error: %s", traceback.format_exc())
 
 if __name__ == "__main__":
     Utils.startup_wait()
@@ -38,6 +46,7 @@ if __name__ == "__main__":
 
     # Start all modules.
     MongoDBHub.start()
+    AEMETMonitor.start()
     CheckIP.start()
     ElectricityPrices.start()
     OpenEnergyMonitor.start()
@@ -77,29 +86,10 @@ if __name__ == "__main__":
         logger.info("Stopping scheduler")
         Scheduler.stop()
         logger.info("Stopping modules")
-        try:
-            CheckIP.stop()
-        except:
-            print "Unexpected error:",traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())
-        try:
-            ElectricityPrices.stop()
-        except:
-            print "Unexpected error:",traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())
-        try:
-            OpenEnergyMonitor.stop()
-        except:
-            print "Unexpected error:",traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())
-        try:
-            PlugwiseMonitor.stop()
-        except:
-            print "Unexpected error:",traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())
-        try:
-            MongoDBHub.stop()
-        except:
-            print "Unexpected error:",traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())
+        __try_stop(logger, AEMETMonitor)
+        __try_stop(logger, CheckIP)
+        __try_stop(logger, ElectricityPrices)
+        __try_stop(logger, OpenEnergyMonitor)
+        __try_stop(logger, PlugwiseMonitor)
+        __try_stop(logger, MongoDBHub)
         logger.info("Bye!")
