@@ -29,6 +29,8 @@ Valencia current weather data::
 
 http://www.aemet.es/es/eltiempo/observacion/ultimosdatos?k=val&l=8416Y&w=0&datos=det&x=h24&f=temperatura
 
+http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24
+
 Valencia weather forecast data::
 
     Capital: Valencia (altitud: 16 m)
@@ -54,6 +56,7 @@ import requests
 import time
 import traceback
 import unicodedata
+import urllib2
 
 from lxml import html
 
@@ -67,8 +70,8 @@ weather_topic  = Utils.gettopic("aemet/{0}")
 forecast_topic = "aemet/forecast/{0}/{1}/{2}"
 
 # This variables are loaded from MongoDB server at start() function.
-tz = pytz.timezone("Europe/Madrid") #None
-logger = LoggerClient.open("AEMETMonitor") #None
+tz = None
+logger = None
 current_weather_url = None
 hourly_forecast_url = None
 location_id = None
@@ -96,25 +99,31 @@ daily_forecast_info = (
 def __normalize(x):
     """Remove non ASCII characters and left/right trailing whitespaces. All
     interior whitespaces, newlines, etc. by underscore characters. Finally, it
-    transforms the sequence into lowercase.
+    transforms the sequence into lowercase. It also replaces / by _ and % by p.
 
     In the future this function should translate into English for normalization
     purposes.
 
     """
+    assert type(x) == str or type(x) == unicode
     # Be careful with this function, in the future it should be used to
     # translate Spanish or other language strings into English.
-    x = unicodedata.normalize("NFKD",unicode(x.strip())).encode("ascii","ignore")
+    x = unicode(x.strip(), errors="ignore")
+    x = unicodedata.normalize("NFKD",x).encode("ascii","ignore")
     x = x.replace(" ","_").replace("\t","_").replace("\n","_").replace("\r","_")
+    x = x.replace("/","_").replace("%","p")
     x = x.lower()
     return x
 
 def __try_number(x):
-    if type(x) is list:
+    if type(x) is list or type(x) is tuple:
         return [ __try_number(y) for y in x ]
     try:
         x_float = float(x)
-        x_int = int(x)
+        try:
+            x_int = int(x)
+        except:
+            x_int = 0
         if x_float == x_int: return x_int
         return x_float
     except:
@@ -127,13 +136,11 @@ def __try_element(e, child, func):
     except:
         return None
 
-def __datestr2time(s):
-    dt = tz.localize( datetime.datetime.strptime(s, "%Y-%m-%d") )
+def __datetimestr2time(s, fmt="%Y-%m-%dT%H:%M:%S"):
+    dt = tz.localize( datetime.datetime.strptime(s, fmt) )
     return time.mktime(dt.utctimetuple())
 
-def __datetimestr2time(s):
-    dt = tz.localize( datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S") )
-    return time.mktime(dt.utctimetuple())
+def __datestr2time(s): return __datetimestr2time(s, "%Y-%m-%d")
 
 def __on_connect(client, userdata, rc):
     logger.info("Connected to MQTT broker")
@@ -158,7 +165,7 @@ def __process_daily_forecast_singleton(result):
     return [ [ [0,24], result ] ]
 
 def __process_daily_forecast_list(days_parsers, func, method_name, *args):
-    all_days = [ __try_number( func(getattr(day, method_name)()) ) for day in days_parsers ]
+    all_days = [ __try_number(__normalize( func(getattr(day, method_name)()) )) for day in days_parsers ]
     all_days = [ [ [ z + __datestr2time(day.fecha) for z in x[0] ] ] + x[1:]
                  for i,day in enumerate(days_parsers) for x in all_days[i] ]
     all_datas = [ x for x in zip(*all_days) ]
@@ -213,6 +220,14 @@ def __publish_daily_forecast(client):
         logger.error("Unable to retrieve daily forecast: %s", traceback.format_exc())
 
 def __publish_hourly_forecast(client):
+    """Traverses the HTML web page of AEMET and transforms it into forecast
+    MQTT messages as described above in this module documentation.
+    
+    All input strings are normalized to be in lower case, using underscores in
+    any whitespace character, replacing accents and other non ASCII characters
+    by its closest ASCII character.
+
+    """
     try:
         d = datetime.date.today()
         t = tz.localize( datetime.datetime(d.year, d.month, d.day) )
@@ -274,6 +289,30 @@ def __publish_hourly_forecast(client):
         print "Unable to retrieve hourly forecast:", traceback.format_exc()
         logger.error("Unable to retrieve hourly forecast: %s", traceback.format_exc())
 
+def __publish_current_weather_status(client):
+    response = urllib2.urlopen(current_weather_url)
+    try:
+        # First three lines are rubbish.
+        for i in range(3): response.readline()
+        reader = csv.reader(response)
+        table = list(reader)
+    
+        names = [ __normalize(x) for x in table[0] ]
+        values = [ __try_number(__normalize(x)) for x in table[1] ]
+
+        names.pop(0)
+        dt_str = values.pop(0)
+        t = __datetimestr2time(dt_str, "%d_%m_%Y_%H:%M")
+
+        for name,value in zip(names,values):
+            if type(value) != str or len(value) > 0:
+                msg = { "timestamp" : t, "data" : value }
+                client.publish(topic.format(location_id,name), json.dumps(msg))
+
+    except:
+        print "Unable to retrieve current weather status:", traceback.format_exc()
+        logger.error("Unable to retrieve current weather status: %s", traceback.format_exc())
+
 def start():
     """Opens logger connection and loads its configuration from MongoDB."""
     global logger
@@ -288,11 +327,16 @@ def start():
     global tz
     tz = pytz.timezone(config["timezone"])
 
+def stop():
+    """Closes connection with logger."""
+    logger.close()
+
 def publish():
     try:
         client = Utils.getpahoclient(logger)
         __publish_daily_forecast(client)
         __publish_hourly_forecast(client)
+        __publish_current_weather_status(client)
         client.disconnect()
         
     except:
@@ -301,45 +345,3 @@ def publish():
 
 start()
 publish()
-#hourly_forecast_url = "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250"
-#__publish_hourly_forecast(None)
-
-# client.on_connect = on_connect
-# client.on_message = on_message
-# client.connect("127.0.0.1", 1883, 60)
-
-# #Configuracion de la conexion al sensor de temperatura DHT11
-# sensor = Adafruit_DHT.DHT11
-# pin = 4
-# humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-
-# #configuracion del canal mqtt
-# canalmqtt = 19
-
-# url = 
-
-
-# client.loop_start()
-# last_min = time.time()
-# temp_ext = None
-# while True:
-    
-#     now = time.time()   # Current time as timestamp based on local time from the Pi. updated once per minute.
-#     dif = now - last_min
-#     humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-    
-    
-#     if dif>3600 or temp_ext is None:  # only check programs once an hour or first time
-#         last_min = now
-#         response = urllib2.urlopen(url)
-#         try:
-#             reader = csv.reader(response)
-#             listado = list(reader)
-#             #print(listado[4][1])
-#             temp_ext = listado[4][1]
-#         except ValueError:
-#             print "Oops!  That was no valid number.  Try again..."
-#     if humidity is not None and temperature is not None:
-#         client.publish("emonhub/rx/{0}/values".format(canalmqtt),"{0:.2f},{1},{2},1.5".format(temperature,temp_ext,humidity))
-    
-#     time.sleep(60)
