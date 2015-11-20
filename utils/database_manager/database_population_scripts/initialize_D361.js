@@ -45,7 +45,8 @@ if (cursor.count() == 0) {
                     "key": 2,
                     "desc": "CT Clip 1, EmonTXV3 1, telephone power consumption",
                     "name": "telephone",
-                    "unit": "W"
+                    "unit": "W",
+                    "tolerance" : 0.0005
                 },
                 {
                     "key": 6,
@@ -53,7 +54,8 @@ if (cursor.count() == 0) {
                     "name": "vrms1",
                     "mul": 0.01,
                     "add": 0,
-                    "unit": "V"
+                    "unit": "V",
+                    "tolerance" : 0.0005
                 }
             ],
             "19": [
@@ -62,21 +64,24 @@ if (cursor.count() == 0) {
                     "desc": "DHT22 Temperature 1",
                     "name": "in_temperature1",
                     "unit": "ºC",
-                    "mul": 0.1
+                    "mul": 0.1,
+                    "tolerance" : 0.01
                 },
                 {
                     "key": 4,
                     "desc": "DHT22 Humidity 1",
                     "name": "in_humidity1",
                     "mul": 0.1,
-                    "unit": "%"
+                    "unit": "%",
+                    "tolerance" : 0.01
                 },
                 {
                     "key": 5,
                     "desc": "Battery voltage EmonTH 1",
                     "name": "emonth1_battery_voltage",
                     "mul": 0.1,
-                    "unit": "V"
+                    "unit": "V",
+                    "tolerance" : 0.01
                 }
             ]
         }
@@ -101,13 +106,15 @@ if (cursor.count() == 0) {
                 "mac": "000D6F0005671DC3",
                 "desc": "Telephone D361 IMF",
                 "name": "telephone",
-                "unit": "W"
+                "unit": "W",
+                "tolerance" : 0.005
             },
             {
                 "mac": "000D6F00004BFA7C",
                 "desc": "Raspberry pi " + raspi_mac,
                 "name": "raspi",
-                "unit": "W"
+                "unit": "W",
+                "tolerance" : 0.005
             }
         ]
     });
@@ -115,7 +122,7 @@ if (cursor.count() == 0) {
 
 cusor = db.GVA2015_config.find({ "source":"aemet", "house":house });
 if (cursor.count() == 0) {
-    print("Inserting at GVA2015_config collection open_energy_monitor document");
+    print("Inserting at GVA2015_config collection aemet document");
     db.GVA2015_config.insert({
         "source": "aemet",
         "house": "D361",

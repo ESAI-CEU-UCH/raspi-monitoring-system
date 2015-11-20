@@ -63,7 +63,7 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
-POWER_TOLERANCE = 0.0005 # 0.05% difference in power
+DEFAULT_POWER_TOLERANCE = 0.0
 
 client = None
 iface = None
@@ -89,7 +89,7 @@ def __process(logger, client, iface, nodes, node2keys):
                 mul       = conf.get("mul", 1.0)
                 add       = conf.get("add", 0.0)
                 v         = (values[key] + add) * mul
-                if Utils.compute_relative_difference(last_data, v) > POWER_TOLERANCE:
+                if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE):
                     message = { 'timestamp' : t, 'data' : v }
                     client.publish(topic.format(nodeId, key, name), json.dumps(message))
                     conf["data"] = v

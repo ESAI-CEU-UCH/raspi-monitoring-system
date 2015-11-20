@@ -29,7 +29,7 @@ import raspi_mon_sys.plugwise.api as plugwise_api
 import raspi_mon_sys.Utils as Utils
 
 # Plugwise connection configuration.
-POWER_TOLERANCE = 0.005 # 0.5% difference in power
+DEFAULT_POWER_TOLERANCE = 0.0
 DEFAULT_SERIAL_PORT = "/dev/ttyUSB0" # USB port used by Plugwise receiver
 
 topic = Utils.gettopic("plugwise/{0}/{1}/{2}")
@@ -108,7 +108,7 @@ def publish():
                 power   = c.get_power_usage()
                 power1s = power[0]
                 state   = c.get_info()['relay_state']
-                if Utils.compute_relative_difference(last_power1s, power1s) > POWER_TOLERANCE:
+                if Utils.compute_relative_difference(last_power1s, power1s) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE):
                     power1s_usage_message = { 'timestamp' : t, 'data': power1s }
                     messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
                     config["power1s"] = power1s
