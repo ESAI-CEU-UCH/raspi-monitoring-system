@@ -108,7 +108,7 @@ def publish():
                 power   = c.get_power_usage()
                 power1s = power[0]
                 state   = c.get_info()['relay_state']
-                if Utils.compute_relative_difference(last_power1s, power1s) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE):
+                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE):
                     power1s_usage_message = { 'timestamp' : t, 'data': power1s }
                     messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
                     config["power1s"] = power1s
