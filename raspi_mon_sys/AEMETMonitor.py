@@ -43,6 +43,9 @@ http://www.aemet.es/es/eltiempo/prediccion/municipios/valencia-id46250
 them). We need to rely in the web page:
 http://www.aemet.es/es/eltiempo/prediccion/municipios/tabla/valencia-id46250
 
+Wind is measured in km/h, rain in mm, probabilities and humidity in %, snow
+level in m.
+
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
@@ -98,8 +101,9 @@ daily_forecast_info = (
 
 def __normalize(x):
     """Remove non ASCII characters and left/right trailing whitespaces. All
-    interior whitespaces, newlines, etc. by underscore characters. Finally, it
+    interior whitespaces, newlines, etc. by underscore characters. It
     transforms the sequence into lowercase. It also replaces / by _ and % by p.
+    Finally it removes any sequence enclosed between parentheses.
 
     In the future this function should translate into English for normalization
     purposes.
@@ -262,6 +266,7 @@ def __publish_hourly_forecast(client):
                         divs = elem.findall("div")
                         assert len(divs) == 2
                         x = divs[0].find("img").get("alt")
+                        x = __try_number(__normalize(x))
                         series_data[-1].append(x)
                         x = divs[1].text
                     # normalize x and copy it as many times as rowspan indicates
@@ -271,6 +276,9 @@ def __publish_hourly_forecast(client):
                 except:
                     print "Unable to parse dom element:", traceback.format_exc()
                     logger.error("Unable to parse dom element: %s", traceback.format_exc())
+
+        # Position 1 contains hour information, not needed, we use timestamps
+        # located at position 0.
         series_names.pop(1)
         series_data.pop(1)
         series_names = [ __normalize(x) for x in series_names ]
