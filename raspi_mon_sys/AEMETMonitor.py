@@ -105,7 +105,7 @@ def __normalize(x):
     purposes.
 
     """
-    assert type(x) == str or type(x) == unicode
+    if type(x) != str and type(x) != unicode: return x
     # Be careful with this function, in the future it should be used to
     # translate Spanish or other language strings into English.
     x = unicode(x.strip(), errors="ignore")
