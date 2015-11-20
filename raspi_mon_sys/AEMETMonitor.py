@@ -5,7 +5,7 @@ today and tomorrow.
 This module is particularly different from other ones because its data is
 published using two different topic roots. It publishes under
 `raspimon/aemet/ID/NAME/#` current weather status, and under
-`aemet/forecast/ID/HORIZON/NAME` where `ID` is the location identifier,
+`aemet/forecast/ID/HORIZON/NAME/#` where `ID` is the location identifier,
 `NAME` is the particular data identifier (wind,
 rain, temperature, min_temperature, max_temperature, etc.) and `HORIZON` is the
 forecast horizon (hourly, two_days, week, etc.). Messages for `raspimon` are a
@@ -66,7 +66,7 @@ import raspi_mon_sys.Utils as Utils
 
 NUM_DAYS = 4
 
-weather_topic  = Utils.gettopic("aemet/{0}")
+weather_topic  = Utils.gettopic("aemet/{0}/{1}")
 forecast_topic = "aemet/forecast/{0}/{1}/{2}"
 
 # This variables are loaded from MongoDB server at start() function.
