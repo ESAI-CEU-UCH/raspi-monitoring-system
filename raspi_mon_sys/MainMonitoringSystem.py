@@ -18,11 +18,12 @@ import raspi_mon_sys.Utils as Utils
 
 def __try_call(logger, func, *args):
     try:
-        return func(*args)
+        func(*args)
+        return True
     except:
         print "Unexpected error:",traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
-        return None
+        return False
 
 if __name__ == "__main__":
     Utils.startup_wait()
@@ -42,40 +43,50 @@ if __name__ == "__main__":
 
     # Configure Scheduler.
     Scheduler.start()
-
-    logger.info("Scheduler started")
-
-    # Start all modules.
-    __try_call(logger, MongoDBHub.start)
-    __try_call(logger, AEMETMonitor.start)
-    __try_call(logger, CheckIP.start)
-    __try_call(logger, ElectricityPrices.start)
-    __try_call(logger, OpenEnergyMonitor.start)
-    __try_call(logger, PlugwiseMonitor.start)
     
-    # repeat every hour with a 1/12th part as offset
-    Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
-    # publish current electricity prices
-    __try_call(logger, ElectricityPrices.publish, 0)
-    if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
-        # publish next day electricity prices when starting the software at
-        # night
-        __try_call(logger, ElectricityPrices.publish, 1)
-    # publish current IP
-    __try_call(logger, CheckIP.publish)
-    # publish last AEMET data
-    __try_call(logger, AEMETMonitor.publish)
+    logger.info("Scheduler started")
+    
+    # Start all modules.
+    started_modules = []
+    if __try_call(logger, MongoDBHub.start):
+        started_modules.append(MongoDBHub)
+        # repeat every hour with a 1/12th part as offset
+        Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
+    
+    if __try_call(logger, AEMETMonitor.start):
+        started_modules.append(AEMETMonitor)
+        # publish last AEMET data
+        __try_call(logger, AEMETMonitor.publish)
+        # repeat every hour AEMET data capture
+        Scheduler.repeat_o_clock(T1_HOUR, AEMETMonitor.publish)
 
-    # repeat every hour AEMET data capture
-    Scheduler.repeat_o_clock(T1_HOUR, AEMETMonitor.publish)
-    # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
-    Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
-    # repeat every day at 21:00 UTC with prices for next day
-    Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
-                                         ElectricityPrices.publish, 1)
-    # repeat every second lectures from plugwise circles
-    Scheduler.repeat_o_clock(T1_SECOND, PlugwiseMonitor.publish)
+    if __try_call(logger, CheckIP.start):
+        started_modules.append(CheckIP)
+        # publish current IP
+        __try_call(logger, CheckIP.publish)
+        # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
+        Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
 
+    if __try_call(logger, ElectricityPrices.start):
+        started_modules.append(ElectricityPrices)
+        # publish current electricity prices
+        __try_call(logger, ElectricityPrices.publish, 0)
+        if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
+            # publish next day electricity prices when starting the software at
+            # night
+            __try_call(logger, ElectricityPrices.publish, 1)
+        # repeat every day at 21:00 UTC with prices for next day
+        Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
+                                            ElectricityPrices.publish, 1)
+    
+    if __try_call(logger, OpenEnergyMonitor.start):
+        started_modules.append(OpenEnergyMonitor)
+
+    if __try_call(logger, PlugwiseMonitor.start):
+        started_modules.append(PlugwiseMonitor)
+        # repeat every second lectures from plugwise circles
+        Scheduler.repeat_o_clock(T1_SECOND, PlugwiseMonitor.publish)
+    
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")
 
@@ -86,10 +97,5 @@ if __name__ == "__main__":
         logger.info("Stopping scheduler")
         Scheduler.stop()
         logger.info("Stopping modules")
-        __try_call(logger, AEMETMonitor.stop)
-        __try_call(logger, CheckIP.stop)
-        __try_call(logger, ElectricityPrices.stop)
-        __try_call(logger, OpenEnergyMonitor.stop)
-        __try_call(logger, PlugwiseMonitor.stop)
-        __try_call(logger, MongoDBHub.stop)
+        for m in started_modules: __try_call(logger, m.stop)
         logger.info("Bye!")
