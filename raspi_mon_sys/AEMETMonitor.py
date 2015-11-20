@@ -109,6 +109,7 @@ def __normalize(x):
     purposes.
 
     """
+    if type(x) is list or type(x) is tuple: return [ __normalize(y) for y in x ]
     if type(x) != str and type(x) != unicode: return x
     # Be careful with this function, in the future it should be used to
     # translate Spanish or other language strings into English.
