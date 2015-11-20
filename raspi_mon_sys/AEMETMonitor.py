@@ -113,7 +113,7 @@ def __normalize(x):
     if type(x) != str and type(x) != unicode: return x
     # Be careful with this function, in the future it should be used to
     # translate Spanish or other language strings into English.
-    if type(x) != unicode: x = unicode(x, errors="ignore")
+    if type(x) != unicode: x = unicode(x, "utf-8", errors="ignore")
     x = x.strip()
     x = unicodedata.normalize("NFKD",x).encode("ascii","ignore")
     x = x.replace(" ","_").replace("\t","_").replace("\n","_").replace("\r","_")
