@@ -8,7 +8,7 @@ print("Populating 'raspimon' database for house " + house + " and raspi " + rasp
 
 var cursor = db.GVA2015_houses.find({ "name":house });
 if (cursor.count() == 0) {
-    print("Inserting at GVA2015_houses collection")
+    print("Inserting at GVA2015_houses collection");
     db.GVA2015_houses.insert({
         "start_date": Timestamp(1447343054, 0),
         "name": house,
@@ -22,7 +22,7 @@ if (cursor.count() == 0) {
 
 cusor = db.GVA2015_config.find({ "source":"open_energy_monitor", "house":house });
 if (cursor.count() == 0) {
-    print("Inserting at GVA2015_config collection open_energy_monitor document")
+    print("Inserting at GVA2015_config collection open_energy_monitor document");
     db.GVA2015_config.insert({
         "source": "open_energy_monitor",
         "house": house,
@@ -110,6 +110,20 @@ if (cursor.count() == 0) {
                 "unit": "W"
             }
         ]
+    });
+}
+
+cusor = db.GVA2015_config.find({ "source":"aemet", "house":house });
+if (cursor.count() == 0) {
+    print("Inserting at GVA2015_config collection open_energy_monitor document");
+    db.GVA2015_config.insert({
+        "source": "aemet",
+        "house": "D361",
+        "raspi": "b827eb7c62d8",
+        "current_weather_url" : "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24",
+        "hourly_forecast_url" : "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250",
+        "location_id" : "46250",
+        "timezone" : "Europe/Madrid"
     });
 }
 
