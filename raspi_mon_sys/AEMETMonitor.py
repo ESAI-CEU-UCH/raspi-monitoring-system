@@ -256,6 +256,7 @@ def __publish_hourly_forecast(client):
         series_names = [ __normalize(x) for x in series_names ]
         
         for i in range(1,len(series_names)):
+            name = series_names[i]
             msg = {
                 "timestamp" : time.time(),
                 "values" : series_data[i],
