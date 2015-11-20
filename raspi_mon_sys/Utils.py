@@ -110,4 +110,4 @@ def startup_wait():
         time.sleep(wait)
         print "Starting"
 
-def compute_relative_difference(a, b): return abs(b - a) / (a + 1e-20)
+def compute_relative_difference(a, b): return abs(b - a) / abs(a + 1e-20)
