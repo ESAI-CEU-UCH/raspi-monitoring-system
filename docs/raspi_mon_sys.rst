@@ -1,6 +1,14 @@
 raspi_mon_sys package
 =====================
 
+AEMETMonitor module
+----------------------------
+
+.. automodule:: AEMETMonitor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 CheckIP module
 ----------------------------
 
