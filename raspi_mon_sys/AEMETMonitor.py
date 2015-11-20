@@ -307,7 +307,7 @@ def __publish_current_weather_status(client):
         for name,value in zip(names,values):
             if type(value) != str or len(value) > 0:
                 msg = { "timestamp" : t, "data" : value }
-                client.publish(topic.format(location_id,name), json.dumps(msg))
+                client.publish(weather_topic.format(location_id,name), json.dumps(msg))
 
     except:
         print "Unable to retrieve current weather status:", traceback.format_exc()
