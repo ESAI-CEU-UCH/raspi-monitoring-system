@@ -26,7 +26,11 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
+PENDING_MESSAGES_LENGTH_WARNING = 10000 # expected 40MB of messages for warning
+PENDING_MESSAGES_LENGTH_ERROR = 30000 # expected 120MB of messages for data loss
 PERIOD = 3600 # every 3600 seconds (1 hour) we send data to hour server
+
+assert PENDING_MESSAGES_LENGTH_ERROR > PENDING_MESSAGES_LENGTH_WARNING
 
 raspi_mac = Utils.getmac()
 logger = None
@@ -34,6 +38,7 @@ mqtt_client = None
 house_data = None
 lock = threading.RLock()
 
+pending_messages = []
 message_queues = {}
 
 def __on_mqtt_connect(client, userdata, rc):
@@ -113,7 +118,26 @@ def publish():
         keys = message_queues.keys()
         lock.release()
         insert_batch = [ __process(x) for x in keys if t - x[1] > PERIOD ]
-        db.GVA2015_data.insert(insert_batch)
+        global pending_messages
+        insert_batch.extend(pending_messages)
+        pending_messages = []
+        try:
+            db.GVA2015_data.insert(insert_batch)
+        except:
+            pending_messages = insert_batch
+            if len(pending_messages) > PENDING_MESSAGES_LENGTH_ERROR:
+                logger.error("Pending %s messages is above data loss threshold %d, sadly pending list set to zero :S",
+                             len(pending_messages),
+                             PENDING_MESSAGES_LENGTH_ERROR)
+                pending_messages = [] # data loss here :'(
+            elif len(pending_messages) > PENDING_MESSAGES_LENGTH_WARNING:
+                logger.alert("Pending %s messages is above warning threshold %d, data loss will occur at %d",
+                             len(pending_messages),
+                             PENDING_MESSAGES_LENGTH_WARNING,
+                             PENDING_MESSAGES_LENGTH_ERROR)
+            else:
+                logger.warning("Connection with database is failing")
+            raise
         logger.info("Inserted %d documents", len(insert_batch))
         mongo_client.close()
     except:
