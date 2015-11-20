@@ -3,4 +3,4 @@
 # Indicates to scripts they have been started at boot.
 STARTED_AT_BOOT=yes
 # Seconds for sleeping during start of the system.
-STARTUP_SLEEP=30.0
+STARTUP_SLEEP=60.0
