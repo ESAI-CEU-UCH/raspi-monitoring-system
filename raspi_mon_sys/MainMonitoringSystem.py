@@ -16,12 +16,15 @@ import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
-def __try_stop(logger, obj):
+def __try_call(logger, func, *args):
     try:
-        obj.stop()
+        return func(*args)
     except:
         print "Unexpected error:",traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
+        return None
+
+def __try_stop(logger, obj): return __try_call(logger, obj.stop)
 
 if __name__ == "__main__":
     Utils.startup_wait()
@@ -55,19 +58,18 @@ if __name__ == "__main__":
     # repeat every hour with a 1/12th part as offset
     Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
     # publish current electricity prices
-    try:
-        ElectricityPrices.publish(0)
-        if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
-            # publish next day electricity prices when starting the software at
-            # night
-            ElectricityPrices.publish(1)
-    except:
-        print "Unexpected error:",traceback.format_exc()
-        logger.error("Unexpected error: %s", traceback.format_exc())
-    try:
-        CheckIP.publish()
-    except:
-        pass
+    __try_call(logger, ElectricityPrices.publish, 0)
+    if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
+        # publish next day electricity prices when starting the software at
+        # night
+        __try_call(logger, ElectricityPrices.publish, 1)
+    # publish current IP
+    __try_call(logger, CheckIP.publish)
+    # publish last AEMET data
+    __try_call(logger, AEMETMonitor.publish)
+
+    # repeat every hour AEMET data capture
+    Scheduler.repeat_o_clock(T1_HOUR, AEMETMonitor.publish)
     # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
     Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
     # repeat every day at 21:00 UTC with prices for next day
