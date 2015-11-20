@@ -118,10 +118,11 @@ def start():
     config    = Utils.getconfig("open_energy_monitor", logger)
     nodes     = config["nodes"]
     node2keys = config["node2keys"]
-    # We add data field to check relative difference between two consecutive
-    # readings, if the difference is not enough the message is not published,
-    # reducing this way the overhead and database size.
-    for conf in node2keys[str(nodeId)]: conf["data"] = -10000.0
+    for n in nodes:
+        # We add data field to check relative difference between two consecutive
+        # readings, if the difference is not enough the message is not published,
+        # reducing this way the overhead and database size.
+        for conf in node2keys[str(n["id"])]: conf["data"] = -10000.0
     global is_running
     is_running = True
     thread = threading.Thread(target=__process,
