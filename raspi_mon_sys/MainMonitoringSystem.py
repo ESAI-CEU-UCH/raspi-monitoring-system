@@ -24,8 +24,6 @@ def __try_call(logger, func, *args):
         logger.error("Unexpected error: %s", traceback.format_exc())
         return None
 
-def __try_stop(logger, obj): return __try_call(logger, obj.stop)
-
 if __name__ == "__main__":
     Utils.startup_wait()
     
@@ -48,12 +46,12 @@ if __name__ == "__main__":
     logger.info("Scheduler started")
 
     # Start all modules.
-    MongoDBHub.start()
-    AEMETMonitor.start()
-    CheckIP.start()
-    ElectricityPrices.start()
-    OpenEnergyMonitor.start()
-    PlugwiseMonitor.start()
+    __try_call(logger, MongoDBHub.start)
+    __try_call(logger, AEMETMonitor.start)
+    __try_call(logger, CheckIP.start)
+    __try_call(logger, ElectricityPrices.start)
+    __try_call(logger, OpenEnergyMonitor.start)
+    __try_call(logger, PlugwiseMonitor.start)
     
     # repeat every hour with a 1/12th part as offset
     Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
@@ -88,10 +86,10 @@ if __name__ == "__main__":
         logger.info("Stopping scheduler")
         Scheduler.stop()
         logger.info("Stopping modules")
-        __try_stop(logger, AEMETMonitor)
-        __try_stop(logger, CheckIP)
-        __try_stop(logger, ElectricityPrices)
-        __try_stop(logger, OpenEnergyMonitor)
-        __try_stop(logger, PlugwiseMonitor)
-        __try_stop(logger, MongoDBHub)
+        __try_call(logger, AEMETMonitor.stop)
+        __try_call(logger, CheckIP.stop)
+        __try_call(logger, ElectricityPrices.stop)
+        __try_call(logger, OpenEnergyMonitor.stop)
+        __try_call(logger, PlugwiseMonitor.stop)
+        __try_call(logger, MongoDBHub.stop)
         logger.info("Bye!")
