@@ -41,7 +41,7 @@ http://www.aemet.es/es/eltiempo/prediccion/municipios/valencia-id46250
 
 48 hours forecasts are not public in XML or CSV formats (or I'm unable to found
 them). We need to rely in the web page:
-http://www.aemet.es/es/eltiempo/prediccion/municipios/tabla/valencia-id46250
+http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250
 
 Wind is measured in km/h, rain in mm, probabilities and humidity in %, snow
 level in m.
@@ -113,7 +113,14 @@ def __normalize(x):
     if type(x) != str and type(x) != unicode: return x
     # Be careful with this function, in the future it should be used to
     # translate Spanish or other language strings into English.
-    if type(x) != unicode: x = unicode(x, "utf-8", errors="ignore")
+    if type(x) != unicode:
+        try:
+            x = unicode(x, "utf-8")
+        except:
+            try:
+                x = unicode(x, "iso-8859-1")
+            except:
+                x = unicode(x, "utf-8", errors="ignore")
     x = x.strip()
     x = unicodedata.normalize("NFKD",x).encode("ascii","ignore")
     x = x.replace(" ","_").replace("\t","_").replace("\n","_").replace("\r","_")
@@ -352,3 +359,13 @@ def publish():
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
+
+
+# class wop:
+#     def publish(self, *args):
+#         print args
+
+# location_id = "46250"
+# __publish_daily_forecast(wop())
+# __publish_hourly_forecast(wop())
+# __publish_current_weather_status(wop())
