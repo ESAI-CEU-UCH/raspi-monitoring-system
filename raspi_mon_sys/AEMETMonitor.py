@@ -95,7 +95,8 @@ daily_forecast_info = (
 
 def __normalize(x):
     """Remove non ASCII characters and left/right trailing whitespaces. All
-    interior whitespaces, newlines, etc. by underscore characters.
+    interior whitespaces, newlines, etc. by underscore characters. Finally, it
+    transforms the sequence into lowercase.
 
     In the future this function should translate into English for normalization
     purposes.
@@ -105,6 +106,7 @@ def __normalize(x):
     # translate Spanish or other language strings into English.
     x = unicodedata.normalize("NFKD",unicode(x.strip())).encode("ascii","ignore")
     x = x.replace(" ","_").replace("\t","_").replace("\n","_").replace("\r","_")
+    x = x.lower()
     return x
 
 def __try_number(x):
