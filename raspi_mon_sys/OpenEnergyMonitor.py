@@ -63,6 +63,8 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
+POWER_TOLERANCE = 0.0005 # 0.05% difference in power
+
 client = None
 iface = None
 is_running = False
@@ -81,13 +83,15 @@ def __process(logger, client, iface, nodes, node2keys):
             t      = values[0]
             nodeId = values[1]
             for conf in node2keys[str(nodeId)]:
-                key     = conf["key"]
-                name    = conf["name"]
-                mul     = conf.get("mul", 1.0)
-                add     = conf.get("add", 0.0)
-                v       = (values[key] + add) * mul
-                message = { 'timestamp' : t, 'data' : v }
-                client.publish(topic.format(nodeId, key, name), json.dumps(message))
+                last_data = conf["data"]
+                key       = conf["key"]
+                name      = conf["name"]
+                mul       = conf.get("mul", 1.0)
+                add       = conf.get("add", 0.0)
+                v         = (values[key] + add) * mul
+                if Utils.compute_relative_difference(last_data, v) > POWER_TOLERANCE:
+                    message = { 'timestamp' : t, 'data' : v }
+                    client.publish(topic.format(nodeId, key, name), json.dumps(message))
         time.sleep(0.05)
 
 def start():
@@ -113,6 +117,10 @@ def start():
     config    = Utils.getconfig("open_energy_monitor", logger)
     nodes     = config["nodes"]
     node2keys = config["node2keys"]
+    # We add data field to check relative difference between two consecutive
+    # readings, if the difference is not enough the message is not published,
+    # reducing this way the overhead and database size.
+    for conf in node2keys[str(nodeId)]: conf["data"] = -10000.0
     global is_running
     is_running = True
     thread = threading.Thread(target=__process,
