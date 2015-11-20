@@ -92,6 +92,7 @@ def __process(logger, client, iface, nodes, node2keys):
                 if Utils.compute_relative_difference(last_data, v) > POWER_TOLERANCE:
                     message = { 'timestamp' : t, 'data' : v }
                     client.publish(topic.format(nodeId, key, name), json.dumps(message))
+                    conf["data"] = v
         time.sleep(0.05)
 
 def start():
