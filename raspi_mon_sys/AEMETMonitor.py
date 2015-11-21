@@ -43,8 +43,8 @@ http://www.aemet.es/es/eltiempo/prediccion/municipios/valencia-id46250
 them). We need to rely in the web page:
 http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250
 
-Wind is measured in km/h, rain in mm, probabilities and humidity in %, snow
-level in m.
+Wind speeds is measured in km/h, rain in mm, probabilities and humidity in %,
+snow level in m, snow in mm, rain_prob and snow_prob in %, pressure in hPa.
 
 """
 
@@ -55,6 +55,7 @@ import csv
 import json
 import datetime
 import pytz
+import re
 import requests
 import time
 import traceback
@@ -99,14 +100,87 @@ daily_forecast_info = (
     ( "get_uv_max", "max_uv" )
 )
 
-def __normalize(x):
-    """Remove non ASCII characters and left/right trailing whitespaces. All
-    interior whitespaces, newlines, etc. by underscore characters. It
-    transforms the sequence into lowercase. It also replaces / by _ and % by p.
-    Finally it removes any sequence enclosed between parentheses.
+translations = {
+    "fecha" : "date",
+    "fecha_y_hora_oficial" : "official_datetime",
+    "temperatura" : "temperature",
+    "velocidad_del_viento" : "wind_speed",
+    "direccion_del_viento" : "wind_direction",
+    "racha" : "wind_gust",
+    "direccion_de_racha" : "wind_gust_direction",
+    "precipitacion" : "rain_mm",
+    "humedad" : "humidity",
+    "cielo" : "sky",
+    "temp." : "temperature",
+    "sen._termica" : "thermal_sens",
+    "viento" : "wind_speed",
+    "racha_max." : "wind_gust",
+    "nieve" : "snow_mm",
+    "humedad_relativa" : "humidity",
+    "prob._precip." : "rain_prob",
+    "prob._de_nieve" : "snow_prob",
+    "prob._de_tormenta" : "storm_prob",
+    "avisos" : "alerts",
+    "direccion_viento" : "wind_direction",
+    "poco_nuboso" : "little_cloudy",
+    "despejado" : "clear",
+    "intervalos_nubosos" : "cloudy_intervals",
+    "nuboso" : "cloudy",
+    "intervalos_nubosos_con_lluvia_escasa" : "cloudy_intervals_with_little_rain",
+    "intervalos_nubosos_con_lluvia" : "cloudy_intervals_with_rain",
+    "nuboso_con_lluvia" : "cloudy_with_rain",
+    "nuboso_con_lluvia_escasa" : "cloudy_with_little_rain",
+    "muy_nuboso_con_lluvia_escasa" : "very_cloudy_with_little_rain",
+    "muy_nuboso_con_lluvia" : "very_cloudy_with_rain",
+    "intervalos_nubosos_con_nieve_escasa" : "cloudy_intervals_with_little_snow",
+    "intervalos_nubosos_con_nieve" : "cloudy_intervals_with_snow",
+    "nuboso_con_nieve" : "cloudy_with_snow",
+    "nuboso_con_nieve_escasa" : "cloudy_with_little_snow",
+    "muy_nuboso_con_nieve_escasa" : "very_cloudy_with_little_snow",
+    "muy_nuboso_con_nieve" : "very_cloudy_with_snow",
+    "nubes_altas" : "high_clouds",
+    "cubierto" : "covered",
+    "cubierto_con_lluvia_escasa" : "covered_with_little_rain",
+    "cubierto_con_lluvia" : "covered_with_rain",
+    "cubierto_con_nieve_escasa" : "covered_with_little_snow",
+    "cubierto_con_nieve" : "covered_with_snow",
+    "muy_cubierto_con_lluvia_escasa" : "very_covered_with_little_rain",
+    "muy_cubierto_con_lluvia" : "very_covered_with_rain",
+    "muy_cubierto_con_nieve_escasa" : "very_covered_with_little_snow",
+    "muy_cubierto_con_nieve" : "very_covered_with_snow",
+    "e" : "E",
+    "o" : "O",
+    "n" : "N",
+    "s" : "S",
+    "ne" : "NE",
+    "no" : "NO",
+    "se" : "SE",
+    "so" : "SO",
+    "cielo_despejado" : "clear",
+    "muy_nuboso" : "very cloudy",
+    "sin_riesgo" : "no_alert",
+    "riesgo" : "alert",
+    "riesgo_importante" : "important_alert",
+    "riesgo_extremo" : "extreme_alert",
+    "norte" : "N",
+    "sur" : "S",
+    "este" : "E",
+    "oeste" : "O",
+    "noroeste" : "NO",
+    "nordeste" : "NE",
+    "sudoeste" : "SO",
+    "sudeste" : "SE",
+    "ip" : "Ip", # Unknown tag related with "precipitacion (mm)" at hourly forecasts :S
+    "presion" : "pressure",
+    "tendencia" : "pressure_trend"
+}
 
-    In the future this function should translate into English for normalization
-    purposes.
+def __normalize(x):
+    """Remove non ASCII characters and left/right trailing whitespaces. All interior
+    whitespaces, newlines, etc. by underscore characters. It transforms the
+    sequence into lowercase. It also replaces / by _ and removing %.
+    Additionally it removes any sequence enclosed between parentheses. And
+    finally this function translates into English for normalization purposes.
 
     """
     if type(x) is list or type(x) is tuple: return [ __normalize(y) for y in x ]
@@ -121,12 +195,15 @@ def __normalize(x):
                 x = unicode(x, "iso-8859-1")
             except:
                 x = unicode(x, "utf-8", errors="ignore")
+    x = re.sub(r'\([^)]*\)', '', x)
     x = x.strip()
     x = unicodedata.normalize("NFKD",x).encode("ascii","ignore")
     x = x.replace(" ","_").replace("\t","_").replace("\n","_").replace("\r","_")
-    x = x.replace("/","_").replace("%","p")
+    x = x.replace("/","_").replace("%","")
     x = x.lower()
-    return x
+    y = translations.get(x, x)
+    if y == x: logger.debug(x)
+    return y
 
 def __try_number(x):
     if type(x) is list or type(x) is tuple:
@@ -166,12 +243,24 @@ def __process_daily_forecast_hour(result):
     return result
 
 def __process_daily_forecast_period(result):
+    def try_pop(x,n,v):
+        y = x.pop(n)
+        if y[0] != v: x.insert(n, y)
+        
+    if len(result) == 7:
+        try_pop(result, 2, "12-24")
+        try_pop(result, 1, "00-12")
+        try_pop(result, 0, "00-24")
+
+    elif len(result) == 3 or len(result) == 5: try_pop(result, 0, "00-24")
+
     for x in result:
         if x[0] is None:
             x[0] = 0
         else:
             dash_pos = x[0].find("-")
             x[0] = [ x[0][0:dash_pos], x[0][dash_pos+1:] ]
+
     return result
 
 def __process_daily_forecast_singleton(result):
@@ -198,16 +287,13 @@ def __process_daily_forecast(days_parsers, *args):
             except TypeError:
                 if len(x) == 1:
                     series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", *x)
+                else:
+                    raise
             except:
                 raise
         else:
             assert len(args) == 2
             series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", args[1])
-    except:
-        print "Unable to retrieve daily forecast for %s:"%(str(args)), traceback.format_exc()
-        logger.error("Unable to retrieve daily forecast for %s: %s", str(args),
-                     traceback.format_exc())
-    else:
         period = series.pop("period")
         aux = [ x for x in zip(*period) ]
         if len(aux) == 1: aux.append(None)
@@ -220,6 +306,10 @@ def __process_daily_forecast(days_parsers, *args):
             }
             for key,values in series.iteritems()
         ]
+    except:
+        print "Unable to retrieve daily forecast for %s:"%(str(args)), traceback.format_exc()
+        logger.error("Unable to retrieve daily forecast for %s: %s", str(args),
+                     traceback.format_exc())        
     return pre_messages
 
 def __publish_daily_forecast(client):
@@ -334,9 +424,9 @@ def __publish_current_weather_status(client):
         t = __datetimestr2time(dt_str, "%d_%m_%Y_%H:%M")
 
         for name,value in zip(names,values):
-            if type(value) != str or len(value) > 0:
-                msg = { "timestamp" : t, "data" : value }
-                client.publish(weather_topic.format(location_id,name), json.dumps(msg))
+            if type(value) == str and len(value) == 0: value = None
+            msg = { "timestamp" : t, "data" : value }
+            client.publish(weather_topic.format(location_id,name), json.dumps(msg))
 
     except:
         print "Unable to retrieve current weather status:", traceback.format_exc()
@@ -383,6 +473,7 @@ if __name__ == "__main__":
 
     tz = pytz.timezone("Europe/Madrid")
     logger = LoggerClient.open("AEMETMonitor", transport)
+    # logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
     current_weather_url = "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24"
     hourly_forecast_url = "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250"
     location_id = "46250"
