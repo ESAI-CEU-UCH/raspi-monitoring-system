@@ -46,6 +46,12 @@ http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id462
 Wind speeds is measured in km/h, rain in mm, probabilities and humidity in %,
 snow level in m, snow in mm, rain_prob and snow_prob in %, pressure in hPa.
 
+The table of sky description and other stuff is available here:
+http://www.aemet.es/en/eltiempo/prediccion/municipios/zaragoza-id50297/ayuda
+
+All descriptions and names are translated into English in order to normalize
+their string representation in the database.
+
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
@@ -100,80 +106,7 @@ daily_forecast_info = (
     ( "get_uv_max", "max_uv" )
 )
 
-translations = {
-    "fecha" : "date",
-    "fecha_y_hora_oficial" : "official_datetime",
-    "temperatura" : "temperature",
-    "velocidad_del_viento" : "wind_speed",
-    "direccion_del_viento" : "wind_direction",
-    "racha" : "wind_gust",
-    "direccion_de_racha" : "wind_gust_direction",
-    "precipitacion" : "rain_mm",
-    "humedad" : "humidity",
-    "cielo" : "sky",
-    "temp." : "temperature",
-    "sen._termica" : "thermal_sens",
-    "viento" : "wind_speed",
-    "racha_max." : "wind_gust",
-    "nieve" : "snow_mm",
-    "humedad_relativa" : "humidity",
-    "prob._precip." : "rain_prob",
-    "prob._de_nieve" : "snow_prob",
-    "prob._de_tormenta" : "storm_prob",
-    "avisos" : "alerts",
-    "direccion_viento" : "wind_direction",
-    "poco_nuboso" : "little_cloudy",
-    "despejado" : "clear",
-    "intervalos_nubosos" : "cloudy_intervals",
-    "nuboso" : "cloudy",
-    "intervalos_nubosos_con_lluvia_escasa" : "cloudy_intervals_with_little_rain",
-    "intervalos_nubosos_con_lluvia" : "cloudy_intervals_with_rain",
-    "nuboso_con_lluvia" : "cloudy_with_rain",
-    "nuboso_con_lluvia_escasa" : "cloudy_with_little_rain",
-    "muy_nuboso_con_lluvia_escasa" : "very_cloudy_with_little_rain",
-    "muy_nuboso_con_lluvia" : "very_cloudy_with_rain",
-    "intervalos_nubosos_con_nieve_escasa" : "cloudy_intervals_with_little_snow",
-    "intervalos_nubosos_con_nieve" : "cloudy_intervals_with_snow",
-    "nuboso_con_nieve" : "cloudy_with_snow",
-    "nuboso_con_nieve_escasa" : "cloudy_with_little_snow",
-    "muy_nuboso_con_nieve_escasa" : "very_cloudy_with_little_snow",
-    "muy_nuboso_con_nieve" : "very_cloudy_with_snow",
-    "nubes_altas" : "high_clouds",
-    "cubierto" : "covered",
-    "cubierto_con_lluvia_escasa" : "covered_with_little_rain",
-    "cubierto_con_lluvia" : "covered_with_rain",
-    "cubierto_con_nieve_escasa" : "covered_with_little_snow",
-    "cubierto_con_nieve" : "covered_with_snow",
-    "muy_cubierto_con_lluvia_escasa" : "very_covered_with_little_rain",
-    "muy_cubierto_con_lluvia" : "very_covered_with_rain",
-    "muy_cubierto_con_nieve_escasa" : "very_covered_with_little_snow",
-    "muy_cubierto_con_nieve" : "very_covered_with_snow",
-    "e" : "E",
-    "o" : "O",
-    "n" : "N",
-    "s" : "S",
-    "ne" : "NE",
-    "no" : "NO",
-    "se" : "SE",
-    "so" : "SO",
-    "cielo_despejado" : "clear",
-    "muy_nuboso" : "very cloudy",
-    "sin_riesgo" : "no_alert",
-    "riesgo" : "alert",
-    "riesgo_importante" : "important_alert",
-    "riesgo_extremo" : "extreme_alert",
-    "norte" : "N",
-    "sur" : "S",
-    "este" : "E",
-    "oeste" : "O",
-    "noroeste" : "NO",
-    "nordeste" : "NE",
-    "sudoeste" : "SO",
-    "sudeste" : "SE",
-    "ip" : "Ip", # Unknown tag related with "precipitacion (mm)" at hourly forecasts :S
-    "presion" : "pressure",
-    "tendencia" : "pressure_trend"
-}
+translations = aemet.translations
 
 def __normalize(x):
     """Remove non ASCII characters and left/right trailing whitespaces. All interior
