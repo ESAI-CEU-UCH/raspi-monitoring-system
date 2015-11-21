@@ -186,28 +186,40 @@ def __process_daily_forecast_list(days_parsers, func, method_name, *args):
     return series
 
 def __process_daily_forecast(days_parsers, *args):
-    cls = args[1]
-    if cls == "hour":
-        x = args[2:]
-        series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_hour, args[0], "period", *x)
-    elif cls == "period":
-        x = args[2:]
-        series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_period, args[0], "period", *x)
+    try:
+        cls = args[1]
+        if cls == "hour":
+            x = args[2:]
+            series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_hour, args[0], "period", *x)
+        elif cls == "period":
+            x = args[2:]
+            try:
+                series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_period, args[0], "period", *x)
+            except TypeError:
+                if len(x) == 1:
+                    series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", *x)
+            except:
+                raise
+        else:
+            assert len(args) == 2
+            series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", args[1])
+    except:
+        print "Unable to retrieve daily forecast for %s:"%(str(args)), traceback.format_exc()
+        logger.error("Unable to retrieve daily forecast for %s: %s", str(args),
+                     traceback.format_exc())
     else:
-        assert len(args) == 2
-        series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", args[1])
-    period = series.pop("period")
-    aux = [ x for x in zip(*period) ]
-    if len(aux) == 1: aux.append(None)
-    pre_messages = [
-        {
-            "content_key" : key,
-            "period_first_times" : aux[0],
-            "period_last_times" : aux[1],
-            "values" : values
-        }
-        for key,values in series.iteritems()
-    ]
+        period = series.pop("period")
+        aux = [ x for x in zip(*period) ]
+        if len(aux) == 1: aux.append(None)
+        pre_messages = [
+            {
+                "content_key" : key,
+                "period_first_times" : aux[0],
+                "period_last_times" : aux[1],
+                "values" : values
+            }
+            for key,values in series.iteritems()
+        ]
     return pre_messages
 
 def __publish_daily_forecast(client):
@@ -360,12 +372,21 @@ def publish():
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
 
+if __name__ == "__main__":
+    import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
+    transport = "ipc:///tmp/zmq_aemet_server.ipc"
+    ScreenLoggerServer.start_thread(transport)
+    
+    class MQTTClientFake:
+        def publish(self, *args):
+            print args
 
-# class wop:
-#     def publish(self, *args):
-#         print args
-
-# location_id = "46250"
-# __publish_daily_forecast(wop())
-# __publish_hourly_forecast(wop())
-# __publish_current_weather_status(wop())
+    tz = pytz.timezone("Europe/Madrid")
+    logger = LoggerClient.open("AEMETMonitor", transport)
+    current_weather_url = "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24"
+    hourly_forecast_url = "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250"
+    location_id = "46250"
+    client = MQTTClientFake()
+    __publish_daily_forecast(client)
+    __publish_hourly_forecast(client)
+    __publish_current_weather_status(client)
