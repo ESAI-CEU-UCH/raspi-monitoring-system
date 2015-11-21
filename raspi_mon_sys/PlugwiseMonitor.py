@@ -108,6 +108,10 @@ def publish():
                 power   = c.get_power_usage()
                 power1s = power[0]
                 state   = c.get_info()['relay_state']
+                alert_below_th = config.get("alert_below_threshold", None)
+                if alert_below_th is not None and power1s < alert_below_th:
+                    logger.alert("Value %f for circle %s registered with name %s is below threshold %f",
+                                 float(power1s), mac, name, float(alert_below_th))
                 if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE):
                     power1s_usage_message = { 'timestamp' : t, 'data': power1s }
                     messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )

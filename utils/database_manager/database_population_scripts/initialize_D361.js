@@ -81,7 +81,8 @@ if (cursor.count() == 0) {
                     "name": "emonth1_battery_voltage",
                     "mul": 0.1,
                     "unit": "V",
-                    "tolerance" : 0.01
+                    "tolerance" : 0.01,
+                    "alert_below_threshold" : 1.5
                 }
             ]
         }

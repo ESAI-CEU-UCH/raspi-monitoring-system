@@ -89,6 +89,10 @@ def __process(logger, client, iface, nodes, node2keys):
                 mul       = conf.get("mul", 1.0)
                 add       = conf.get("add", 0.0)
                 v         = (values[key] + add) * mul
+                alert_below_th = conf.get("alert_below_threshold", None)
+                if alert_below_th is not None and v < alert_below_th:
+                    logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
+                                 float(v), nodeId, key, name, float(alert_below_th))
                 if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE):
                     message = { 'timestamp' : t, 'data' : v }
                     client.publish(topic.format(nodeId, key, name), json.dumps(message))
