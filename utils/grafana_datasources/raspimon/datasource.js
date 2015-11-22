@@ -1,55 +1,67 @@
 define([
     'angular',
     'lodash',
-    'kbn',
-    'moment'
+    'app/core/utils/datemath',
+    'moment',
+    './query_ctrl.js'
 ],
-       function (angular, _, kbn) {
+       function (angular, _, dateMath) {
            'use strict';
 
            var module = angular.module('grafana.services');
 
-           module.factory('CustomDatasource', function($q) {
+           module.factory('RaspimonDatasource', function($q, backendSrv) {
 
                // the datasource object passed to constructor
                // is the same defined in config.js
-               function CustomDatasource(datasource) {
+               function RaspimonDatasource(datasource) {
                    this.name = datasource.name;
+                   this.type = "raspimon";
+                   this.url  = datasource.url;
                    this.supportMetrics = true;
-                   this.url = datasource.url;
                }
 
-               CustomDatasource.prototype.query = function(filterSrv, options) {
+               RaspimonDatasource.prototype.query = function(options) {
+                   console.log(options);
                    // get from & to in seconds
-                   var from = kbn.parseDate(options.range.from).getTime() / 1000;
-                   var to = kbn.parseDate(options.range.to).getTime() / 1000;
-
-                   var series = [];
-                   var stepInSeconds = (to - from) / options.maxDataPoints;
-
-                   for (var i = 0; i < 3; i++) {
-                       var walker = Math.random() * 100;
-                       var time = from;
-                       var timeSeries = {
-                           target: "Series " + i,
-                           datapoints: []
-                       };
-
-                       for (var j = 0; j < options.maxDataPoints; j++) {
-                           timeSeries.datapoints[j] = [walker, time];
-                           walker += Math.random() - 0.5;
-                           time += stepInSeconds;
+                   var from = Math.ceil(dateMath.parse(options.range.from) / 1000);
+                   var to = Math.ceil(dateMath.parse(options.range.to) / 1000);
+                   var maxDataPoints = options.maxDataPoints
+                   var topic = "raspimon:b827eb7c62d8:aemet:46250:humidity:value"; //options.target;
+                   var query = this.url + "/raspimon/api/query/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                   var options = {
+                       method: 'GET',
+                       url: query
+                   };
+                   return backendSrv.datasourceRequest(options).then(function (result) {
+                       return result;
+                   }).then(function (response) {
+                       // this callback will be called asynchronously
+                       // when the response is available
+                       var data = [ [topic,response.data] ];
+                       var series = [];
+                       for (var i=0; i<data.length; ++i) {
+                           var timeSeries = {
+                               target: data[i][0],
+                               datapoints: data[i][1],
+                           }
+                           series.push(timeSeries);
                        }
-
-                       series.push(timeSeries);
-                   }
-
-                   return $q.when({data: series });
-
+                       console.log(series);
+                       return { data: series };
+                   });
                };
 
-               return CustomDatasource;
+               RaspimonDatasource.prototype.testDatasource = function () {
+                   var options = {
+                       method: 'GET',
+                       url: this.url + '/raspimon/api/topics',
+                   };
+                   return backendSrv.datasourceRequest(options).then(function () {
+                       return { status: "success", message: "Data source is working", title: "Success" };
+                   });
+               };
 
+               return RaspimonDatasource;
            });
-
        });

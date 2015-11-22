@@ -1,0 +1,17 @@
+{
+    "pluginType": "datasource",
+    "name": "Raspimon MongoDB",
+
+    "type": "raspimon",
+    "serviceName": "RaspimonDatasource",
+
+    "module": "app/plugins/datasource/raspimon/datasource",
+
+    "partials": {
+        "config": "app/plugins/datasource/raspimon/partials/config.html",
+        "query": "app/plugins/datasource/clouderamanager/partials/query.editor.html"
+    },
+
+    "metrics": true,
+    "annotations": false
+}

@@ -17,7 +17,7 @@ import time
 
 from flask import Flask
 
-app = Flask("Raspimon Grafana Datasource API")
+app = Flask(__name__)
 
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
@@ -40,6 +40,8 @@ def connect():
     return (client,collection)
 
 def take_n_points_and_convert_to_series(data, max_data_points):
+    if len(data) == 0: return []
+    if len(data) == 1: return [ [data[0]["value"],data[0]["_id"]] ]
     # take at most max_data_points, so we take one data point for each time step
     # as computed below
     step = (data[-1]["_id"] - data[0]["_id"]) / max_data_points
@@ -51,30 +53,46 @@ def take_n_points_and_convert_to_series(data, max_data_points):
             x = time.mktime(dt.utctimetuple())
             result.append([y,x])
             next_time += step
+            if dt > next_time: next_time = dt
     return result
 
-@app.route("/raspimon/api/topics")
-def topics():
+def get_topics():
     client,col = connect()
     topics = col.distinct("topic")
     client.close()
-    return json.dumps(topics)
+    return topics
 
-# http://localhost:5000/raspimon/api/query/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
-
-@app.route('/raspimon/api/query/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
-def query(topic, start, stop, max_data_points):
+def get_topic_query(topic, start, stop, max_data_points):
     client,col = connect()
     query = {
         "topic" : topic,
         "basetime" : { "$gte" : datetime.datetime.utcfromtimestamp(start),
                        "$lte" : datetime.datetime.utcfromtimestamp(stop) }
     }
+    print query
     data = col.inline_map_reduce(mapfn, reducefn,
                                  full_response=False, query=query)
-    data.sort()
+    client.close()
+    data.sort(key=lambda x: x["_id"])
     result = take_n_points_and_convert_to_series(data, max_data_points)
-    return json.dumps(result)
+    return result
+
+
+@app.route("/raspimon/api/topics")
+def http_get_topics():
+    return json.dumps( get_topics() )
+
+# http://localhost:5000/raspimon/api/query/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
+
+@app.route('/raspimon/api/query/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
+def http_get_topic_query(topic, start, stop, max_data_points):
+    return json.dumps( get_topic_query(topic, start, stop, max_data_points) )
+
+@app.route('/raspimon/api/all_topics_query/<int:start>/<int:stop>/<int:max_data_points>')
+def get_all_topics_query(start, stop, max_data_points):
+    topics  = get_topics()
+    results = [ [ topic, get_topic_query(topic, start, stop, max_data_points) ] for topic in topics ]
+    return json.dumps(results)
 
 if __name__ == "__main__":
     app.debug = True

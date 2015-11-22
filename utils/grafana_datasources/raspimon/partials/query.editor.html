@@ -1,0 +1,7 @@
+<div class="editor-row">
+  <div ng-controller="RaspimonQueryCtrl"
+       ng-init="init()"
+       ng-class="tight-form-container">
+    <select ng-model="target.selected_topic", ng-options="i for i in target.topics" required></select>
+  </div>
+</div>
