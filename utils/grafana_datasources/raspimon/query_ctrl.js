@@ -8,21 +8,15 @@ define([
            
            module.controller('RaspimonQueryCtrl', function($scope, $http) {
                $scope.init = function() {
+                   console.log($scope);
                    if (!$scope.target) { return; }
                    var target = $scope.target;
-                   target.topics = [];
-                   $scope.updateTopicsList(target);
-               };
-
-               $scope.updateTopicsList = function(target) {
-                   $http({
-                       method: 'GET',
-                       url: target.datasource.url + "/raspimon/api/topics"
-                   }).then(function successCallback(response) {
-                       target.topics.push.apply(response.data);
-                   }, function errorCallback(response) {
+                   $scope.datasource.getTopicsList().then(function(topics) {
+                       $scope.topics = topics;
                    });
                };
-               
+               $scope.targetBlur = function() {
+                   // TODO: perform target validation here
+               };
            });
        });

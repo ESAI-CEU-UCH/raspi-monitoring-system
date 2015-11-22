@@ -3,7 +3,8 @@ define([
     'lodash',
     'app/core/utils/datemath',
     'moment',
-    './query_ctrl.js'
+    './directives',
+    './query_ctrl'
 ],
        function (angular, _, dateMath) {
            'use strict';
@@ -20,48 +21,79 @@ define([
                    this.url  = datasource.url;
                    this.supportMetrics = true;
                }
+               
+               RaspimonDatasource.prototype._get = function(relativeUrl, params) {
+                   return backendSrv.datasourceRequest({
+                       method: 'GET',
+                       url: this.url + relativeUrl,
+                       params: params,
+                   });
+               };
 
+               var transformToTimeSeries = function(query, data) {
+                   return {
+                       target: query.alias || query.topic,
+                       datapoints: data,
+                   };
+               };
+               
                RaspimonDatasource.prototype.query = function(options) {
-                   console.log(options);
+                   console.log('options: ' + JSON.stringify(options));
                    // get from & to in seconds
                    var from = Math.ceil(dateMath.parse(options.range.from) / 1000);
                    var to = Math.ceil(dateMath.parse(options.range.to) / 1000);
                    var maxDataPoints = options.maxDataPoints
-                   var topic = "raspimon:b827eb7c62d8:aemet:46250:humidity:value"; //options.target;
-                   var query = this.url + "/raspimon/api/query/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
-                   var options = {
-                       method: 'GET',
-                       url: query
+                   var qs = [];
+
+                   _.each(options.targets, function(target) {
+                       if (!target.topic || target.hide) { return; }
+                       qs.push({ topic: target.topic, alias: target.alias });
+                   });
+
+                   if (_.isEmpty(qs)) {
+                       var d = $q.defer();
+                       d.resolve({ data: [] });
+                       return d.promise;
+                   }
+
+                   var buildQuery = function(topic) {
+                       return "/raspimon/api/query/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
                    };
-                   return backendSrv.datasourceRequest(options).then(function (result) {
-                       return result;
-                   }).then(function (response) {
-                       // this callback will be called asynchronously
-                       // when the response is available
-                       var data = [ [topic,response.data] ];
+
+                   // chain all promises, one per each element at qs (targets)
+                   var self = this;
+                   var promises = []
+                   _.each(qs, function(q) {
+                       promises.push( self._get(buildQuery(q.topic))
+                                      .then(function(response) {
+                                          return transformToTimeSeries(q, response.data);
+                                      }) );
+                   });
+                   
+                   return $q.all(promises).then(function(result) {
                        var series = [];
-                       for (var i=0; i<data.length; ++i) {
-                           var timeSeries = {
-                               target: data[i][0],
-                               datapoints: data[i][1],
-                           }
-                           series.push(timeSeries);
-                       }
+                       for (var i in result) { series.push( result[i] ); }
                        console.log(series);
                        return { data: series };
                    });
                };
 
                RaspimonDatasource.prototype.testDatasource = function () {
-                   var options = {
-                       method: 'GET',
-                       url: this.url + '/raspimon/api/topics',
-                   };
-                   return backendSrv.datasourceRequest(options).then(function () {
+                   return this._get('/raspimon/api/topics').then(function(topics) {
+                       if (!topics) return { status: "error", message: "Unable to connect to data source" };
                        return { status: "success", message: "Data source is working", title: "Success" };
                    });
                };
 
+               RaspimonDatasource.prototype.getTopicsList = function() {
+                   return this._get('/raspimon/api/topics').then(function(result) {
+                       if (result.data && _.isArray(result.data)) {
+                           return result.data.sort();
+                       }
+                       return [];
+                   });
+               };
+               
                return RaspimonDatasource;
            });
        });

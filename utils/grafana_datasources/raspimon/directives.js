@@ -9,9 +9,4 @@ define([
            module.directive('metricQueryEditorRaspimon', function() {
                return {controller: 'RaspimonQueryCtrl', templateUrl: 'app/plugins/datasource/raspimon/partials/query.editor.html'};
            });
-           
-           module.directive('metricQueryOptionsRaspimon', function() {
-               return {templateUrl: 'app/plugins/datasource/raspimon/partials/query.options.html'};
-           });
-
        });

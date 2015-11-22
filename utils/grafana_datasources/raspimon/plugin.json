@@ -9,7 +9,7 @@
 
     "partials": {
         "config": "app/plugins/datasource/raspimon/partials/config.html",
-        "query": "app/plugins/datasource/clouderamanager/partials/query.editor.html"
+        "query": "app/plugins/datasource/raspimon/partials/query.editor.html"
     },
 
     "metrics": true,

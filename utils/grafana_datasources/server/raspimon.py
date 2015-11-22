@@ -41,7 +41,7 @@ def connect():
 
 def take_n_points_and_convert_to_series(data, max_data_points):
     if len(data) == 0: return []
-    if len(data) == 1: return [ [data[0]["value"],data[0]["_id"]] ]
+    if len(data) == 1: return [ [data[0]["value"],time.mktime(data[0]["_id"].utctimetuple())] ]
     # take at most max_data_points, so we take one data point for each time step
     # as computed below
     step = (data[-1]["_id"] - data[0]["_id"]) / max_data_points
@@ -69,7 +69,6 @@ def get_topic_query(topic, start, stop, max_data_points):
         "basetime" : { "$gte" : datetime.datetime.utcfromtimestamp(start),
                        "$lte" : datetime.datetime.utcfromtimestamp(stop) }
     }
-    print query
     data = col.inline_map_reduce(mapfn, reducefn,
                                  full_response=False, query=query)
     client.close()
