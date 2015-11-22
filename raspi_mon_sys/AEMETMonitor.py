@@ -239,11 +239,12 @@ def __process_daily_forecast(days_parsers, *args):
             }
             for key,values in series.iteritems()
         ]
+        return pre_messages
     except:
         print "Unable to retrieve daily forecast for %s:"%(str(args)), traceback.format_exc()
         logger.error("Unable to retrieve daily forecast for %s: %s", str(args),
                      traceback.format_exc())        
-    return pre_messages
+        return []
 
 def __publish_daily_forecast(client):
     try:
