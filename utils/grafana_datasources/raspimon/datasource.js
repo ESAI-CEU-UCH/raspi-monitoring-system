@@ -60,15 +60,20 @@ define([
                        return d.promise;
                    }
 
-                   var buildQuery = function(topic) {
-                       return "/raspimon/api/query/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                   var buildQuery = function(topic, aggregator) {
+                       if (aggergator) {
+                           return "/raspimon/api/aggregate/" aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                       }
+                       else {
+                           return "/raspimon/api/query/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                       }
                    };
 
                    // chain all promises, one per each element at qs (targets)
                    var self = this;
                    var promises = []
                    _.each(qs, function(q) {
-                       promises.push( self._get(buildQuery(q.topic))
+                       promises.push( self._get(buildQuery(q.topic, q.aggregator))
                                       .then(function(response) {
                                           return transformToTimeSeries(q, response.data);
                                       }) );
@@ -89,6 +94,15 @@ define([
 
                RaspimonDatasource.prototype.getTopicsList = function() {
                    return this._get('/raspimon/api/topics').then(function(result) {
+                       if (result.data && _.isArray(result.data)) {
+                           return result.data.sort();
+                       }
+                       return [];
+                   });
+               };
+
+               RaspimonDatasource.prototype.getAggergatorsList = function() {
+                   return this._get('/raspimon/api/aggregators').then(function(result) {
                        if (result.data && _.isArray(result.data)) {
                            return result.data.sort();
                        }

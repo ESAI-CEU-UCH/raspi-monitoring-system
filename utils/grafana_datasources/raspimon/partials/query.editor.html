@@ -63,6 +63,20 @@
 	       data-min-length=0 data-items=100
 	       ng-blur="targetBlur()"></input>
       </li>
+
+      <li class="tight-form-item query-keyword">
+	Aggregator
+      </li>
+      <li>
+	<select ng-model="target.aggregator" class="tight-form-input input-small"
+		ng-options="agg for agg in aggregators"
+		ng-change="targetBlur()">
+	</select>
+	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
+	<!--   <i class="fa fa-warning"></i> -->
+	<!-- </a> -->
+      </li>
+
     </ul>
 
     <div class="clearfix"></div>

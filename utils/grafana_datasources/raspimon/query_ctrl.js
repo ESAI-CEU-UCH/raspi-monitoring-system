@@ -14,6 +14,9 @@ define([
                    $scope.datasource.getTopicsList().then(function(topics) {
                        $scope.topics = topics;
                    });
+                   $scope.datasource.getAggergatorsList().then(function(topics) {
+                       $scope.aggregators = aggregators;
+                   });
                };
                $scope.targetBlur = function() {
                    // TODO: perform target validation here
