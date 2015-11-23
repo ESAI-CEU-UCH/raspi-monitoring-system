@@ -170,9 +170,14 @@ def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
 if __name__ == "__main__":
     app.debug = IN_DEBUG
     if not IN_DEBUG:
-        handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        handler.setLevel(logging.INFO)
-        handler.setFormatter(formatter)
-        app.logger.addHandler(handler)
+        try:
+            handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            handler.setLevel(logging.INFO)
+            handler.setFormatter(formatter)
+            app.logger.addHandler(handler)
+        except IOError:
+            pass
+        except:
+            raise
     app.run()
