@@ -78,6 +78,36 @@
 	<!-- </a> -->
       </li>
 
+      <li class="tight-form-item query-keyword">
+	Mul
+      </li>
+      <li>
+        <input type="text" class="tight-form-input input-small"
+	       ng-model="target.mul"
+               ng-init="1.0"
+	       spellcheck='false'
+	       data-min-length=0 data-items=100
+	       ng-blur="targetBlur()"></input>
+	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
+	<!--   <i class="fa fa-warning"></i> -->
+	<!-- </a> -->
+      </li>
+
+      <li class="tight-form-item query-keyword">
+	Add
+      </li>
+      <li>
+        <input type="text" class="tight-form-input input-small"
+	       ng-model="target.add"
+               ng-init="0.0"
+	       spellcheck='false'
+	       data-min-length=0 data-items=100
+	       ng-blur="targetBlur()"></input>
+	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
+	<!--   <i class="fa fa-warning"></i> -->
+	<!-- </a> -->
+      </li>
+
     </ul>
 
     <div class="clearfix"></div>
