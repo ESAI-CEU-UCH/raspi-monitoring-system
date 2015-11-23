@@ -50,6 +50,7 @@ avg_reducefn = """function(key,values) {{
         sum  += value * dt;
         t    += dt;
     }}
+    if (t < 1.0) t = 1.0;
     return {{ secs: values[0].secs + t*0.5, value: sum/t }};
 }}"""
 
@@ -63,6 +64,7 @@ sum_reducefn = """function(key,values) {{
         sum  += value * dt;
         t    += dt;
     }}
+    if (t < 1.0) t = 1.0;
     return {{ secs: values[values.length].secs, value: sum }};
 }}"""
 
@@ -77,6 +79,7 @@ generic_math_reducefn = """function(key,values) {{
         result = Math.{0}(result, value);
         t     += dt;
     }}
+    if (t < 1.0) t = 1.0;
     return {{ secs: values[0].secs + t*0.5, value: result }};
 }}"""
 
@@ -126,6 +129,7 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
                        "$lte" : datetime.datetime.utcfromtimestamp(stop) }
     }
     step = (stop - start) / max_data_points;
+    if step < 1.0: step = 1.0;
     query_mapfn = build_mapfn(step)
     query_reducefn = build_reducefn(agg)
     data = col.inline_map_reduce(query_mapfn,
