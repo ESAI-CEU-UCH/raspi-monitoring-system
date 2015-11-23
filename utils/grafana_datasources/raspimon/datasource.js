@@ -32,11 +32,9 @@ define([
 
                var transformToTimeSeries = function(query, data) {
                    var dps = [];
-                   for (var i=0; i<data.length; ++i) {
-                       var y = data[i][0];
-                       var x = data[i][1]*1000;
-                       dps.push( [y,x] );
-                   }
+                   _.each(data, function(v, k) {
+                       dps.push([v, Math.round(k * 1000)]);
+                   })
                    return {
                        target: query.alias || query.topic,
                        datapoints: dps,
