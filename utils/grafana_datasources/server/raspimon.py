@@ -138,6 +138,7 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
     print data
     result = transform_to_time_series(data)
     print result
+    print step
     return result
 
 @app.route("/raspimon/api/topics")
