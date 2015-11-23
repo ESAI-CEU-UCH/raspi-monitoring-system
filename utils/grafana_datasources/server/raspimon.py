@@ -57,7 +57,6 @@ avg_reducefn = """function(key,values) {{
     }}
     if (t < 1.0) t = 1.0;
     if (sum == 0.0) sum = values[0].value;
-    t = 1.0;
     return {{ secs: 0.5*values[0].secs + 0.5*values[values.length-1].secs, value: sum/t }};
 }}"""
 
