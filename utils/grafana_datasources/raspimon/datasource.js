@@ -50,8 +50,7 @@ define([
                    var qs = [];
 
                    _.each(options.targets, function(target) {
-                       if (!target.topic || target.hide) { return; }
-                       qs.push({ topic: target.topic, alias: target.alias });
+                       if (target.topic && !target.hide) qs.push(target);
                    });
 
                    if (_.isEmpty(qs)) {
@@ -68,15 +67,13 @@ define([
                    var self = this;
                    var promises = []
                    _.each(qs, function(q) {
-                       console.log(q);
-                       promises.push( self._get(buildQuery(q.topic, q.aggregator))
+                       promises.push( self._get(buildQuery(q.topic, q.aggregator || "last"))
                                       .then(function(response) {
                                           return transformToTimeSeries(q, response.data);
                                       }) );
                    });
                    
                    return $q.all(promises).then(function(result) {
-                       console.log(result);
                        return { data: result };
                    });
                };
