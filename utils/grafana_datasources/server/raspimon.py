@@ -24,6 +24,7 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 
+IN_DEBUG=False
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
 
@@ -159,10 +160,11 @@ def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
     return json.dumps( mapreduce_query(topic, start, stop, max_data_points, agg) )
 
 if __name__ == "__main__":
-    handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(formatter)
-    app.logger.addHandler(handler)
-    app.debug = False
+    app.debug = IN_DEBUG
+    if not IN_DEBUG:
+        handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(formatter)
+        app.logger.addHandler(handler)
     app.run()
