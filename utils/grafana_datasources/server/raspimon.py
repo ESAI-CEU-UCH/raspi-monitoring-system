@@ -53,7 +53,11 @@ avg_reducefn = """function(key,values) {{
         sum  += value * dt;
         t    += dt;
     }}
-    if (t < 1.0) t = 1.0;
+    if (values.length == 1) {{
+        sum = values[0].value;
+        t = 1.0;
+    }}
+    else if (t < 1.0) t = 1.0;
     return {{ secs: values[0].secs + t*0.5, value: sum/t }};
 }}"""
 
@@ -67,7 +71,11 @@ sum_reducefn = """function(key,values) {{
         sum  += value * dt;
         t    += dt;
     }}
-    if (t < 1.0) t = 1.0;
+    if (values.length == 1) {{
+        sum = values[0].value;
+        t = 1.0;
+    }}
+    else if (t < 1.0) t = 1.0;
     return {{ secs: values[values.length-1].secs, value: sum }};
 }}"""
 
