@@ -112,7 +112,6 @@ def transform_to_time_series(data):
     for pair in data:
         p = pair["value"]
         x,y = p["milis"],p["value"]
-        print x,y
         result.append([y,x])
     return result
 
@@ -132,15 +131,12 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
     step = (stop - start) / max_data_points;
     query_mapfn = build_mapfn(step)
     query_reducefn = build_reducefn(agg)
-    print query_mapfn
-    print query_reducefn
     data = col.inline_map_reduce(query_mapfn,
                                  query_reducefn,
                                  full_response=False,
                                  query=query,
                                  sort={"topic":1,"basetime":1})
     client.close()
-    print data
     #data.sort(key=lambda x: x["_id"])
     result = transform_to_time_series(data)
     return result
