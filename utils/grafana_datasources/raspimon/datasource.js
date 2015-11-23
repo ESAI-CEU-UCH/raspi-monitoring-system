@@ -61,7 +61,7 @@ define([
                    }
 
                    var buildQuery = function(topic, aggregator) {
-                       if (aggergator) {
+                       if (aggregator) {
                            return "/raspimon/api/aggregate/" + aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
                        }
                        else {
