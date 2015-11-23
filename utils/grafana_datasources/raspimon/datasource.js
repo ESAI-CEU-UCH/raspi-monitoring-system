@@ -68,6 +68,7 @@ define([
                    var self = this;
                    var promises = []
                    _.each(qs, function(q) {
+                       console.log(q);
                        promises.push( self._get(buildQuery(q.topic, q.aggregator))
                                       .then(function(response) {
                                           return transformToTimeSeries(q, response.data);
