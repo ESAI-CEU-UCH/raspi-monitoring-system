@@ -7,9 +7,6 @@ API with following commands:
 
 - `/raspimon/api/topics` returns a JSON array with all available topics.
 - `/raspimon/api/aggregators` returns a JSON array with all available aggregators.
-- `/raspimon/api/query/<topic>/<from>/<to>/<max>` returns a JSON array with the
-  time-series for given `<topic>` name in the time interval `<from>-<to>` given
-  as timestamps. The size of the returned array will be at most `<max>`.
 - `/raspimon/api/aggregate/<agg>/<topic>/<from>/<to>/<max>` returns a JSON array
   with the time-series aggregation for given `<topic>` name in the time interval
   `<from>-<to>` given as timestamps. The size of the returned array will be at
@@ -149,11 +146,7 @@ def http_get_topics():
 def http_get_aggregators():
     return json.dumps( reduce_operators.keys() );
 
-# http://localhost:5000/raspimon/api/query/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
-
-@app.route('/raspimon/api/query/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
-def http_get_topic_query(topic, start, stop, max_data_points):
-    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, "last") )
+# http://localhost:5000/raspimon/api/aggregate/last/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
 
 @app.route('/raspimon/api/aggregate/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
 def http_get_aggregation_query(agg, topic, start, stop, max_data_points):

@@ -70,7 +70,8 @@
       <li>
 	<select ng-model="target.aggregator" class="tight-form-input input-small"
 		ng-options="agg for agg in aggregators"
-		ng-change="targetBlur()">
+		ng-change="targetBlur()"
+                ng-selected="agg == 'last'">
 	</select>
 	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
 	<!--   <i class="fa fa-warning"></i> -->
