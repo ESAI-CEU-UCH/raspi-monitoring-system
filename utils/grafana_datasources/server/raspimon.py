@@ -36,13 +36,13 @@ mapfn = """function() {{
 }}"""
 
 take_one_reducefn = """function(key,values) {{
-    values.sort(function(a,b) {{ return a.secs < b.secs; }});
+    values.sort(function(a,b) {{ return a.secs - b.secs; }});
     return {{ secs:values[{0}].secs, value: values[{0}].value }};
 }}"""
 
 avg_reducefn = """function(key,values) {{
-    values.sort(function(a,b) {{ return a.secs < b.secs; }});
-    sum = values[0].value;
+    values.sort(function(a,b) {{ return a.secs - b.secs; }});
+    sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
         dt    = values[i].secs - values[i-1].secs;
@@ -55,8 +55,8 @@ avg_reducefn = """function(key,values) {{
 }}"""
 
 sum_reducefn = """function(key,values) {{
-    values.sort(function(a,b) {{ return a.secs < b.secs; }});
-    sum = values[0].value;
+    values.sort(function(a,b) {{ return a.secs - b.secs; }});
+    sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
         dt    = values[i].secs - values[i-1].secs;
@@ -69,7 +69,7 @@ sum_reducefn = """function(key,values) {{
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
-    values.sort(function(a,b) {{ return a.secs < b.secs; }});
+    values.sort(function(a,b) {{ return a.secs - b.secs; }});
     result = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
@@ -139,10 +139,7 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
                                  sort={"topic":1,"basetime":1})
     client.close()
     #data.sort(key=lambda x: x["_id"])
-    print data
     result = transform_to_time_series(data)
-    print result
-    print step
     return result
 
 @app.route("/raspimon/api/topics")
