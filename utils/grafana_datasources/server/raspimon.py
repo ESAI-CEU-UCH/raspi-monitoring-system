@@ -30,48 +30,55 @@ MONGO_PORT = 27018
 
 mapfn = """function() {{
     period = {0};
-    offset = {1};
     b = this.basetime;
-    period_2 = period*offset;
     for(i=0; i<this.values.length; ++i) {{
         milis = b.getTime() + this.delta_times[i]*1000.0;
-        key = Math.floor( milis / period ) * period + period_2;
+        key = Math.floor( milis / period ) * period;
         emit(key, {{ milis: milis, value: this.values[i] }});
     }}
 }}"""
 
 take_one_reducefn = """function(key,values) {{
-    return values[{0}].value;
+    return {{ milis:values[{0}].milis, value: values[{0}].value }};
 }}"""
 
 avg_reducefn = """function(key,values) {{
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-       milis = values[i].milis;
-       value = values[i].value;
-       dt    = milis - values[i-1].milis;
-       sum  += value * dt;
-       t    += dt;
+        milis = values[i].milis;
+        value = values[i].value;
+        dt    = milis - values[i-1].milis;
+        sum  += value * dt;
+        t    += dt;
     }}
-    return sum/t;
+    return {{ milis: values[0].milis + t*0.5, value: sum/t }};
 }}"""
 
 sum_reducefn = """function(key,values) {{
     sum = values[0].value;
+    t = 0.0;
     for(i=1; i<values.length; ++i) {{
-       milis = values[i].milis;
-       value = values[i].value;
-       dt    = milis - values[i-1].milis;
-       sum  += value * dt;
+        milis = values[i].milis;
+        value = values[i].value;
+        dt    = milis - values[i-1].milis;
+        sum  += value * dt;
+        t    += dt;
     }}
-    return sum;
+    return {{ milis: values[0].milis + t*0.5, value: sum }};
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
     result = values[0].value;
-    for(i=1; i<values.length; ++i) result = Math.{0}(result, values[i].value);
-    return result;
+    t = 0.0;
+    for(i=1; i<values.length; ++i) {{
+        milis  = values[i].milis;
+        value  = values[i].value;
+        dt     = milis - values[i-1].milis;
+        result = Math.{0}(result, value);
+        t     += dt;
+    }}
+    return {{ milis: values[0].milis + t*0.5, value: result }};
 }}"""
 
 ['avg', 'sum', 'min', 'max', 'dev', 'zimsum', 'mimmin', 'mimmax'];
@@ -85,8 +92,7 @@ reduce_operators = {
     "max" : [ generic_math_reducefn, "max" ]
 }
 
-def build_mapfn(step, offset):
-    return mapfn.format(step, offset)
+def build_mapfn(step): return mapfn.format(step)
 
 def build_reducefn(agg):
     func = reduce_operators[agg][0]
@@ -101,10 +107,12 @@ def connect():
 
 def transform_to_time_series(data):
     if len(data) == 0: return []
-    if len(data) == 1: return [ [data[0]["value"],data[0]["_id"]] ]
+    if len(data) == 1: return [ [data[0]["value"]["value"],data[0]["value"]["milis"]] ]
     result = []
     for pair in data:
-        x,y = pair["_id"],pair["value"]
+        p = pair["value"]
+        x,y = p["milis"],p["value"]
+        print x,y
         result.append([y,x])
     return result
 
@@ -114,7 +122,7 @@ def get_topics():
     client.close()
     return topics
 
-def mapreduce_query(topic, start, stop, max_data_points, offset, agg):
+def mapreduce_query(topic, start, stop, max_data_points, agg):
     client,col = connect()
     query = {
         "topic" : topic,
@@ -122,7 +130,7 @@ def mapreduce_query(topic, start, stop, max_data_points, offset, agg):
                        "$lte" : datetime.datetime.utcfromtimestamp(stop) }
     }
     step = (stop - start) / max_data_points;
-    query_mapfn = build_mapfn(step, offset)
+    query_mapfn = build_mapfn(step)
     query_reducefn = build_reducefn(agg)
     print query_mapfn
     print query_reducefn
@@ -135,7 +143,7 @@ def mapreduce_query(topic, start, stop, max_data_points, offset, agg):
     print data
     #data.sort(key=lambda x: x["_id"])
     result = transform_to_time_series(data)
-    return data
+    return result
 
 @app.route("/raspimon/api/topics")
 def http_get_topics():
@@ -149,11 +157,11 @@ def http_get_aggregators():
 
 @app.route('/raspimon/api/query/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
 def http_get_topic_query(topic, start, stop, max_data_points):
-    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, 1.0, "last") )
+    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, "last") )
 
 @app.route('/raspimon/api/aggregate/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
 def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
-    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, 0.5, agg) )
+    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, agg) )
 
 if __name__ == "__main__":
     app.debug = True
