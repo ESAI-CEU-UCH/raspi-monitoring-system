@@ -63,7 +63,7 @@ sum_reducefn = """function(key,values) {{
         sum  += value * dt;
         t    += dt;
     }}
-    return {{ secs: values[0].secs + t*0.5, value: sum }};
+    return {{ secs: values[values.length].secs, value: sum }};
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
@@ -135,7 +135,9 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
                                  sort={"topic":1,"basetime":1})
     client.close()
     #data.sort(key=lambda x: x["_id"])
+    print data
     result = transform_to_time_series(data)
+    print result
     return result
 
 @app.route("/raspimon/api/topics")
