@@ -32,53 +32,53 @@ mapfn = """function() {{
     period = {0};
     b = this.basetime;
     for(i=0; i<this.values.length; ++i) {{
-        milis = b.getTime() + this.delta_times[i]*1000.0;
-        key = Math.floor( milis / period ) * period;
-        emit(key, {{ milis: milis, value: this.values[i] }});
+        secs = b.getTime()/1000.0 + this.delta_times[i];
+        key  = Math.floor( secs / period ) * period;
+        emit(key, {{ secs: secs, value: this.values[i] }});
     }}
 }}"""
 
 take_one_reducefn = """function(key,values) {{
-    return {{ milis:values[{0}].milis, value: values[{0}].value }};
+    return {{ secs:values[{0}].secs, value: values[{0}].value }};
 }}"""
 
 avg_reducefn = """function(key,values) {{
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        milis = values[i].milis;
+        secs  = values[i].secs;
         value = values[i].value;
-        dt    = milis - values[i-1].milis;
+        dt    = secs - values[i-1].secs;
         sum  += value * dt;
         t    += dt;
     }}
-    return {{ milis: values[0].milis + t*0.5, value: sum/t }};
+    return {{ secs: values[0].secs + t*0.5, value: sum/t }};
 }}"""
 
 sum_reducefn = """function(key,values) {{
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        milis = values[i].milis;
+        secs  = values[i].secs;
         value = values[i].value;
-        dt    = milis - values[i-1].milis;
+        dt    = secs - values[i-1].secs;
         sum  += value * dt;
         t    += dt;
     }}
-    return {{ milis: values[0].milis + t*0.5, value: sum }};
+    return {{ secs: values[0].secs + t*0.5, value: sum }};
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
     result = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        milis  = values[i].milis;
+        secs   = values[i].secs;
         value  = values[i].value;
-        dt     = milis - values[i-1].milis;
+        dt     = secs - values[i-1].secs;
         result = Math.{0}(result, value);
         t     += dt;
     }}
-    return {{ milis: values[0].milis + t*0.5, value: result }};
+    return {{ secs: values[0].secs + t*0.5, value: result }};
 }}"""
 
 ['avg', 'sum', 'min', 'max', 'dev', 'zimsum', 'mimmin', 'mimmax'];
@@ -107,12 +107,12 @@ def connect():
 
 def transform_to_time_series(data):
     if len(data) == 0: return []
-    if len(data) == 1: return [ [data[0]["value"]["value"],data[0]["value"]["milis"]] ]
+    if len(data) == 1: return [ [data[0]["value"]["value"],data[0]["value"]["secs"]] ]
     result = []
     for pair in data:
-        p = pair["value"]
-        x,y = p["milis"],p["value"]
-        result.append([y,x])
+        p   = pair["value"]
+        k,v = p["secs"],p["value"]
+        result.append([v,k])
     return result
 
 def get_topics():

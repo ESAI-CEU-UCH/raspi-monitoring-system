@@ -44,7 +44,7 @@ define([
                RaspimonDatasource.prototype.query = function(options) {
                    console.log('options: ' + JSON.stringify(options));
                    // get from & to in seconds
-                   var from = Math.ceil(dateMath.parse(options.range.from) / 1000);
+                   var from = Math.floor(dateMath.parse(options.range.from) / 1000);
                    var to = Math.ceil(dateMath.parse(options.range.to) / 1000);
                    var maxDataPoints = options.maxDataPoints
                    var qs = [];
