@@ -15,10 +15,12 @@ API with following commands:
 """
 import datetime
 import json
+import logging
 import pymongo
 import time
 
 from flask import Flask
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 
@@ -157,5 +159,10 @@ def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
     return json.dumps( mapreduce_query(topic, start, stop, max_data_points, agg) )
 
 if __name__ == "__main__":
-    app.debug = True
+    handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+    app.debug = False
     app.run()
