@@ -14,7 +14,7 @@ define([
                    $scope.datasource.getTopicsList().then(function(topics) {
                        $scope.topics = topics;
                    });
-                   $scope.datasource.getAggergatorsList().then(function(topics) {
+                   $scope.datasource.getAggregatorsList().then(function(aggregators) {
                        $scope.aggregators = aggregators;
                    });
                };

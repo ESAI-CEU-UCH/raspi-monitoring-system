@@ -101,7 +101,7 @@ define([
                    });
                };
 
-               RaspimonDatasource.prototype.getAggergatorsList = function() {
+               RaspimonDatasource.prototype.getAggregatorsList = function() {
                    return this._get('/raspimon/api/aggregators').then(function(result) {
                        if (result.data && _.isArray(result.data)) {
                            return result.data.sort();
