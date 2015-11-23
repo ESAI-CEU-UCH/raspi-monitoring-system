@@ -29,6 +29,7 @@ import raspi_mon_sys.plugwise.api as plugwise_api
 import raspi_mon_sys.Utils as Utils
 
 # Plugwise connection configuration.
+MAX_TIME_BETWEEN_READINGS = 1800
 DEFAULT_POWER_TOLERANCE = 0.0
 DEFAULT_SERIAL_PORT = "/dev/ttyUSB0" # USB port used by Plugwise receiver
 
@@ -113,7 +114,7 @@ def publish():
                 if alert_below_th is not None and power1s < alert_below_th:
                     logger.alert("Value %f for circle %s registered with name %s is below threshold %f",
                                  float(power1s), mac, name, float(alert_below_th))
-                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"] > 300.0:
+                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"] > MAX_TIME_BETWEEN_READINGS:
                     power1s_usage_message = { 'timestamp' : t, 'data': power1s }
                     messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
                     config["power1s"] = power1s

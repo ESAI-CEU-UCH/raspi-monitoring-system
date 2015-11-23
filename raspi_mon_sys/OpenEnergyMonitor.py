@@ -63,6 +63,7 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
+MAX_TIME_BETWEEN_READINGS = 1800
 DEFAULT_POWER_TOLERANCE = 0.0
 
 client = None
@@ -93,7 +94,7 @@ def __process(logger, client, iface, nodes, node2keys):
                 if alert_below_th is not None and v < alert_below_th:
                     logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
                                  float(v), nodeId, key, name, float(alert_below_th))
-                if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > 300.0:
+                if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
                     message = { 'timestamp' : t, 'data' : v }
                     client.publish(topic.format(nodeId, key, name), json.dumps(message))
                     conf["data"] = v
