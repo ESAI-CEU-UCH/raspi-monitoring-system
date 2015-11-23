@@ -45,9 +45,8 @@ avg_reducefn = """function(key,values) {{
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        secs  = values[i].secs;
-        value = values[i].value;
-        dt    = secs - values[i-1].secs;
+        dt    = values[i].secs - values[i-1].secs;
+        value = 0.5*values[i].value + 0.5*values[i-1].value;
         sum  += value * dt;
         t    += dt;
     }}
@@ -59,9 +58,8 @@ sum_reducefn = """function(key,values) {{
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        secs  = values[i].secs;
-        value = values[i].value;
-        dt    = secs - values[i-1].secs;
+        dt    = values[i].secs - values[i-1].secs;
+        value = 0.5*values[i].value + 0.5*values[i-1].value;
         sum  += value * dt;
         t    += dt;
     }}
@@ -81,8 +79,6 @@ generic_math_reducefn = """function(key,values) {{
     }}
     return {{ secs: values[0].secs + t*0.5, value: result }};
 }}"""
-
-['avg', 'sum', 'min', 'max', 'dev', 'zimsum', 'mimmin', 'mimmax'];
 
 reduce_operators = {
     "first" : [ take_one_reducefn, 0 ],
