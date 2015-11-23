@@ -1,13 +1,19 @@
 #!/usr/bin/env python2.7
-"""The purpose of this module is to offer a basic API for MongoDB server. It
-should be executed at same host as MongoDB server. This module communicates with
-MongoDB using pymongo and implements facilities to obtain time-series from data
-storage. Currently it offers a basic API with following commands:
+"""The purpose of this module is to offer a basic API for MongoDB server using
+the schema defined in the project. It should be executed at same host as MongoDB
+server. This module communicates with MongoDB using pymongo and implements
+facilities to obtain time-series from data storage. Currently it offers a basic
+API with following commands:
 
-- `/raspimon/topics` returns a JSON array with all available topics.
-- `/raspimon/query/<topic>/<from>/<to>/<max>` returns a JSON array with the
+- `/raspimon/api/topics` returns a JSON array with all available topics.
+- `/raspimon/api/aggregators` returns a JSON array with all available aggregators.
+- `/raspimon/api/query/<topic>/<from>/<to>/<max>` returns a JSON array with the
   time-series for given `<topic>` name in the time interval `<from>-<to>` given
   as timestamps. The size of the returned array will be at most `<max>`.
+- `/raspimon/api/aggregate/<agg>/<topic>/<from>/<to>/<max>` returns a JSON array
+  with the time-series aggregation for given `<topic>` name in the time interval
+  `<from>-<to>` given as timestamps. The size of the returned array will be at
+  most `<max>`.
 
 """
 import datetime
@@ -22,16 +28,70 @@ app = Flask(__name__)
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
 
-mapfn = """function() {
+mapfn = """function() {{
+    period = {0};
+    offset = {1};
     b = this.basetime;
-    for(i=0; i<this.values.length; ++i) {
-        emit(new Date(b.getTime()+this.delta_times[i]*1000.0), this.values[i]);
-    }
-}"""
+    period_2 = period*offset;
+    for(i=0; i<this.values.length; ++i) {{
+        milis = b.getTime() + this.delta_times[i]*1000.0;
+        key = Math.floor( milis / period ) * period + period_2;
+        emit(key, {{ milis: milis, value: this.values[i] }});
+    }}
+}}"""
 
-reducefn = """function(key,values) {
-    return values[0];
-}"""
+take_one_reducefn = """function(key,values) {{
+    return values[{0}].value;
+}}"""
+
+avg_reducefn = """function(key,values) {{
+    sum = values[0].value;
+    t = 0.0;
+    for(i=1; i<values.length; ++i) {{
+       milis = values[i].milis;
+       value = values[i].value;
+       dt    = milis - values[i-1].milis;
+       sum  += value * dt;
+       t    += dt;
+    }}
+    return sum/t;
+}}"""
+
+sum_reducefn = """function(key,values) {{
+    sum = values[0].value;
+    for(i=1; i<values.length; ++i) {{
+       milis = values[i].milis;
+       value = values[i].value;
+       dt    = milis - values[i-1].milis;
+       sum  += value * dt;
+    }}
+    return sum;
+}}"""
+
+generic_math_reducefn = """function(key,values) {{
+    result = values[0].value;
+    for(i=1; i<values.length; ++i) result = Math.{0}(result, values[i].value);
+    return result;
+}}"""
+
+['avg', 'sum', 'min', 'max', 'dev', 'zimsum', 'mimmin', 'mimmax'];
+
+reduce_operators = {
+    "first" : [ take_one_reducefn, 0 ],
+    "last" : [ take_one_reducefn, "values.length-1" ],
+    "sum" : [ sum_reducefn ],
+    "avg" : [ avg_reducefn ],
+    "min" : [ generic_math_reducefn, "min" ],
+    "max" : [ generic_math_reducefn, "max" ]
+}
+
+def build_mapfn(step, offset):
+    return mapfn.format(step, offset)
+
+def build_reducefn(agg):
+    func = reduce_operators[agg][0]
+    params = reduce_operators[agg][1:]
+    return func.format(*params)
 
 def connect():
     client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
@@ -39,21 +99,13 @@ def connect():
     collection = db["GVA2015_data"]
     return (client,collection)
 
-def take_n_points_and_convert_to_series(data, max_data_points):
+def transform_to_time_series(data):
     if len(data) == 0: return []
-    if len(data) == 1: return [ [data[0]["value"],time.mktime(data[0]["_id"].utctimetuple())] ]
-    # take at most max_data_points, so we take one data point for each time step
-    # as computed below
-    step = (data[-1]["_id"] - data[0]["_id"]) / max_data_points
-    next_time = data[0]["_id"]
+    if len(data) == 1: return [ [data[0]["value"],data[0]["_id"]] ]
     result = []
     for pair in data:
-        dt,y = pair["_id"],pair["value"]
-        if dt >= next_time:
-            x = time.mktime(dt.utctimetuple())
-            result.append([y,x])
-            next_time += step
-            if dt > next_time: next_time = dt
+        x,y = pair["_id"],pair["value"]
+        result.append([y,x])
     return result
 
 def get_topics():
@@ -62,36 +114,46 @@ def get_topics():
     client.close()
     return topics
 
-def get_topic_query(topic, start, stop, max_data_points):
+def mapreduce_query(topic, start, stop, max_data_points, offset, agg):
     client,col = connect()
     query = {
         "topic" : topic,
         "basetime" : { "$gte" : datetime.datetime.utcfromtimestamp(start),
                        "$lte" : datetime.datetime.utcfromtimestamp(stop) }
     }
-    data = col.inline_map_reduce(mapfn, reducefn,
-                                 full_response=False, query=query)
+    step = (stop - start) / max_data_points;
+    query_mapfn = build_mapfn(step, offset)
+    query_reducefn = build_reducefn(agg)
+    print query_mapfn
+    print query_reducefn
+    data = col.inline_map_reduce(query_mapfn,
+                                 query_reducefn,
+                                 full_response=False,
+                                 query=query,
+                                 sort={"topic":1,"basetime":1})
     client.close()
-    data.sort(key=lambda x: x["_id"])
-    result = take_n_points_and_convert_to_series(data, max_data_points)
-    return result
-
+    print data
+    #data.sort(key=lambda x: x["_id"])
+    result = transform_to_time_series(data)
+    return data
 
 @app.route("/raspimon/api/topics")
 def http_get_topics():
     return json.dumps( get_topics() )
 
+@app.route("/raspimon/api/aggregators")
+def http_get_aggregators():
+    return json.dumps( reduce_operators.keys() );
+
 # http://localhost:5000/raspimon/api/query/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
 
 @app.route('/raspimon/api/query/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
 def http_get_topic_query(topic, start, stop, max_data_points):
-    return json.dumps( get_topic_query(topic, start, stop, max_data_points) )
+    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, 1.0, "last") )
 
-@app.route('/raspimon/api/all_topics_query/<int:start>/<int:stop>/<int:max_data_points>')
-def get_all_topics_query(start, stop, max_data_points):
-    topics  = get_topics()
-    results = [ [ topic, get_topic_query(topic, start, stop, max_data_points) ] for topic in topics ]
-    return json.dumps(results)
+@app.route('/raspimon/api/aggregate/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
+def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
+    return json.dumps( mapreduce_query(topic, start, stop, max_data_points, 0.5, agg) )
 
 if __name__ == "__main__":
     app.debug = True
