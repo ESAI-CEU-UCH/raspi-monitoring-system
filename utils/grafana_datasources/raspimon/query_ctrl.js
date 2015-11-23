@@ -11,6 +11,8 @@ define([
                    console.log($scope);
                    if (!$scope.target) { return; }
                    var target = $scope.target;
+                   target.mul = 1.0;
+                   target.add = 0.0;
                    $scope.datasource.getTopicsList().then(function(topics) {
                        $scope.topics = topics;
                    });
