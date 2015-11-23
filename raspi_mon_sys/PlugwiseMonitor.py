@@ -83,6 +83,7 @@ def start():
         }) )
         circle_data["state"] = "NA"
         circle_data["power1s"] = -10000.0
+        circle_data["when"] = 0.0
 
     client.loop_start()
 
@@ -112,10 +113,11 @@ def publish():
                 if alert_below_th is not None and power1s < alert_below_th:
                     logger.alert("Value %f for circle %s registered with name %s is below threshold %f",
                                  float(power1s), mac, name, float(alert_below_th))
-                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE):
+                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"] > 300.0:
                     power1s_usage_message = { 'timestamp' : t, 'data': power1s }
                     messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
                     config["power1s"] = power1s
+                    config["when"] = t
                     # check state transition before message is appended
                 if state != last_state:
                     state_message = { 'timestamp' : t, 'data' : state }
