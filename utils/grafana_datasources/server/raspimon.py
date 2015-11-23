@@ -48,17 +48,17 @@ avg_reducefn = """function(key,values) {{
     sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        dt    = values[i].secs - values[i-1].secs;
-        value = 0.5*values[i].value + 0.5*values[i-1].value;
-        sum  += value * dt;
-        t    += dt;
+        dt = values[i].secs - values[i-1].secs;
+        if (dt > 0.0) {{
+            value = 0.5*values[i].value + 0.5*values[i-1].value;
+            sum  += value * dt;
+            t    += dt;
+        }}
     }}
-    if (values.length == 1) {{
-        sum = values[0].value;
-        t = 1.0;
-    }}
-    else if (t < 1.0) t = 1.0;
-    return {{ secs: values[0].secs + t*0.5, value: sum/t }};
+    if (t < 1.0) t = 1.0;
+    if (sum == 0.0) sum = values[0].value;
+    t = 1.0;
+    return {{ secs: 0.5*values[0].secs + 0.5*values[values.length-1].secs, value: sum/t }};
 }}"""
 
 sum_reducefn = """function(key,values) {{
@@ -66,16 +66,15 @@ sum_reducefn = """function(key,values) {{
     sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        dt    = values[i].secs - values[i-1].secs;
-        value = 0.5*values[i].value + 0.5*values[i-1].value;
-        sum  += value * dt;
-        t    += dt;
+        dt = values[i].secs - values[i-1].secs;
+        if (dt > 0.0) {{
+            value = 0.5*values[i].value + 0.5*values[i-1].value;
+            sum  += value * dt;
+            t    += dt;
+        }}
     }}
-    if (values.length == 1) {{
-        sum = values[0].value;
-        t = 1.0;
-    }}
-    else if (t < 1.0) t = 1.0;
+    if (t < 1.0) t = 1.0;
+    if (sum == 0.0) sum = values[0].value;
     return {{ secs: values[values.length-1].secs, value: sum }};
 }}"""
 
