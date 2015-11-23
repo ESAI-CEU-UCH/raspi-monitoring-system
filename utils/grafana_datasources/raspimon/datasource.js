@@ -31,9 +31,15 @@ define([
                };
 
                var transformToTimeSeries = function(query, data) {
+                   var dps = [];
+                   for (var i=0; i<data.length; ++i) {
+                       var y = data[i][0];
+                       var x = data[i][1]*1000;
+                       dps.push( [y,x] );
+                   }
                    return {
                        target: query.alias || query.topic,
-                       datapoints: data,
+                       datapoints: dps,
                    };
                };
                
@@ -71,10 +77,8 @@ define([
                    });
                    
                    return $q.all(promises).then(function(result) {
-                       var series = [];
-                       for (var i in result) { series.push( result[i] ); }
-                       console.log(series);
-                       return { data: series };
+                       console.log(result);
+                       return { data: result };
                    });
                };
 
