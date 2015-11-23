@@ -65,7 +65,7 @@ sum_reducefn = """function(key,values) {{
         t    += dt;
     }}
     if (t < 1.0) t = 1.0;
-    return {{ secs: values[values.length].secs, value: sum }};
+    return {{ secs: values[values.length-1].secs, value: sum }};
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
