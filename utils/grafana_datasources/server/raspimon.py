@@ -86,7 +86,7 @@ generic_math_reducefn = """function(key,values) {{
 reduce_operators = {
     "first" : [ take_one_reducefn, 0 ],
     "last" : [ take_one_reducefn, "values.length-1" ],
-    "sum" : [ sum_reducefn ],
+    #"sum" : [ sum_reducefn ],
     "avg" : [ avg_reducefn ],
     "min" : [ generic_math_reducefn, "min" ],
     "max" : [ generic_math_reducefn, "max" ]

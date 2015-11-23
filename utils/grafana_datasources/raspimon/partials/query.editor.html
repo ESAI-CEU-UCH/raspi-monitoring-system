@@ -68,10 +68,11 @@
 	Aggregator
       </li>
       <li>
-	<select ng-model="target.aggregator" class="tight-form-input input-small"
+	<select class="tight-form-input input-small"
+                ng-model="target.aggregator"
+                ng-init="target.aggregator = aggregators[2]"
 		ng-options="agg for agg in aggregators"
-		ng-change="targetBlur()"
-                ng-selected="agg == 'last'">
+		ng-change="targetBlur()">
 	</select>
 	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
 	<!--   <i class="fa fa-warning"></i> -->
