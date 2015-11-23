@@ -36,10 +36,12 @@ mapfn = """function() {{
 }}"""
 
 take_one_reducefn = """function(key,values) {{
+    values.sort(function(a,b) {{ return a.secs < b.secs; }});
     return {{ secs:values[{0}].secs, value: values[{0}].value }};
 }}"""
 
 avg_reducefn = """function(key,values) {{
+    values.sort(function(a,b) {{ return a.secs < b.secs; }});
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
@@ -53,6 +55,7 @@ avg_reducefn = """function(key,values) {{
 }}"""
 
 sum_reducefn = """function(key,values) {{
+    values.sort(function(a,b) {{ return a.secs < b.secs; }});
     sum = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
@@ -66,6 +69,7 @@ sum_reducefn = """function(key,values) {{
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
+    values.sort(function(a,b) {{ return a.secs < b.secs; }});
     result = values[0].value;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
