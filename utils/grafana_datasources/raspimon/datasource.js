@@ -33,6 +33,7 @@ define([
                var transformToTimeSeries = function(query, data) {
                    var dps = [];
                    _.each(data, function(v, k) {
+                       console.log(v, k);
                        dps.push([v, Math.round(k * 1000)]);
                    })
                    return {
