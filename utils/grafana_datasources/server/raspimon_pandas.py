@@ -1,10 +1,11 @@
-#!/usr/bin/env python2.7
+1#!/usr/bin/env python2.7
 """This is a bit more complicated module, similar to raspimon.py but allowing to
 incorporate complex statistics using numpy and pandas.
 """
 import datetime
 import json
 import logging
+import math
 import numpy as np
 import pandas as pd
 import pymongo
@@ -94,6 +95,117 @@ reduce_operators = {
     "max" : [ generic_math_reducefn, "max" ]
 }
 
+class MySeries:
+    def __init__(self, *args, **kwargs):
+        self.x = Series(*args, **kwargs)
+        self.values = self.x.values
+        self.index = self.x.index
+    
+    def rolling_mean(self, *args, **kwargs):
+        return MySeries(pd.rolling_mean(self.x, *args, **kwargs))
+
+    def rolling_count(self, *args, **kwargs):
+        return MySeries(pd.rolling_count(self.x, *args, **kwargs))
+
+    def rolling_sum(self, *args, **kwargs):
+        return MySeries(pd.rolling_sum(self.x, *args, **kwargs))
+
+    def rolling_median(self, *args, **kwargs):
+        return MySeries(pd.rolling_median(self.x, *args, **kwargs))
+        
+    def rolling_min(self, *args, **kwargs):
+        return MySeries(pd.rolling_min(self.x, *args, **kwargs))
+
+    def rolling_max(self, *args, **kwargs):
+        return MySeries(pd.rolling_max(self.x, *args, **kwargs))
+
+    def rolling_std(self, *args, **kwargs):
+        return MySeries(pd.rolling_std(self.x, *args, **kwargs))
+
+    def rolling_var(self, *args, **kwargs):
+        return MySeries(pd.rolling_var(self.x, *args, **kwargs))
+
+    def rolling_skew(self, *args, **kwargs):
+        return MySeries(pd.rolling_skew(self.x, *args, **kwargs))
+
+    def rolling_kurtosis(self, *args, **kwargs):
+        return MySeries(pd.rolling_kurtosis(self.x, *args, **kwargs))
+
+    def rolling_window(self, *args, **kwargs):
+        return MySeries(pd.rolling_window(self.x, *args, **kwargs))
+
+    def cumprod(self, *args, **kwargs):
+        return MySeries(self.x.cumprod(*args, **kwargs))
+
+    def cumsum(self, *args, **kwargs):
+        return MySeries(self.x.cumsum(*args, **kwargs))
+
+    def diff(self, *args, **kwargs):
+        return MySeries(self.x.diff(*args, **kwargs))
+
+    def div(self, *args, **kwargs):
+        return MySeries(self.x.div(*args, **kwargs))
+
+    def mul(self, *args, **kwargs):
+        return MySeries(self.x.mul(*args, **kwargs))
+
+    def add(self, *args, **kwargs):
+        return MySeries(self.x.add(*args, **kwargs))
+
+    def dropna(self, *args, **kwargs):
+        return MySeries(self.x.dropna(*args, **kwargs))
+    
+    def fillna(self, *args, **kwargs):
+        return MySeries(self.x.fillna(*args, **kwargs))
+
+    def floordiv(self, *args, **kwargs):
+        return MySeries(self.x.floordiv(*args, **kwargs))
+
+    def mod(self, *args, **kwargs):
+        return MySeries(self.x.mod(*args, **kwargs))
+
+    def nlargest(self, *args, **kwargs):
+        return MySeries(self.x.nlargest(*args, **kwargs))
+
+    def nonzero(self, *args, **kwargs):
+        return MySeries(self.x.nonzero(*args, **kwargs))
+
+    def nsmallest(self, *args, **kwargs):
+        return MySeries(self.x.nsmallest(*args, **kwargs))
+
+    def pow(self, *args, **kwargs):
+        return MySeries(self.x.pow(*args, **kwargs))
+
+    def rank(self, *args, **kwargs):
+        return MySeries(self.x.rank(*args, **kwargs))
+
+    def round(self, *args, **kwargs):
+        return MySeries(self.x.round(*args, **kwargs))
+
+    def shift(self, *args, **kwargs):
+        return MySeries(self.x.shift(*args, **kwargs))
+
+    def sub(self, *args, **kwargs):
+        return MySeries(self.x.sub(*args, **kwargs))
+
+    def abs(self, *args, **kwargs):
+        return MySeries(self.x.abs(*args, **kwargs))
+
+    def clip(self, *args, **kwargs):
+        return MySeries(self.x.clip(*args, **kwargs))
+
+    def clip_lower(self, *args, **kwargs):
+        return MySeries(self.x.clip_lower(*args, **kwargs))
+
+    def clip_upper(self, *args, **kwargs):
+        return MySeries(self.x.clip_upper(*args, **kwargs))
+    
+    def interpolate(self, *args, **kwargs):
+        return MySeries(self.x.interpolate(*args, **kwargs))
+
+    def resample(self, *args, **kwargs):
+        return MySeries(self.x.resample(*args, **kwargs))
+    
 def build_mapfn(step): return mapfn.format(step)
 
 def build_reducefn(agg):
@@ -108,18 +220,18 @@ def connect():
     return (client,collection)
 
 def transform_to_time_series(data):
-    if len(data) == 0: return Series(np.array([]))
+    if len(data) == 0: return MySeries(np.array([]))
     if len(data) == 1:
         idx = np.array([ data[0]["value"]["secs"] ])
         ts = np.array([ [data[0]["value"]["value"]] ])
-        return Series(ts, index=idx)
+        return MySeries(ts, index=idx)
     idx = []
     ts = []
     for pair in data:
         p = pair["value"]
         idx.append( p["secs"] )
         ts.append( p["value"] )
-    return Series(np.array(ts), index=np.array(idx))
+    return MySeries(np.array(ts), index=np.array(idx))
 
 def get_topics(filters=None):
     client,col = connect()
@@ -160,9 +272,8 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
     result = transform_to_time_series(data)
     return result
 
-def series(start, stop, max_data_points, topics_agg):
-    series = [ mapreduce_query(top, start, stop, max_data_points, agg) for top,agg in topics_agg ]
-    return pd.concat(series, axis=1)
+#def series(topic, start, stop, max_data_points, agg):
+#    return mapreduce_query(topic, start, stop, max_data_points, agg)
 
 def to_grafana_time_series(s):
     values = s.values
@@ -171,6 +282,14 @@ def to_grafana_time_series(s):
     time = list( s.index )
     result = [ [v,k] for v,k in zip(values,time) ]
     return result
+
+def process_series(ts, funcs):
+    for f in funcs:
+        method_name = f[0]
+        args = f[1:]
+        method = getattr(ts, method_name)
+        ts = method(*args)
+    return ts
 
 @app.route("/raspimon/api/topics")
 def http_get_topics():
@@ -191,37 +310,42 @@ def http_get_aggregators():
 def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
     return json.dumps( to_grafana_time_series( mapreduce_query(topic, start, stop, max_data_points, agg) ) )
 
-@app.route('/raspimon/api/pandas/<int:start>/<int:stop>/<int:max_data_points>', methods=["POST"])
-def http_get_pandas_query(start, stop, max_data_points):
-    params = request.get_json(force=True)
-    topics_aggs = params["topics_aggs"]
-    funcs = params["funcs"]
-    eval_list = [ "series({0},{1},{2},{3})".format(str(start),str(stop),
-                                                   str(max_data_points),
-                                                   str(topics_aggs)) ]
-    for func in params: eval_list.append( ".%s"%func )
-    return json.dumps( to_grafana_time_series( eval( ''.join(eval_list) ) ) )
+@app.route('/raspimon/api/pandas/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>', methods=["POST"])
+def http_get_pandas_query(agg, topic, start, stop, max_data_points):
+    funcs = request.get_json(force=True)
+    ts = mapreduce_query(topic, start, stop, max_data_points, agg)
+    return json.dumps( to_grafana_time_series( process_series(ts, funcs) ) )
 
-# if __name__ == "__main__":
-#     app.debug = IN_DEBUG
-#     if not IN_DEBUG:
-#         try:
-#             handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
-#             formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-#             handler.setLevel(logging.INFO)
-#             handler.setFormatter(formatter)
-#             app.logger.addHandler(handler)
-#         except IOError:
-#             pass
-#         except:
-#             raise
-#     app.run()
+if __name__ == "__main__":
+    app.debug = IN_DEBUG
+    if not IN_DEBUG:
+        try:
+            handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            handler.setLevel(logging.INFO)
+            handler.setFormatter(formatter)
+            app.logger.addHandler(handler)
+        except IOError:
+            pass
+        except:
+            raise
+    app.run(port=5050)
 
-import math
-import numpy as np
-import pandas as pd
+# import math
+# import numpy as np
+# import pandas as pd
 
-y = series(0, 1448193433, 100000,
-           [ ["raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value","last"],
-             ["raspimon:b827eb7c62d8:rfemon:10:2:telephone:value","last"] ]).interpolate().dropna().diff().dropna().sum(axis=1)
-print to_grafana_time_series(y)
+# y = mapreduce_query("raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value", 1448183433, 1448193433, 100, "last")
+
+# z = process_series(y, [
+#     [ "diff" ],
+#     [ "fillna", None, "backfill" ],
+#     [ "mul", 4 ],
+#     [ "add", 4 ],
+#     [ "diff" ],
+#     [ "rolling_mean",  20 ],
+#     [ "dropna" ],
+# ])
+
+# print to_grafana_time_series(y)
+# print to_grafana_time_series(z)
