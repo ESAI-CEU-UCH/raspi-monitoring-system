@@ -146,12 +146,13 @@ define([
                // Returns the list of topics filtered by using topic_filters
                // property as declared at datasource configuration.
                RaspimonDatasource.prototype.getTopicsListFiltered = function() {
-                   return this.getTopicsList().then(function(v) {
+                   var self = this;
+                   return this.getTopicsList().then(function(result) {
                        if (self.topic_filters && self.topic_filters.length > 0) {
-                           return v.filter(contains_any(self.topic_filters));
+                           return result.filter(contains_any(self.topic_filters));
                        }
                        else {
-                           return v;
+                           return result;
                        }
                    });
                };
