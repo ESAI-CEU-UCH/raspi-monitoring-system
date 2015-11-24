@@ -1,1 +1,19 @@
 <div ng-include="httpConfigPartialSrc"></div>
+
+<h5>Raspimon Details</h5>
+<div class="grafana-info-box" style="margin: 30px 0 0 0">
+  It is possible to filter available topics using a comma-separated list of MAC
+  addresses (you need to know which MAC refers with which house).
+</div>
+
+<div class="tight-form">
+  <ul class="tight-form-list">
+    <li class="tight-form-item" style="width: 80px">
+      MAC addresses:
+    </li>
+    <li>
+      <input type="text" class="tight-form-input input-xxlarge" ng-model="current.macs" placeholder="" ng-list="," ng-trim="true"></input>
+    </li>
+  </ul>
+  <div class="clearfix"></div>
+</div>

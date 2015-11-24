@@ -6,6 +6,8 @@ facilities to obtain time-series from data storage. Currently it offers a basic
 API with following commands:
 
 - `/raspimon/api/topics` returns a JSON array with all available topics.
+- `/raspimon/api/topics/filtered` returns a JSON array with topics containing
+  any of the given strings via POST.
 - `/raspimon/api/aggregators` returns a JSON array with all available aggregators.
 - `/raspimon/api/aggregate/<agg>/<topic>/<from>/<to>/<max>` returns a JSON array
   with the time-series aggregation for given `<topic>` name in the time interval
@@ -118,9 +120,13 @@ def transform_to_time_series(data):
         result.append([v,k])
     return result
 
-def get_topics():
+def get_topics(filters=None):
     client,col = connect()
-    topics = col.distinct("topic")
+    if filters is None:
+        topics = col.distinct("topic")
+    else:
+        query  = { "topic" : {"$or":x for x in filters} }
+        topics = col.distinct("topic", query)
     client.close()
     return topics
 
@@ -148,6 +154,11 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
 @app.route("/raspimon/api/topics")
 def http_get_topics():
     return json.dumps( get_topics() )
+
+@app.route("/raspimon/api/topics/filtered", methods=["POST"])
+def http_post_topics_filtered():
+    filters = request.form['macs']
+    return json.dumps( get_topics(filters) )
 
 @app.route("/raspimon/api/aggregators")
 def http_get_aggregators():

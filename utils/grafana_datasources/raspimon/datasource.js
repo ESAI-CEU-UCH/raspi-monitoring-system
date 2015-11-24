@@ -19,12 +19,21 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
+                   this.macs = datasource.macs;
                    this.supportMetrics = true;
                }
                
                RaspimonDatasource.prototype._get = function(relativeUrl, params) {
                    return backendSrv.datasourceRequest({
                        method: 'GET',
+                       url: this.url + relativeUrl,
+                       params: params,
+                   });
+               };
+
+               RaspimonDatasource.prototype._post = function(relativeUrl, params) {
+                   return backendSrv.datasourceRequest({
+                       method: 'POST',
                        url: this.url + relativeUrl,
                        params: params,
                    });
@@ -86,12 +95,18 @@ define([
                };
 
                RaspimonDatasource.prototype.getTopicsList = function() {
-                   return this._get('/raspimon/api/topics').then(function(result) {
+                   var callback = function(result) {
                        if (result.data && _.isArray(result.data)) {
                            return result.data.sort();
                        }
                        return [];
-                   });
+                   };
+                   if (this.macs.length > 0) {
+                       return this._post('/raspimon/api/topics/filtered',{macs:this.macs}).then(callback);
+                   }
+                   else {
+                       return this._get('/raspimon/api/topics').then(callback);
+                   }
                };
 
                RaspimonDatasource.prototype.getAggregatorsList = function() {
