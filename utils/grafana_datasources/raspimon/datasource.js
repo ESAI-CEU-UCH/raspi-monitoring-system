@@ -19,11 +19,14 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
+                   // jsonData is a dictionary created by the controller and
+                   // resued by raspimon to track new configuration items
                    this.topic_filters = datasource.jsonData.topic_filters;
                    this.supportMetrics = true;
                }
                
-               // performs an HTTP GET request to datasource using the backendSrv
+               // performs an HTTP GET request to datasource using the
+               // backendSrv
                RaspimonDatasource.prototype._get = function(relativeUrl) {
                    return backendSrv.datasourceRequest({
                        method: 'GET',
@@ -31,7 +34,8 @@ define([
                    });
                };
 
-               // performs an HTTP POST request to datasource using the backendSrv
+               // performs an HTTP POST request to datasource using the
+               // backendSrv
                RaspimonDatasource.prototype._post = function(relativeUrl, data) {
                    return backendSrv.datasourceRequest({
                        method: 'POST',
@@ -61,7 +65,7 @@ define([
                
                // a facility which allow to cache call to functions which return
                // a promise
-               var cachedPromise = function(func) {
+               var buildCachedPromiseMethod = function(func) {
                    var promise;
                    return function() {
                        if (!promise) promise = func(this);
@@ -74,7 +78,7 @@ define([
                // query to datasource server and transforms its response into a
                // time-series expected by Grafana.
                RaspimonDatasource.prototype.query = function(options) {
-                   console.log('options: ' + JSON.stringify(options));
+                   // console.log('options: ' + JSON.stringify(options));
                    var self = this; // forward declaration
                    // get from & to in seconds
                    var from = Math.floor(dateMath.parse(options.range.from) / 1000);
@@ -139,7 +143,7 @@ define([
                };
                
                // Facility to request topics list from query editor.
-               RaspimonDatasource.prototype.getTopicsList = cachedPromise(function(self) {
+               RaspimonDatasource.prototype.getTopicsList = buildCachedPromiseMethod(function(self) {
                    return self._get('/raspimon/api/topics').then(array_promise_callback)
                })
                
@@ -158,7 +162,7 @@ define([
                };
                
                // facility to request aggregators list from query editor
-               RaspimonDatasource.prototype.getAggregatorsList = cachedPromise(function(self) {
+               RaspimonDatasource.prototype.getAggregatorsList = buildCachedPromiseMethod(function(self) {
                    return self._get('/raspimon/api/aggregators').then(array_promise_callback);
                });
                

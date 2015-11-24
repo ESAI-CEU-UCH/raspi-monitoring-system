@@ -1,3 +1,5 @@
+<!-- The scope of this code is given as `datasource` argument to
+     RaspimonDatasource() -->
 <div ng-include="httpConfigPartialSrc"></div>
 <br/>
 
@@ -14,6 +16,8 @@
       Topic filters:
     </li>
     <li>
+      <!-- We use jsonData here because it is a dictionary created by Grafana
+           config controller -->
       <input type="text" class="tight-form-input input-xxlarge" ng-model="current.jsonData.topic_filters" placeholder="" ng-list></input>
     </li>
   </ul>

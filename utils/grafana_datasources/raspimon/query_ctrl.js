@@ -8,7 +8,6 @@ define([
            
            module.controller('RaspimonQueryCtrl', function($scope, $http) {
                $scope.init = function() {
-                   console.log($scope);
                    if (!$scope.target) { return; }
                    var target = $scope.target;
                    target.mul = target.mul || 1.0;
