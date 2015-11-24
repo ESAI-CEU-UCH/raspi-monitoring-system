@@ -19,7 +19,7 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
-                   this.macs = datasource.macs || [];
+                   this.topic_filters = datasource.topic_filters || [];
                    this.supportMetrics = true;
                }
                
@@ -103,8 +103,8 @@ define([
                        }
                        return [];
                    };
-                   if (this.macs.length > 0) {
-                       return this._post('/raspimon/api/topics/filtered',{macs:this.macs}).then(callback);
+                   if (this.topic_filters.length > 0) {
+                       return this._post('/raspimon/api/topics/filtered',{topic_filters:this.topic_filters}).then(callback);
                    }
                    else {
                        return this._get('/raspimon/api/topics').then(callback);
