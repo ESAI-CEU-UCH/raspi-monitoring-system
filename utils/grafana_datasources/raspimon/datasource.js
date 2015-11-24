@@ -78,6 +78,7 @@ define([
                // time-series expected by Grafana.
                RaspimonDatasource.prototype.query = function(options) {
                    console.log('options: ' + JSON.stringify(options));
+                   var self = this; // forward declaration
                    // get from & to in seconds
                    var from = Math.floor(dateMath.parse(options.range.from) / 1000);
                    var to = Math.ceil(dateMath.parse(options.range.to) / 1000);
@@ -100,7 +101,6 @@ define([
                    };
                    
                    // chain all promises, one per each element at qs (targets)
-                   var self = this;
                    var promises = []
                    _.each(qs, function(q) {
                        promises.push( self._get(buildQueryUrl(q.topic, q.consolidateby || "last"))
@@ -134,15 +134,14 @@ define([
                // Facility to request topics list from query editor. Notice that
                // this function filters topics by using topic_filters array.
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function() {
-                   var topic_filters = this.topic_filters;
-                   console.log(topic_filters);
-                   return this._post('/raspimon/api/topics/filtered',
-                                     {topic_filters:topic_filters}).then(array_promise_callback);
+                   console.log(self.topic_filters);
+                   return self._post('/raspimon/api/topics/filtered',
+                                     {topic_filters:self.topic_filters}).then(array_promise_callback);
                });
                
                // facility to request aggregators list from query editor
                RaspimonDatasource.prototype.getAggregatorsList = cachedPromise(function() {
-                   return this._get('/raspimon/api/aggregators').then(array_promise_callback);
+                   return self._get('/raspimon/api/aggregators').then(array_promise_callback);
                });
                
                return RaspimonDatasource;
