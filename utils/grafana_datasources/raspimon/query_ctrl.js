@@ -13,7 +13,7 @@ define([
                    var target = $scope.target;
                    target.mul = target.mul || 1.0;
                    target.add = target.add || 0.0;
-                   $scope.datasource.getTopicsList().then(function(topics) {
+                   $scope.datasource.getTopicsListFiltered().then(function(topics) {
                        $scope.topics = topics;
                    });
                    $scope.datasource.getAggregatorsList().then(function(aggregators) {

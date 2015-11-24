@@ -138,18 +138,23 @@ define([
                    };
                };
                
-               // Facility to request topics list from query editor. Notice that
-               // this function filters topics by using topic_filters array.
+               // Facility to request topics list from query editor.
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function(self) {
                    return self._get('/raspimon/api/topics').then(array_promise_callback)
-               }).then(function(v) {
-                   if (self.topic_filters && self.topic_filters.length > 0) {
-                       return v.filter(contains_any(self.topic_filters));
-                   }
-                   else {
-                       return v;
-                   }
-               });
+               })
+               
+               // Returns the list of topics filtered by using topic_filters
+               // property as declared at datasource configuration.
+               RaspimonDatasource.prototype.getTopicsListFiltered = function() {
+                   return this.getTopicsList().then(function(v) {
+                       if (self.topic_filters && self.topic_filters.length > 0) {
+                           return v.filter(contains_any(self.topic_filters));
+                       }
+                       else {
+                           return v;
+                       }
+                   });
+               };
                
                // facility to request aggregators list from query editor
                RaspimonDatasource.prototype.getAggregatorsList = cachedPromise(function(self) {
