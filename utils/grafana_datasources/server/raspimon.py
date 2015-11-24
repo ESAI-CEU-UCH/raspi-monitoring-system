@@ -128,12 +128,19 @@ def transform_to_time_series(data):
 
 def get_topics(filters=None):
     client,col = connect()
-    if filters is None or type(filters) is not list or len(filters) == 0:
-        topics = col.distinct("topic")
+    if False:
+        # This code is not working, pymongo Collection.distinct don't accepts a
+        # query as argument :'(
+        if filters is None or type(filters) is not list or len(filters) == 0:
+            topics = col.distinct("topic")
+        else:
+            query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
+            topics = col.distinct("topic", query)
     else:
-        query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
-        print query
-        topics = col.distinct("topic", query)
+        # so we perform selection of topics using a Python filter
+        topics = col.distinct("topic")
+        if filters is not None and type(filters) is list and len(filters) == 0:
+            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) ]
     client.close()
     return topics
 
