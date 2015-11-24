@@ -19,8 +19,14 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
-                   this.topic_filters = datasource.topic_filters || [];
+                   if (datasource.extra) {
+                       this.topic_filters = datasource.extra.topic_filters || [];
+                   }
+                   else {
+                       this.topic_filters = [];
+                   }
                    this.supportMetrics = true;
+                   console.log('datasource: ' + JSON.stringify(datasource));
                    console.log('filters: ' + JSON.stringify(this.topic_filters));
                }
                
