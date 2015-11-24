@@ -128,7 +128,7 @@ def transform_to_time_series(data):
 
 def get_topics(filters=None):
     client,col = connect()
-    if filters is None:
+    if filters is None or filters.length == 0:
         topics = col.distinct("topic")
     else:
         query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
@@ -163,6 +163,7 @@ def http_get_topics():
 
 @app.route("/raspimon/api/topics/filtered", methods=["POST"])
 def http_post_topics_filtered():
+    print request.form
     filters = request.form['topic_filters']
     return json.dumps( get_topics(filters) )
 

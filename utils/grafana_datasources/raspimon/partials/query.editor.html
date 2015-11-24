@@ -9,12 +9,12 @@
 	  <a class="pointer dropdown-toggle" data-toggle="dropdown" tabindex="1">
 	    <i class="fa fa-bars"></i>
 	  </a>
-	  <!-- <ul class="dropdown-menu pull-right" role="menu"> -->
-	  <!--   <li role="menuitem"><a tabindex="1" ng-click="toggleQueryMode()">Switch editor mode</a></li> -->
-	  <!--   <li role="menuitem"><a tabindex="1" ng-click="duplicateDataQuery(target)">Duplicate</a></li> -->
-	  <!--   <li role="menuitem"><a tabindex="1" ng-click="moveDataQuery($index, $index-1)">Move up</a></li> -->
-	  <!--   <li role="menuitem"><a tabindex="1" ng-click="moveDataQuery($index, $index+1)">Move down</a></li> -->
-	  <!-- </ul> -->
+	  <ul class="dropdown-menu pull-right" role="menu">
+	    <!--<li role="menuitem"><a tabindex="1" ng-click="toggleQueryMode()">Switch editor mode</a></li>-->
+	    <li role="menuitem"><a tabindex="1" ng-click="duplicateDataQuery(target)">Duplicate</a></li>
+	    <li role="menuitem"><a tabindex="1" ng-click="moveDataQuery($index, $index-1)">Move up</a></li>
+	    <li role="menuitem"><a tabindex="1" ng-click="moveDataQuery($index, $index+1)">Move down</a></li>
+	  </ul>
 	</div>
       </li>
       <li class="tight-form-item last">
@@ -52,7 +52,7 @@
       </li>
       
       <li class="tight-form-item query-keyword">
-	Alias:
+	Alias
 	<!-- <tip>Use patterns like $tag_tagname to replace part of the alias for a tag value</tip> -->
       </li>
       <li>
@@ -65,11 +65,11 @@
       </li>
 
       <li class="tight-form-item query-keyword">
-	Aggregator
+	ConsolidateBy
       </li>
       <li>
 	<select class="tight-form-input input-mini"
-                ng-model="target.aggregator"
+                ng-model="target.consolidateby"
 		ng-options="agg for agg in aggregators"
 		ng-change="targetBlur()">
 	</select>

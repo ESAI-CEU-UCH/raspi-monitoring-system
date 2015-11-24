@@ -19,7 +19,7 @@ define([
                    $scope.datasource.getAggregatorsList().then(function(aggregators) {
                        $scope.aggregators = aggregators;
                    });
-                   $scope.aggregator = "last";
+                   $scope.consolidateby = "last";
                };
                $scope.targetBlur = function() {
                    // TODO: perform target validation here
