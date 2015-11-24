@@ -16,8 +16,6 @@ define([
                // the datasource object passed to constructor is the same
                // defined in config.js named `current`
                function RaspimonDatasource(datasource) {
-                   console.log('datasource: ' + JSON.stringify(datasource));
-                   console.log('filters: ' + JSON.stringify(datasource.topic_filters));
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;

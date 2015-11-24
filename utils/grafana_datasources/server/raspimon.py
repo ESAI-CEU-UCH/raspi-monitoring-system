@@ -26,7 +26,7 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 
-IN_DEBUG=False
+IN_DEBUG=True
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
 
@@ -132,6 +132,7 @@ def get_topics(filters=None):
         topics = col.distinct("topic")
     else:
         query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
+        print query
         topics = col.distinct("topic", query)
     client.close()
     return topics
@@ -164,7 +165,6 @@ def http_get_topics():
 @app.route("/raspimon/api/topics/filtered", methods=["POST"])
 def http_post_topics_filtered():
     filters = request.get_json(force=True)
-    print filters
     return json.dumps( get_topics(filters) )
 
 @app.route("/raspimon/api/aggregators")
