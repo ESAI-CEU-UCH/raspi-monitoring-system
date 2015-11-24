@@ -42,8 +42,8 @@ define([
                var transformToTimeSeries = function(query, data) {
                    var dps = [];
                    _.each(data, function(v) {
-                       var mul = query.mul or 1.0;
-                       var add = query.add or 0.0;
+                       var mul = query.mul || 1.0;
+                       var add = query.add || 0.0;
                        dps.push([v[0]*mul + add, Math.round(v[1] * 1000)]);
                    })
                    return {
