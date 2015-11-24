@@ -1,6 +1,7 @@
 <div ng-include="httpConfigPartialSrc"></div>
+<br/>
 
-<h5>Raspimon Details</h5>
+<h5>Raspimon MongoDB Details</h5>
 <div class="grafana-info-box" style="margin: 30px 0 0 0">
   It is possible to filter available topics using a comma-separated list of
   strings, so only topics which contain <b>any</b> of the strings would be
@@ -13,7 +14,7 @@
       Topic filters:
     </li>
     <li>
-      <input type="text" class="tight-form-input input-xxlarge" ng-model="current.topic_filters" placeholder=""></input>
+      <input type="text" class="tight-form-input input-xxlarge" ng-model="current.jsonData.topic_filters" placeholder="" ng-list></input>
     </li>
   </ul>
   <div class="clearfix"></div>

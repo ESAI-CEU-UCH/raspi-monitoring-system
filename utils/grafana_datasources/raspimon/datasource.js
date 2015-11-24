@@ -21,7 +21,7 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
-                   this.topic_filters = datasource.topic_filters || [];
+                   this.topic_filters = datasource.jsonData.topic_filters || [];
                    this.supportMetrics = true;
                }
                

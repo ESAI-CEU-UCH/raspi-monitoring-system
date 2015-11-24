@@ -44,7 +44,8 @@
       <li>
 	<select ng-model="target.topic" class="tight-form-input input-xxlarge"
 		ng-options="top for top in topics"
-		ng-change="targetBlur()">
+		ng-change="targetBlur()"
+                required>
 	</select>
         <!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
 	<!--   <i class="fa fa-warning"></i> -->
@@ -70,7 +71,7 @@
       <li>
 	<select class="tight-form-input input-mini"
                 ng-model="target.consolidateby"
-		ng-options="agg for agg in aggregators"
+		ng-options="agg as agg for agg in aggregators"
 		ng-change="targetBlur()"
                 bs-tooltip="'By default it is last.'">
 	</select>
