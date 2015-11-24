@@ -42,7 +42,7 @@ define([
                var transformToTimeSeries = function(query, data) {
                    var dps = [];
                    _.each(data, function(v) {
-                       dps.push([v[0], Math.round(v[1] * 1000)]);
+                       dps.push([v[0]*query.mul + query.add, Math.round(v[1] * 1000)]);
                    })
                    return {
                        target: query.alias || query.topic,

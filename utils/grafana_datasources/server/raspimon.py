@@ -50,13 +50,16 @@ avg_reducefn = """function(key,values) {{
     sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        dt    = values[i].secs - values[i-1].secs;
-        value = 0.5*values[i].value + 0.5*values[i-1].value;
-        sum  += value * dt;
-        t    += dt;
+        dt = values[i].secs - values[i-1].secs;
+        if (dt > 0.0) {{
+            value = 0.5*values[i].value + 0.5*values[i-1].value;
+            sum  += value * dt;
+            t    += dt;
+        }}
     }}
     if (t < 1.0) t = 1.0;
-    return {{ secs: values[0].secs + t*0.5, value: sum/t }};
+    if (sum == 0.0) sum = values[0].value;
+    return {{ secs: 0.5*values[0].secs + 0.5*values[values.length-1].secs, value: sum/t }};
 }}"""
 
 sum_reducefn = """function(key,values) {{
@@ -64,12 +67,15 @@ sum_reducefn = """function(key,values) {{
     sum = 0.0;
     t = 0.0;
     for(i=1; i<values.length; ++i) {{
-        dt    = values[i].secs - values[i-1].secs;
-        value = 0.5*values[i].value + 0.5*values[i-1].value;
-        sum  += value * dt;
-        t    += dt;
+        dt = values[i].secs - values[i-1].secs;
+        if (dt > 0.0) {{
+            value = 0.5*values[i].value + 0.5*values[i-1].value;
+            sum  += value * dt;
+            t    += dt;
+        }}
     }}
     if (t < 1.0) t = 1.0;
+    if (sum == 0.0) sum = values[0].value;
     return {{ secs: values[values.length-1].secs, value: sum }};
 }}"""
 
@@ -173,9 +179,14 @@ def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
 if __name__ == "__main__":
     app.debug = IN_DEBUG
     if not IN_DEBUG:
-        handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        handler.setLevel(logging.INFO)
-        handler.setFormatter(formatter)
-        app.logger.addHandler(handler)
+        try:
+            handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            handler.setLevel(logging.INFO)
+            handler.setFormatter(formatter)
+            app.logger.addHandler(handler)
+        except IOError:
+            pass
+        except:
+            raise
     app.run()
