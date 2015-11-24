@@ -21,6 +21,7 @@ define([
                    this.url  = datasource.url;
                    this.topic_filters = datasource.topic_filters || [];
                    this.supportMetrics = true;
+                   console.log('filters: ' + JSON.stringify(this.topic_filters));
                }
                
                RaspimonDatasource.prototype._get = function(relativeUrl, params) {
