@@ -26,20 +26,19 @@ define([
                }
                
                // performs an HTTP GET request to datasource using the backendSrv
-               RaspimonDatasource.prototype._get = function(relativeUrl, params) {
+               RaspimonDatasource.prototype._get = function(relativeUrl) {
                    return backendSrv.datasourceRequest({
                        method: 'GET',
                        url: this.url + relativeUrl,
-                       params: params,
                    });
                };
 
                // performs an HTTP POST request to datasource using the backendSrv
-               RaspimonDatasource.prototype._post = function(relativeUrl, params) {
+               RaspimonDatasource.prototype._post = function(relativeUrl, data) {
                    return backendSrv.datasourceRequest({
                        method: 'POST',
                        url: this.url + relativeUrl,
-                       params: params,
+                       data: data,
                    });
                };
                
@@ -136,7 +135,7 @@ define([
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function(self) {
                    console.log(self.topic_filters);
                    return self._post('/raspimon/api/topics/filtered',
-                                     {topic_filters:self.topic_filters}).then(array_promise_callback);
+                                     self.topic_filters).then(array_promise_callback);
                });
                
                // facility to request aggregators list from query editor

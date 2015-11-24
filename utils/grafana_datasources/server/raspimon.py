@@ -163,8 +163,8 @@ def http_get_topics():
 
 @app.route("/raspimon/api/topics/filtered", methods=["POST"])
 def http_post_topics_filtered():
-    print request.form
-    filters = request.form['topic_filters']
+    filters = request.get_json(force=True)
+    print filters
     return json.dumps( get_topics(filters) )
 
 @app.route("/raspimon/api/aggregators")
