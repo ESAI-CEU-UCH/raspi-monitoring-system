@@ -128,7 +128,7 @@ def transform_to_time_series(data):
 
 def get_topics(filters=None):
     client,col = connect()
-    if filters is None or filters.length == 0:
+    if filters is None or type(filters) is not list or len(filters) == 0:
         topics = col.distinct("topic")
     else:
         query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
