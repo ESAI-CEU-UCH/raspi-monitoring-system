@@ -17,7 +17,7 @@ define([
                // defined in config.js named `current`
                function RaspimonDatasource(datasource) {
                    console.log('datasource: ' + JSON.stringify(datasource));
-                   console.log('filters: ' + JSON.stringify(this.topic_filters));
+                   console.log('filters: ' + JSON.stringify(datasource.topic_filters));
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
@@ -134,9 +134,10 @@ define([
                // Facility to request topics list from query editor. Notice that
                // this function filters topics by using topic_filters array.
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function() {
-                   console.log(this.topic_filters);
+                   var topic_filters = this.topic_filters;
+                   console.log(topic_filters);
                    return this._post('/raspimon/api/topics/filtered',
-                                     {topic_filters:this.topic_filters}).then(array_promise_callback);
+                                     {topic_filters:topic_filters}).then(array_promise_callback);
                });
                
                // facility to request aggregators list from query editor
