@@ -2,17 +2,17 @@
 
 <h5>Raspimon Details</h5>
 <div class="grafana-info-box" style="margin: 30px 0 0 0">
-  It is possible to filter available topics using a comma-separated list of MAC
-  addresses (you need to know which MAC refers with which house).
+  It is possible to filter available topics using a comma-separated list of
+  strings, so only topics which contain ANY of the strings would be selected.
 </div>
 
 <div class="tight-form">
   <ul class="tight-form-list">
     <li class="tight-form-item" style="width: 80px">
-      MAC addresses:
+      Topic contains any of:
     </li>
     <li>
-      <input type="text" class="tight-form-input input-xxlarge" ng-model="current.macs" placeholder="" ng-list="," ng-trim="true"></input>
+      <input type="text" class="tight-form-input input-xxlarge" ng-model="current.topic_filters" placeholder="" ng-list="," ng-trim="true"></input>
     </li>
   </ul>
   <div class="clearfix"></div>

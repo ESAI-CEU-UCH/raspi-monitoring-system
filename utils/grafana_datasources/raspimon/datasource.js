@@ -19,7 +19,7 @@ define([
                    this.name = datasource.name;
                    this.type = "raspimon";
                    this.url  = datasource.url;
-                   this.macs = datasource.macs;
+                   this.macs = datasource.macs || [];
                    this.supportMetrics = true;
                }
                
@@ -42,7 +42,9 @@ define([
                var transformToTimeSeries = function(query, data) {
                    var dps = [];
                    _.each(data, function(v) {
-                       dps.push([v[0]*query.mul + query.add, Math.round(v[1] * 1000)]);
+                       var mul = query.mul or 1.0;
+                       var add = query.add or 0.0;
+                       dps.push([v[0]*mul + add, Math.round(v[1] * 1000)]);
                    })
                    return {
                        target: query.alias || query.topic,

@@ -21,7 +21,7 @@ import logging
 import pymongo
 import time
 
-from flask import Flask
+from flask import Flask, request
 from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
@@ -131,7 +131,7 @@ def get_topics(filters=None):
     if filters is None:
         topics = col.distinct("topic")
     else:
-        query  = { "topic" : {"$or":x for x in filters} }
+        query  = { "$or" : [ {"topic":{"$regex":".*"+x+".*"}} for x in filters ] }
         topics = col.distinct("topic", query)
     client.close()
     return topics
@@ -163,7 +163,7 @@ def http_get_topics():
 
 @app.route("/raspimon/api/topics/filtered", methods=["POST"])
 def http_post_topics_filtered():
-    filters = request.form['macs']
+    filters = request.form['topic_filters']
     return json.dumps( get_topics(filters) )
 
 @app.route("/raspimon/api/aggregators")
