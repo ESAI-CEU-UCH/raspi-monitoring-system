@@ -64,10 +64,10 @@ define([
                
                // a facility which allow to cache call to functions which return
                // a promise
-               var cachedPromise = function(func) {
+               var cachedPromise = function(func,self) {
                    var promise;
-                   return function() {
-                       if (!promise) promise = func();
+                   return function(self) {
+                       if (!promise) promise = func(self);
                        return promise;
                    }
                };
@@ -133,16 +133,16 @@ define([
                
                // Facility to request topics list from query editor. Notice that
                // this function filters topics by using topic_filters array.
-               RaspimonDatasource.prototype.getTopicsList = cachedPromise(function() {
+               RaspimonDatasource.prototype.getTopicsList = cachedPromise(function(self) {
                    console.log(self.topic_filters);
                    return self._post('/raspimon/api/topics/filtered',
                                      {topic_filters:self.topic_filters}).then(array_promise_callback);
-               });
+               }, self);
                
                // facility to request aggregators list from query editor
-               RaspimonDatasource.prototype.getAggregatorsList = cachedPromise(function() {
+               RaspimonDatasource.prototype.getAggregatorsList = cachedPromise(function(self) {
                    return self._get('/raspimon/api/aggregators').then(array_promise_callback);
-               });
+               }, self);
                
                return RaspimonDatasource;
            });
