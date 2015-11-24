@@ -135,8 +135,8 @@ define([
                // this function filters topics by using topic_filters array.
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function() {
                    console.log(this.topic_filters);
-                   return = this._post('/raspimon/api/topics/filtered',
-                                       {topic_filters:this.topic_filters}).then(array_promise_callback);
+                   return this._post('/raspimon/api/topics/filtered',
+                                     {topic_filters:this.topic_filters}).then(array_promise_callback);
                });
                
                // facility to request aggregators list from query editor
