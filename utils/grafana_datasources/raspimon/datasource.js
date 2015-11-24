@@ -128,11 +128,27 @@ define([
                    return [];
                };
                
+               var contains_any = function(filters) {
+                   return function(x) {
+                       var any = false;
+                       for (var i=0; i<filters.length && !any; ++i) {
+                           any = (x.indexOf(filters[i]) > -1);
+                       }
+                       return any;
+                   };
+               };
+               
                // Facility to request topics list from query editor. Notice that
                // this function filters topics by using topic_filters array.
                RaspimonDatasource.prototype.getTopicsList = cachedPromise(function(self) {
-                   return self._post('/raspimon/api/topics/filtered',
-                                     self.topic_filters || []).then(array_promise_callback);
+                   return self._get('/raspimon/api/topics').then(array_promise_callback)
+               }).then(function(v) {
+                   if (self.topic_filters && self.topic_filters.length > 0) {
+                       return v.filter(contains_any(self.topic_filters));
+                   }
+                   else {
+                       return v;
+                   }
                });
                
                // facility to request aggregators list from query editor
