@@ -9,6 +9,8 @@
 
     "partials": {
         "config": "app/plugins/datasource/raspimon/partials/config.html",
+        "query": "app/plugins/datasource/raspimon/partials/query.editor.html",
+        "options": "app/plugins/datasource/raspimon/partials/query.options.html"
     },
 
     "metrics": true,
