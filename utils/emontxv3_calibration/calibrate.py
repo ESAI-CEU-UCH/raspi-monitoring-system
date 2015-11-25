@@ -8,7 +8,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
 
 DEFAULT_CTs = [ 2, 3, 4, 5 ]
-DEFAULT_CALIBRATION_TIME = 30 # in seconds
+DEFAULT_CALIBRATION_TIME = 300 # in seconds
 DEFAULT_COM_BAUD = 38400
 DEFAULT_COM_PORT = "/dev/ttyAMA0"
 nodeId_reference = 10
