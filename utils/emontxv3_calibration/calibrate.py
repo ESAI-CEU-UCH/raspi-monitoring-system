@@ -34,6 +34,7 @@ def configure_user_options():
     time.sleep(1)
     nloops = int(try_input("Indicate number of loops", DEFAULT_NUMBER_OF_LOOPS))
     power = int(try_input("Indicate power reference", DEFAULT_POWER_REFERENCE))
+    print "Expecting %d power"%(nloops*power)
     return nloops,power
 
 def configure_rfm69():
