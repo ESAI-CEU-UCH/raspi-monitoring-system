@@ -44,11 +44,12 @@ def configure_rfm69():
 
 def do_monitoring(logger, number_of_loops, power_reference, iface):
     measures = []
-    t0 = time.time
+    t0 = time.time()
     while time.time() - t0 < calibration_time:
         iface.run()
         # Read socket
         values = iface.read()
+        print values
         if values is not None:
             logger.debug(str(values))
             t      = values[0]
@@ -56,6 +57,7 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
             if nodeId == nodeId_reference:
                 current = [ values[i]/number_of_loops for i in DEFAULT_CTs ]
                 measures.append( current )
+        time.sleep(0.05)
     m = numpy.array(measures)
     return m
 
