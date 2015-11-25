@@ -51,7 +51,7 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
         # Read socket
         values = iface.read()
         if values is not None:
-            logger.debug("Elapsed time %.1f (%3.0f)", time.time() - t0,
+            logger.debug("Elapsed time %6.1f (%3.0f%%)", time.time() - t0,
                          (time.time() - t0) / DEFAULT_CALIBRATION_TIME * 100)
             logger.debug(str(values))
             t      = values[0]
