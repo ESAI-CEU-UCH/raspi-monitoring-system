@@ -8,7 +8,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
 
 DEFAULT_CTs = [ 2, 3, 4, 5 ]
-DEFAULT_CALIBRATION_TIME = 300 # in seconds
+DEFAULT_CALIBRATION_TIME = 30 # in seconds
 DEFAULT_COM_BAUD = 38400
 DEFAULT_COM_PORT = "/dev/ttyAMA0"
 nodeId_reference = 10
@@ -68,5 +68,6 @@ if __name__ == "__main__":
     number_of_loops,power_reference = configure_user_options()
     iface = configure_rfm69()
     m = do_monitoring(logger, number_of_loops, power_reference, iface)
+    print m
     print "Mean values=    " + str( m.mean(axis=1) )
     print "Std-dev values= " + str( m.std(axis=1) )
