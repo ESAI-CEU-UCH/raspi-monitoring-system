@@ -62,6 +62,6 @@ if __name__ == "__main__":
     stds = m.std(axis=0)
     mins = m.min(axis=0)
     maxs = m.max(axis=0)
-    result = numpy.concatenate( means, stds, mins, maxs )
+    result = numpy.concatenate( (means, stds, mins, maxs), axis=1 )
     print "# Mean   Stdanrd-deviations   Minimum   Maximum"
     print result
