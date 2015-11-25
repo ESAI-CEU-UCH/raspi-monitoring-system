@@ -112,4 +112,21 @@
 
     <div class="clearfix"></div>
   </div>
-</div>
+
+  <div class="tight-form">
+    <ul class="tight-form-list" role="menu">
+      <li ng-repeat="segment in segments" role="menuitem">
+	<metric-segment segment="segment" get-options="getAltSegments($index)" on-change="segmentValueChanged(segment, $index)"></metric-segment>
+      </li>
+      <li ng-repeat="func in functions">
+	<span graphite-func-editor class="tight-form-item tight-form-func">
+	</span>
+      </li>
+      <li class="dropdown" pandas-add-func>
+      </li>
+    </ul>
+    <div class="clearfix"></div>
+
+    <div>
+      
+    </div>

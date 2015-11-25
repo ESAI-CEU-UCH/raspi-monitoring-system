@@ -1,5 +1,6 @@
 define([
     'angular',
+    './gfunc'
 ],
        function (angular) {
            'use strict';

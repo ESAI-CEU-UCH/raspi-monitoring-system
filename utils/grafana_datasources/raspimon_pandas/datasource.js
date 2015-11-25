@@ -21,7 +21,12 @@ define([
                    this.url  = datasource.url;
                    // jsonData is a dictionary created by the controller and
                    // resued by raspimon to track new configuration items
-                   this.topic_filters = datasource.jsonData.topic_filters;
+                   if (datasource.jsonData) {
+                       this.topic_filters = datasource.jsonData.topic_filters;
+                   }
+                   else {
+                       this.topic_filters = [];
+                   }
                    this.supportMetrics = true;
                }
                
