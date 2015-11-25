@@ -12,7 +12,6 @@ DEFAULT_CALIBRATION_TIME = 300 # in seconds
 DEFAULT_COM_BAUD = 38400
 DEFAULT_COM_PORT = "/dev/ttyAMA0"
 nodeId_reference = 10
-DEFAULT_NUMBER_OF_LOOPS = 8
 DEFAULT_POWER_REFERENCE = 40 # in Watts
 DEFAULT_TIMEOUT = 0
 
@@ -33,10 +32,8 @@ def configure_logger():
 def configure_user_options():
     time.sleep(1)
     print "Use plugwise_util to measure the exact expected power consumption of your reference"
-    nloops = int(try_input("Indicate number of loops", DEFAULT_NUMBER_OF_LOOPS))
     power = int(try_input("Indicate power reference", DEFAULT_POWER_REFERENCE))
-    print "Expecting %d power"%(nloops*power)
-    return nloops,power
+    return power
 
 def configure_rfm69():
     iface = emonhub_interfacer.EmonHubJeeInterfacer("calibration", logger,
@@ -44,7 +41,7 @@ def configure_rfm69():
                                                     DEFAULT_COM_BAUD)
     return iface
 
-def do_monitoring(logger, number_of_loops, power_reference, iface):
+def do_monitoring(logger, power_reference, iface):
     measures = []
     t0 = time.time()
     while time.time() - t0 < DEFAULT_CALIBRATION_TIME:
@@ -58,7 +55,7 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
             t      = values[0]
             nodeId = values[1]
             if nodeId == nodeId_reference:
-                current = [ values[i]/number_of_loops for i in DEFAULT_CTs if values[i] > 0 ]
+                current = [ values[i] for i in DEFAULT_CTs if values[i] > 0 ]
                 measures.append( current )
         time.sleep(0.05)
     m = numpy.array(measures)
@@ -66,8 +63,13 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
 
 if __name__ == "__main__":
     logger = configure_logger()
-    number_of_loops,power_reference = configure_user_options()
+    power_reference = configure_user_options()
     iface = configure_rfm69()
-    m = do_monitoring(logger, number_of_loops, power_reference, iface)
-    print "Mean values=    " + str( m.mean(axis=0) )
-    print "Std-dev values= " + str( m.std(axis=0) )
+    m = do_monitoring(logger, power_reference, iface)
+    means = m.mean(axis=0)
+    stds = m.std(axis=0)
+    mins = m.min(axis=0)
+    maxs = m.max(axis=0)
+    result = numpy.concatenate( means, stds, mins, maxs )
+    print "# Mean   Stdanrd-deviations   Minimum   Maximum"
+    print result
