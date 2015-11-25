@@ -49,8 +49,8 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
         iface.run()
         # Read socket
         values = iface.read()
-        print values
         if values is not None:
+            print values
             logger.debug(str(values))
             t      = values[0]
             nodeId = values[1]
