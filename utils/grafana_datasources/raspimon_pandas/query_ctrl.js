@@ -20,6 +20,7 @@ define([
                        $scope.aggregators = aggregators;
                    });
                    $scope.consolidateby = "last";
+                   $scope.functions = [];
                };
                $scope.targetBlur = function() {
                    // TODO: perform target validation here

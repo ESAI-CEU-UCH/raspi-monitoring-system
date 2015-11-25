@@ -10,7 +10,7 @@ define([
 
            angular
                .module('grafana.directives')
-               .directive('graphiteFuncEditor', function($compile, templateSrv) {
+               .directive('pandasFuncEditor', function($compile, templateSrv) {
 
                    var funcSpanTemplate = '<a ng-click="">{{func.def.name}}</a><span>(</span>';
                    var paramTemplate = '<input type="text" style="display:none"' +
@@ -220,11 +220,13 @@ define([
                                        });
                                        return;
                                    }
-
-                                   if ($target.hasClass('fa-question-circle')) {
-                                       window.open("http://graphite.readthedocs.org/en/latest/functions.html#graphite.render.functions." + funcDef.name,'_blank');
-                                       return;
-                                   }
+                                   
+                                   /*
+                                     if ($target.hasClass('fa-question-circle')) {
+                                     window.open("http://graphite.readthedocs.org/en/latest/functions.html#graphite.render.functions." + funcDef.name,'_blank');
+                                     return;
+                                     }
+                                   */
                                });
                            }
 

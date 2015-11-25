@@ -79,54 +79,20 @@
 	<!--   <i class="fa fa-warning"></i> -->
 	<!-- </a> -->
       </li>
-
-      <li class="tight-form-item query-keyword">
-	Mul
-      </li>
-      <li>
-        <input type="number" class="tight-form-input input-mini"
-	       ng-model="target.mul"
-	       spellcheck='false'
-	       data-min-length=0 data-items=100
-	       ng-blur="targetBlur()"></input>
-	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
-	<!--   <i class="fa fa-warning"></i> -->
-	<!-- </a> -->
-      </li>
-
-      <li class="tight-form-item query-keyword">
-	Add
-      </li>
-      <li>
-        <input type="number" class="tight-form-input input-mini"
-	       ng-model="target.add"
-	       spellcheck='false'
-	       data-min-length=0 data-items=100
-	       ng-blur="targetBlur()"></input>
-	<!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
-	<!--   <i class="fa fa-warning"></i> -->
-	<!-- </a> -->
-      </li>
-
     </ul>
-
     <div class="clearfix"></div>
   </div>
 
   <div class="tight-form">
     <ul class="tight-form-list" role="menu">
-      <li ng-repeat="segment in segments" role="menuitem">
-	<metric-segment segment="segment" get-options="getAltSegments($index)" on-change="segmentValueChanged(segment, $index)"></metric-segment>
-      </li>
       <li ng-repeat="func in functions">
-	<span graphite-func-editor class="tight-form-item tight-form-func">
+	<span pandas-func-editor class="tight-form-item tight-form-func">
 	</span>
       </li>
       <li class="dropdown" pandas-add-func>
       </li>
     </ul>
-    <div class="clearfix"></div>
-
-    <div>
-      
-    </div>
+    <div class="clearfix"></div>    
+  </div>
+  
+</div>
