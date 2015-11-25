@@ -69,5 +69,5 @@ if __name__ == "__main__":
     iface = configure_rfm69()
     m = do_monitoring(logger, number_of_loops, power_reference, iface)
     print m
-    print "Mean values=    " + str( m.mean(axis=1) )
-    print "Std-dev values= " + str( m.std(axis=1) )
+    print "Mean values=    " + str( m.mean(axis=0) )
+    print "Std-dev values= " + str( m.std(axis=0) )
