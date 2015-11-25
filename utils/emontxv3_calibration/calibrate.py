@@ -8,7 +8,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
 
 DEFAULT_CTs = [ 2, 3, 4, 5 ]
-DEFAULT_CALIBRATION_TIME = 60 # in seconds
+DEFAULT_CALIBRATION_TIME = 300 # in seconds
 DEFAULT_COM_BAUD = 38400
 DEFAULT_COM_PORT = "/dev/ttyAMA0"
 nodeId_reference = 10
@@ -51,11 +51,13 @@ def do_monitoring(logger, number_of_loops, power_reference, iface):
         # Read socket
         values = iface.read()
         if values is not None:
+            logger.debug("Elapsed time %.1f (%3.0f)", time.time() - t0,
+                         (time.time() - t0) / DEFAULT_CALIBRATION_TIME * 100)
             logger.debug(str(values))
             t      = values[0]
             nodeId = values[1]
             if nodeId == nodeId_reference:
-                current = [ values[i]/number_of_loops for i in DEFAULT_CTs ]
+                current = [ values[i]/number_of_loops for i in DEFAULT_CTs if values[i] > 0 ]
                 measures.append( current )
         time.sleep(0.05)
     m = numpy.array(measures)
