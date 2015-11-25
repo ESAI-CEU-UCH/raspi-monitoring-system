@@ -45,7 +45,7 @@ def configure_rfm69():
 def do_monitoring(logger, number_of_loops, power_reference, iface):
     measures = []
     t0 = time.time()
-    while time.time() - t0 < calibration_time:
+    while time.time() - t0 < DEFAULT_CALIBRATION_TIME:
         iface.run()
         # Read socket
         values = iface.read()
