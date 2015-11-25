@@ -12,7 +12,6 @@ DEFAULT_CALIBRATION_TIME = 300 # in seconds
 DEFAULT_COM_BAUD = 38400
 DEFAULT_COM_PORT = "/dev/ttyAMA0"
 nodeId_reference = 10
-DEFAULT_POWER_REFERENCE = 40 # in Watts
 DEFAULT_TIMEOUT = 0
 
 def try_input(msg, n):
@@ -29,19 +28,13 @@ def configure_logger():
     logger.info("Opening connection")
     return logger
 
-def configure_user_options():
-    time.sleep(1)
-    print "Use plugwise_util to measure the exact expected power consumption of your reference"
-    power = int(try_input("Indicate power reference", DEFAULT_POWER_REFERENCE))
-    return power
-
 def configure_rfm69():
     iface = emonhub_interfacer.EmonHubJeeInterfacer("calibration", logger,
                                                     DEFAULT_COM_PORT,
                                                     DEFAULT_COM_BAUD)
     return iface
 
-def do_monitoring(logger, power_reference, iface):
+def do_monitoring(logger, iface):
     measures = []
     t0 = time.time()
     while time.time() - t0 < DEFAULT_CALIBRATION_TIME:
@@ -63,9 +56,8 @@ def do_monitoring(logger, power_reference, iface):
 
 if __name__ == "__main__":
     logger = configure_logger()
-    power_reference = configure_user_options()
     iface = configure_rfm69()
-    m = do_monitoring(logger, power_reference, iface)
+    m = do_monitoring(logger, iface)
     means = m.mean(axis=0)
     stds = m.std(axis=0)
     mins = m.min(axis=0)
