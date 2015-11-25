@@ -15,6 +15,7 @@ import time
 import datetime
 import socket
 import select
+import traceback
 
 import raspi_mon_sys.emonhub.emonhub_coder as ehc
 
@@ -298,7 +299,7 @@ class EmonHubInterfacer(object):
             s = serial.Serial(com_port, com_baud, timeout=0)
             # self._log.debug("Opening serial port: " + str(com_port) + " @ "+ str(com_baud) + " bits/s")
         except serial.SerialException as e:
-            self._log.error(e)
+            self._log.error("%s",traceback.format_exc())
             raise EmonHubInterfacerInitError('Could not open COM port %s' %
                                            com_port)
         else:
@@ -318,7 +319,7 @@ class EmonHubInterfacer(object):
             s.bind(('', int(port_nb)))
             s.listen(1)
         except socket.error as e:
-            self._log.error(e)
+            self._log.error("%s",traceback.format_exc())
             raise EmonHubInterfacerInitError('Could not open port %s' %
                                            port_nb)
         else:
