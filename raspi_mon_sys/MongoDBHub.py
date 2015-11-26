@@ -85,9 +85,9 @@ def __configure_mqtt(client):
 def __build_raspimon_documents(key):
     global raspimon_message_queues
     topic,basetime = key
-    data_pairs = raspimon_message_queues.pop(key)
-    data_pairs.put('STOP')
-    data_pairs = [ x for x in iter(data_pairs.get, 'STOP') ]
+    q = raspimon_message_queues.pop(key)
+    q.put('STOP')
+    data_pairs = [ x for x in iter(q.get, 'STOP') ]
     data_pairs.sort(key=lambda x: x[0])
     delta_times,values = zip(*data_pairs)
     document = {
@@ -104,7 +104,9 @@ def __build_raspimon_documents(key):
 def __build_forecast_documents(key):
     global forecast_message_queues
     topic,basetime = key
-    messages = forecast_message_queues.pop(key)
+    q = forecast_message_queues.pop(key)
+    q.put('STOP')
+    messages = [ x for x in iter(q.get, 'STOP') ]
     messages.sort(key=lambda x: x["timestamp"])
     for doc in messages:
         doc["house"] = house_data["name"]
