@@ -108,7 +108,11 @@ def __build_forecast_documents(key):
     q.put('STOP')
     messages = [ x for x in iter(q.get, 'STOP') ]
     messages.sort(key=lambda x: x["timestamp"])
+    time2dt = datetime.datetime.utcfromtimestamp
     for doc in messages:
+        doc["timestamp"] = time2dt(doc["timestamp"])
+        doc["periods_start"] = [ time2dt(x) for x in doc["periods_start"] ]
+        doc["periods_end"]   = [ time2dt(x) for x in doc["periods_end"] ]
         doc["house"] = house_data["name"]
         doc["topic"] = topic
     logger.info("New documents for topic= %s basetime= %d with n= %d",
