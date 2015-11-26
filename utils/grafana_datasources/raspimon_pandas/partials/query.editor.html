@@ -118,13 +118,16 @@
 	Filters
       </li>
       <li ng-repeat="func in target.functions">
-	<metric-segment segment="segment" ng-model="func.name" get-options="function_names"></metric-segment>
+	<select ng-model="func.name" class="tight-form-input input-large"
+		ng-options="name as name for name in function_names"
+		ng-change="targetBlur()"
+                required>
         (
-        <input type="number" class="tight-form-input input-mini"
+        <input type="string" class="tight-form-input input-mini"
 	       ng-model="func.arguments"
 	       spellcheck='false'
 	       ng-blur="targetBlur()"></input>
-        )        
+        )
         <!-- function controls -->
         <div class="tight-form-func-controls">
           <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a>
