@@ -83,7 +83,7 @@ define([
                // query to datasource server and transforms its response into a
                // time-series expected by Grafana.
                RaspimonPandasDatasource.prototype.query = function(options) {
-                   // console.log('options: ' + JSON.stringify(options));
+                   console.log('options: ' + JSON.stringify(options));
                    var self = this; // forward declaration
                    // get from & to in seconds
                    var from = Math.floor(dateMath.parse(options.range.from) / 1000);

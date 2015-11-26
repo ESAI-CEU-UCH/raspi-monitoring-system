@@ -29,21 +29,22 @@ define([
                        "rolling_skew", "rolling_std", "rolling_sum",
                        "rolling_var", "rolling_window", "round", "shift", "sub",
                    ];
-                   $scope.functions = [];
-               };
-               $scope.addFunction = function() {
-                   $scope.functions.put( { "name" : undefined,
-                                           "arguments" : undefined } )
-               };
-               $scope.removeFunction = function(i) {
-                   $scope.functions.splice(i, 1);
-               };
-               $scope.moveFunction = function(i,j) {
-                   if (j >= 0 && j <= $scope.functions.length) {
-                       var tmp = $scope.functions[i];
-                       $scope.functions[i] = $scope.functions[j];
-                       $scope.functions[j] = tmp;
-                   }
+                   target.functions = [];
+                   
+                   $scope.addFunction = function() {
+                       target.functions.put( { "name" : undefined,
+                                               "arguments" : undefined } )
+                   };
+                   $scope.removeFunction = function(i) {
+                       target.functions.splice(i, 1);
+                   };
+                   $scope.moveFunction = function(i,j) {
+                       if (j >= 0 && j <= target.functions.length) {
+                           var tmp = target.functions[i];
+                           target.functions[i] = target.functions[j];
+                           target.functions[j] = tmp;
+                       }
+                   };
                };
                $scope.targetBlur = function() {
                    // TODO: perform target validation here
