@@ -76,7 +76,7 @@ def __on_mqtt_message(client, userdata, msg):
     elif topic.startswith("forecast/"):
         __enqueue_forecast_message(client, userdata, topic, message)
     else:
-        raise "Unknown MQTT topic :S"
+        raise ValueError("Unknown MQTT topic " + topic)
 
 def __configure_mqtt(client):
     client.on_connect = __on_mqtt_connect
