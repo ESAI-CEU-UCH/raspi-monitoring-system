@@ -125,14 +125,13 @@
         <span>(</span>
         <input type="text" auto-grow
                class="tight-form-input input-mini"
-	       ng-model="func.arguments"
+	       ng-model="func.args"
 	       ng-blur="targetBlur()"></input>
         <span>)</span>
         <!-- function controls -->
         <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a>
         <a class="pointer" ng-click="moveFunction($index,$index+1)"><i class="fa fa-arrow-right"></i></a>
         <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-remove"></i></a>
-        <span>&nbsp;</span>
       </li>
       <!-- add button -->
       <li class="tight-form-item">

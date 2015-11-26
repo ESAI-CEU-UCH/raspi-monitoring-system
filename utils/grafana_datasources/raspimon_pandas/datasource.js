@@ -104,13 +104,21 @@ define([
                    }
                    
                    var buildQueryUrl = function(topic, aggregator) {
-                       return "/raspimon_pandas/api/aggregate/" + aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                       return "/raspimon_pandas/api/pandas/" + aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
                    };
                    
                    // chain all promises, one per each element at qs (targets)
                    var promises = []
                    _.each(qs, function(q) {
-                       promises.push( self._get(buildQueryUrl(q.topic, q.consolidateby || "last"))
+                       var funcs_list = [];
+                       _.each(q.functions, function(x) {
+                           if (x.name) {
+                               var args = x.args || "";
+                               funcs_list.push( x+"("+ args + ")" );
+                           }
+                       });
+                       promises.push( self._post(buildQueryUrl(q.topic, q.consolidateby || "last"),
+                                                 funcs_list)
                                       .then(function(response) {
                                           return transformToTimeSeries(q, response.data);
                                       }) );
