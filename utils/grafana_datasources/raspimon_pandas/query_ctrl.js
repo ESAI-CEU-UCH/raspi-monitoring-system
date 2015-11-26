@@ -25,7 +25,7 @@ define([
                        "floordiv", "interpolate", "mod", "mul", "nlargest",
                        "nonzero", "nsmallest", "pow", "rank", "resample",
                        "rolling_count", "rolling_kurtosis", "rolling_max",
-                       "rolling_mean" "rolling_median", "rolling_min",
+                       "rolling_mean", "rolling_median", "rolling_min",
                        "rolling_skew", "rolling_std", "rolling_sum",
                        "rolling_var", "rolling_window", "round", "shift", "sub",
                    ];
