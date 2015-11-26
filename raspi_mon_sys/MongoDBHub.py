@@ -128,7 +128,7 @@ def __build_after_deadline_documents(build_docs, queues, t):
     lock.acquire()
     keys = queues.keys()
     lock.release()
-    batch = [ (y for y in build_docs(queues) if t - x[1] > PERIOD) for x in keys ]
+    batch = [ (y for y in build_docs(x) if t - x[1] > PERIOD) for x in keys ]
     return batch
 
 def start():
