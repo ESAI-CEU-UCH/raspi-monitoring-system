@@ -4,7 +4,7 @@ define([
     'app/core/utils/datemath',
     'moment',
     './directives',
-    './autogrow'
+    './autogrow',
     './query_ctrl',
 ],
        function (angular, _, dateMath) {
