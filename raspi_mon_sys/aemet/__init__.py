@@ -174,27 +174,33 @@ class DatosFecha:
 
 	'''Carga de los datos del XML para el dia seleccionado'''
 	def __load_datos(self, fecha):
+                def try_periodo(elem):
+                        try:
+                                return elem.get('periodo')
+                        except:
+                                return "00-24"
+
 		nodo = self.rss.find("prediccion/dia[@fecha='" + fecha + "']")
 
 		'''Probabilidad de precipitacion'''
 		for elem in nodo.findall('prob_precipitacion'):
-			self.precipitacion.append([elem.get('periodo'), elem.text])
+			self.precipitacion.append([try_periodo(elem), elem.text])
 
 		'''Cota de nieve'''
 		for elem in nodo.findall('cota_nieve_prov'):
-			self.cota_nieve.append([elem.get('periodo'), elem.text])
+			self.cota_nieve.append([try_periodo(elem), elem.text])
 		
 		'''Estado'''
 		for elem in nodo.findall('estado_cielo'):
-			self.estado_cielo.append([elem.get('periodo'), elem.get('descripcion')])
+			self.estado_cielo.append([try_periodo(elem), elem.get('descripcion')])
 
 		'''Viento'''
 		for elem in nodo.findall('viento'):
-			self.viento.append([elem.get('periodo'), elem.find('direccion').text, elem.find('velocidad').text])
+			self.viento.append([try_periodo(elem), elem.find('direccion').text, elem.find('velocidad').text])
 
 		'''Racha maxima'''
 		for elem in nodo.findall('racha_max'):
-			self.racha.append([elem.get('periodo'), elem.text])
+			self.racha.append([try_periodo(elem), elem.text])
 
 		'''Temperaturas'''
                 try:
