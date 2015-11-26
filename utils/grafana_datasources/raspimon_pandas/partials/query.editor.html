@@ -118,21 +118,21 @@
 	Filters
       </li>
       <li class="tight-form-item" ng-repeat="func in target.functions">
-        .
 	<select ng-model="func.name" class="tight-form-input input-small"
 		ng-options="name as name for name in function_names"
 		ng-change="targetBlur()">
         </select>
-        (
+        <span>(</span>
         <input type="text" auto-grow
                class="tight-form-input input-small"
 	       ng-model="func.arguments"
 	       ng-blur="targetBlur()"></input>
-        )
+        <span>)</span>
         <!-- function controls -->
         <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a>
-        <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-arrow-remove"></i></a>
         <a class="pointer" ng-click="moveFunction($index,$index+1)"><i class="fa fa-arrow-right"></i></a>
+        <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-arrow-remove"></i></a>
+        <span>&nbsp;</span>
       </li>
       <!-- add button -->
       <li class="tight-form-item">
