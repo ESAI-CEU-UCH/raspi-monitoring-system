@@ -1,4 +1,4 @@
-1#!/usr/bin/env python2.7
+#!/usr/bin/env python2.7
 """This is a bit more complicated module, similar to raspimon.py but allowing to
 incorporate complex statistics using numpy and pandas.
 """
