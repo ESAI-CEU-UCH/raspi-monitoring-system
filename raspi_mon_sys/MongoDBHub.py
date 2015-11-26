@@ -75,6 +75,8 @@ def __on_mqtt_message(client, userdata, msg):
         __enqueue_raspimon_message(client, userdata, topic, message)
     elif topic.startswith("forecast/"):
         __enqueue_forecast_message(client, userdata, topic, message)
+    else:
+        raise "Unknown MQTT topic :S"
 
 def __configure_mqtt(client):
     client.on_connect = __on_mqtt_connect
