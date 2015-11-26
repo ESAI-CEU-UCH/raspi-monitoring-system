@@ -104,7 +104,7 @@ def __build_raspimon_documents(key):
 def __build_forecast_documents(key):
     global forecast_message_queues
     topic,basetime = key
-    messages = raspimon_message_queues.pop(key)
+    messages = forecast_message_queues.pop(key)
     messages.sort(key=lambda x: x["timestamp"])
     for doc in messages:
         doc["house"] = house_data["name"]
