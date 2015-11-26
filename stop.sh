@@ -12,4 +12,6 @@ for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/MailLoggerSer
         kill -2 $pid
         waitpid $pid
     fi
+    echo "Sleeping 2 seconds"
+    sleep 2
 done
