@@ -126,8 +126,7 @@
         <input type="text" auto-grow
                class="tight-form-input input-mini"
 	       ng-model="func.args"
-	       ng-blur="targetBlur()"
-               ng-click="get_data()"></input>
+	       ng-blur="targetBlur(); get_data()"></input>
         <span>)</span>
         <!-- function controls -->
         <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();"><i class="fa fa-arrow-left"></i></a>
