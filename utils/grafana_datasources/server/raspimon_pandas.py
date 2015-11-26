@@ -230,7 +230,7 @@ def transform_to_time_series(data):
     ts = []
     for pair in data:
         p = pair["value"]
-        idx.append( p["secs"] )
+        idx.append( datetime.datetime.utcfromtimestamp(p["secs"]) )
         ts.append( p["value"] )
     return MySeries(np.array(ts), index=np.array(idx))
 
@@ -290,7 +290,7 @@ def to_grafana_time_series(s):
     if len(values.shape) == 1: values = list( values )
     else: values = list( values[:,0] )
     time = list( s.index )
-    result = [ [filt(v),k] for v,k in zip(values,time) ]
+    result = [ [filt(v),time.mktime(k.utctimetuple())] for v,k in zip(values,time) ]
     return result
 
 def process_series(ts, funcs):
