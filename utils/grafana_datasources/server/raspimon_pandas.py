@@ -286,6 +286,7 @@ def to_grafana_time_series(s):
     return result
 
 def process_series(ts, funcs):
+    print funcs
     g = { "__builtins__" : None } # only allow time-series object
     l = { "ts" : ts }
     for f in funcs: ts = eval("ts.{0}".format(f), g, l)

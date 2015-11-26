@@ -174,6 +174,7 @@ def upload_data():
         pending_documents = []
         
         try:
+            print insert_batch
             if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
         except:
             pending_documents = insert_batch
