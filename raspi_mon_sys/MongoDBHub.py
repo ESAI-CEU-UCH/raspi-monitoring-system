@@ -117,6 +117,9 @@ def __upload_all_data(build_documents, queues):
     logger.info("Inserted %d documents", len(insert_batch))
 
 def __build_after_deadline_documents(build_docs, queues, t):
+    lock.acquire()
+    keys = queues.keys()
+    lock.release()
     batch = [ (y for y in build_docs(queues) if t - x[1] > PERIOD) for x in keys ]
     return batch
 
@@ -150,11 +153,8 @@ def upload_data():
     try:
         mongo_client = Utils.getmongoclient(logger)
         db = mongo_client["raspimon"]
-        lock.acquire()
         t = time.time()
-        keys = message_queues.keys()
-        lock.release()
-        
+
         raspimon_batch = __build_after_deadline_documents(__build_raspimon_documents,
                                                           raspimon_message_queues, t)
         forecast_batch = __build_after_deadline_documents(__build_forecast_documents,
