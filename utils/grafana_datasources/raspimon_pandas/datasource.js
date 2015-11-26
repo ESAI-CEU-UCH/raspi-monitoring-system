@@ -114,7 +114,7 @@ define([
                        _.each(q.functions, function(x) {
                            if (x.name) {
                                var args = x.args || "";
-                               funcs_list.push( x+"("+ args + ")" );
+                               funcs_list.push( x.name+"("+ args + ")" );
                            }
                        });
                        promises.push( self._post(buildQueryUrl(q.topic, q.consolidateby || "last"),
