@@ -48,27 +48,30 @@ if __name__ == "__main__":
     
     # Start all modules.
     started_modules = []
-    if __try_call(logger, MongoDBHub.start):
-        started_modules.append(MongoDBHub)
+
+    def try_start(module):
+        if __try_call(logger, module.start):
+            started_modules.append(module)
+            return True
+        return False
+
+    if try_start(MongoDBHub):
         # repeat every hour with a 1/12th part as offset
-        Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.publish)
+        Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.upload_data)
     
-    if __try_call(logger, AEMETMonitor.start):
-        started_modules.append(AEMETMonitor)
+    if try_start(AEMETMonitor):
         # publish last AEMET data
         __try_call(logger, AEMETMonitor.publish)
         # repeat every hour AEMET data capture
         Scheduler.repeat_o_clock(T1_HOUR, AEMETMonitor.publish)
 
-    if __try_call(logger, CheckIP.start):
-        started_modules.append(CheckIP)
+    if try_start(CheckIP):
         # publish current IP
         __try_call(logger, CheckIP.publish)
         # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
         Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
 
-    if __try_call(logger, ElectricityPrices.start):
-        started_modules.append(ElectricityPrices)
+    if try_start(ElectricityPrices):
         # publish current electricity prices
         __try_call(logger, ElectricityPrices.publish, 0)
         if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
@@ -79,11 +82,9 @@ if __name__ == "__main__":
         Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
                                             ElectricityPrices.publish, 1)
     
-    if __try_call(logger, OpenEnergyMonitor.start):
-        started_modules.append(OpenEnergyMonitor)
+    try_start(OpenEnergyMonitor)
 
-    if __try_call(logger, PlugwiseMonitor.start):
-        started_modules.append(PlugwiseMonitor)
+    if try_start(PlugwiseMonitor):
         # repeat every second lectures from plugwise circles
         Scheduler.repeat_o_clock(T1_SECOND, PlugwiseMonitor.publish)
     

@@ -5,11 +5,11 @@ today and tomorrow.
 This module is particularly different from other ones because its data is
 published using two different topic roots. It publishes under
 `raspimon/aemet/ID/NAME/#` current weather status, and under
-`aemet/forecast/ID/HORIZON/NAME/#` where `ID` is the location identifier,
+`forecast/aemet/ID/HORIZON/NAME/#` where `ID` is the location identifier,
 `NAME` is the particular data identifier (wind,
 rain, temperature, min_temperature, max_temperature, etc.) and `HORIZON` is the
 forecast horizon (hourly, two_days, week, etc.). Messages for `raspimon` are a
-usual with two data fields `timestamp` and `data`. For `aemet/forecast` they are
+usual with two data fields `timestamp` and `data`. For `forecast/aemet` they are
 more complex with the following fields:
 
 - `timestamp`: when the data has been captured (it can be a time mark given by
@@ -17,9 +17,9 @@ more complex with the following fields:
 
 - `values`: a list of forecast parameters.
 
-- `period_first_times`: a list of timestamps indicating period start times.
+- `periods_start`: a list of timestamps indicating period start times.
 
-- `period_last_times`: a list of timestamps indicating period last times. This
+- `periods_end`: a list of timestamps indicating period last times. This
   can be None (null in JSON) when the data is not for a period.
 
 Valencia current weather data::
@@ -77,7 +77,7 @@ import raspi_mon_sys.Utils as Utils
 NUM_DAYS = 4
 
 weather_topic  = Utils.gettopic("aemet/{0}/{1}")
-forecast_topic = "aemet/forecast/{0}/{1}/{2}"
+forecast_topic = "forecast/aemet/{0}/{1}/{2}"
 
 # This variables are loaded from MongoDB server at start() function.
 tz = None
@@ -172,7 +172,7 @@ def __configure(client):
     client.on_connect = __on_connect
 
 def __process_daily_forecast_hour(result):
-    for x in result: x[0] = [ x[0] ]
+    for x in result: x[0] = [ x[0], int(x[0])+1 ] # one hour period
     return result
 
 def __process_daily_forecast_period(result):
@@ -201,9 +201,10 @@ def __process_daily_forecast_singleton(result):
 
 def __process_daily_forecast_list(days_parsers, func, method_name, *args):
     all_days = [ __try_number(__normalize( func(getattr(day, method_name)()) )) for day in days_parsers ]
-    all_days = [ [ [ z + __datestr2time(day.fecha) for z in x[0] ] ] + x[1:]
+    all_days = [ [ [ z*3600 + __datestr2time(day.fecha) for z in x[0] ] ] + x[1:]
                  for i,day in enumerate(days_parsers) for x in all_days[i] ]
     all_datas = [ x for x in zip(*all_days) ]
+    # print 3600,3600*6,3600*12,3600*24,[ x[1] - x[0] for x in all_datas[0] ]
     series = { name : all_datas[i] for i,name in enumerate(args) }
     return series
 
@@ -227,14 +228,15 @@ def __process_daily_forecast(days_parsers, *args):
         else:
             assert len(args) == 2
             series = __process_daily_forecast_list(days_parsers, __process_daily_forecast_singleton, args[0], "period", args[1])
-        period = series.pop("period")
-        aux = [ x for x in zip(*period) ]
-        if len(aux) == 1: aux.append(None)
+        period  = series.pop("period")
+        periods = [ x for x in zip(*period) ]
+        assert len(periods) == 2
+        
         pre_messages = [
             {
                 "content_key" : key,
-                "period_first_times" : aux[0],
-                "period_last_times" : aux[1],
+                "periods_start" : periods[0],
+                "periods_end" : periods[1],
                 "values" : values
             }
             for key,values in series.iteritems()
@@ -332,8 +334,8 @@ def __publish_hourly_forecast(client):
             msg = {
                 "timestamp" : time.time(),
                 "values" : series_data[i],
-                "period_first_times" : series_data[0],
-                "period_last_times" : None
+                "periods_start" : series_data[0],
+                "periods_end" : [ x+3600 for x in series_data[0] ]
             }
             client.publish(forecast_topic.format(location_id, "hourly", name),
                            json.dumps(msg))

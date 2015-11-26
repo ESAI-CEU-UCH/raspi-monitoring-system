@@ -39,34 +39,51 @@ house_data = None
 lock = threading.RLock()
 
 pending_messages = []
-message_queues = {}
+raspimon_message_queues = {}
+forecast_message_queues = {}
 
-def __on_mqtt_connect(client, userdata, rc):
-    client.subscribe("raspimon/#")
-
-def __on_mqtt_message(client, userdata, msg):
-    global message_queues
-    topic = msg.topic.replace("/",":")
-    message = json.loads(msg.payload)
+def __enqueue_raspimon_message(client, userdata, topic, message):
     timestamp = message["timestamp"]
     data = message["data"]
     basetime = int(timestamp // PERIOD * PERIOD)
     lock.acquire()
-    q = message_queues.setdefault( (topic,basetime), Queue.Queue() )
+    q = raspimon_message_queues.setdefault( (topic,basetime), Queue.Queue() )
     lock.release()
     delta_time = timestamp - basetime
     q.put( (delta_time, data) )
     logger.debug("%s %f %f %f %s", topic, float(basetime), float(timestamp),
                  float(delta_time), str(data))
 
+def __enqueue_forecast_message(client, userdata, topic, message):
+    timestamp = message["timestamp"]
+    basetime = int(timestamp // PERIOD * PERIOD)
+    lock.acquire()
+    q = forecast_message_queues.setdefault( (topic,basetime), Queue.Queue() )
+    lock.release()
+    q.put( message )
+    logger.debug("%s %f %s", topic, float(timestamp), str(message))
+
+def __on_mqtt_connect(client, userdata, rc):
+    client.subscribe("raspimon/#")
+    client.subscribe("forecast/#")
+
+def __on_mqtt_message(client, userdata, msg):
+    global raspimon_message_queues
+    topic = msg.topic.replace("/",":")
+    message = json.loads(msg.payload)
+    if topic.startswith("raspimon/"):
+        __enqueue_raspimon_message(client, userdata, topic, message)
+    elif topic.startswith("forecast/"):
+        __enqueue_forecast_message(client, userdata, topic, message)
+
 def __configure_mqtt(client):
     client.on_connect = __on_mqtt_connect
     client.on_message = __on_mqtt_message
 
-def __process(key):
-    global message_queues
+def __build_raspimon_documents(key):
+    global raspimon_message_queues
     topic,basetime = key
-    data_pairs = message_queues.pop(key)
+    data_pairs = raspimon_message_queues.pop(key)
     data_pairs.put('STOP')
     data_pairs = [ x for x in iter(data_pairs.get, 'STOP') ]
     data_pairs.sort(key=lambda x: x[0])
@@ -80,7 +97,28 @@ def __process(key):
     }
     logger.info("New document for topic= %s basetime= %d with n= %d",
                 topic, int(basetime), len(delta_times))
-    return document
+    return [ document ]
+
+def __build_forecast_documents(key):
+    global forecast_message_queues
+    topic,basetime = key
+    messages = raspimon_message_queues.pop(key)
+    messages.sort(key=lambda x: x["timestamp"])
+    for doc in messages:
+        doc["house"] = house_data["name"]
+        doc["topic"] = topic
+    logger.info("New documents for topic= %s basetime= %d with n= %d",
+                topic, int(basetime), len(messages))
+    return messages
+
+def __upload_all_data(build_documents, queues):
+    insert_batch = [ y for x in queues.keys() for y in build_documents(x)]
+    db.GVA2015_data.insert(insert_batch)
+    logger.info("Inserted %d documents", len(insert_batch))
+
+def __build_after_deadline_documents(build_docs, queues, t):
+    batch = [ (y for y in build_docs(queues) if t - x[1] > PERIOD) for x in keys ]
+    return batch
 
 def start():
     """Opens connections with logger, MongoDB and MQTT broker."""
@@ -102,14 +140,13 @@ def stop():
     # close MQTT broker connection
     mqtt_client.disconnect()
     # force sending data to MongoDB
-    insert_batch = [ __process(x) for x in message_queues.keys() ]
-    db.GVA2015_data.insert(insert_batch)
-    logger.info("Inserted %d documents", len(insert_batch))
+    __upload_all_data(__build_raspimon_documents, raspimon_message_queues)
+    __upload_all_data(__build_forecast_documents, forecast_message_queues)
     # close rest of pending connections
     mongo_client.close()
     logger.close()
 
-def publish():
+def upload_data():
     try:
         mongo_client = Utils.getmongoclient(logger)
         db = mongo_client["raspimon"]
@@ -117,10 +154,16 @@ def publish():
         t = time.time()
         keys = message_queues.keys()
         lock.release()
-        insert_batch = [ __process(x) for x in keys if t - x[1] > PERIOD ]
+        
+        raspimon_batch = __build_after_deadline_documents(__build_raspimon_documents,
+                                                          raspimon_message_queues, t)
+        forecast_batch = __build_after_deadline_documents(__build_forecast_documents,
+                                                          forecast_message_queues, t)
+        
         global pending_messages
-        insert_batch.extend(pending_messages)
+        insert_batch = raspimon_batch + forecast_batch + pending_messages
         pending_messages = []
+        
         try:
             db.GVA2015_data.insert(insert_batch)
         except:
