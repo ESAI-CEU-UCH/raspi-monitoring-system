@@ -120,18 +120,19 @@
       <li class="tight-form-item" ng-repeat="func in target.functions">
 	<select ng-model="func.name" class="tight-form-input input-medium"
 		ng-options="name as name for name in function_names"
-		ng-change="targetBlur()">
+		ng-change="targetBlur(); get_data();">
         </select>
         <span>(</span>
         <input type="text" auto-grow
                class="tight-form-input input-mini"
 	       ng-model="func.args"
-	       ng-blur="targetBlur()"></input>
+	       ng-blur="targetBlur()"
+               ng-click="get_data()"></input>
         <span>)</span>
         <!-- function controls -->
-        <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a>
-        <a class="pointer" ng-click="moveFunction($index,$index+1)"><i class="fa fa-arrow-right"></i></a>
-        <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-remove"></i></a>
+        <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();"><i class="fa fa-arrow-left"></i></a>
+        <a class="pointer" ng-click="moveFunction($index,$index+1); get_data();"><i class="fa fa-arrow-right"></i></a>
+        <a class="pointer" ng-click="removeFunction($index); get_data();"><i class="fa fa-remove"></i></a>
       </li>
       <!-- add button -->
       <li class="tight-form-item">
