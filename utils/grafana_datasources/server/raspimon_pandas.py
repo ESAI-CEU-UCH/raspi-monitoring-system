@@ -280,7 +280,7 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
 
 def to_grafana_time_series(s):
     def filt(x):
-        if math.isnan(x): return None
+        if type(x) == float and math.isnan(x): return None
         else: return x
 
     values = s.values
