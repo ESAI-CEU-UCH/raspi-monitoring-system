@@ -118,7 +118,8 @@
 	Filters
       </li>
       <li class="tight-form-item" ng-repeat="func in target.functions">
-	<select ng-model="func.name" class="tight-form-input input-medium"
+	<select dir="rtl" ng-model="func.name"
+                class="tight-form-input input-medium"
 		ng-options="name as name for name in function_names"
 		ng-change="targetBlur(); get_data();">
         </select>
