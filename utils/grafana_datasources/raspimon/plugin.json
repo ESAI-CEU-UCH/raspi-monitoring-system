@@ -12,5 +12,5 @@
     },
 
     "metrics": true,
-    "annotations": false
+    "annotations": true
 }
