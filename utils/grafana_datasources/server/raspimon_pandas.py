@@ -278,11 +278,16 @@ def mapreduce_query(topic, start, stop, max_data_points, agg):
 #    return mapreduce_query(topic, start, stop, max_data_points, agg)
 
 def to_grafana_time_series(s):
+    def filt(x):
+        if math.isnan(x): return None
+        else: return x
+
     values = s.values
     if len(values.shape) == 1: values = list( values )
     else: values = list( values[:,0] )
     time = list( s.index )
-    result = [ [v,k] for v,k in zip(values,time) ]
+    result = [ [filt(v),k] for v,k in zip(values,time) ]
+
     return result
 
 def process_series(ts, funcs):
