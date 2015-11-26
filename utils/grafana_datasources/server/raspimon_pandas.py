@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pandas as pd
 import pymongo
+import re
 import time
 
 from pandas import Series
@@ -237,7 +238,8 @@ def get_topics(filters=None):
     client,col = connect()
     if False:
         # This code is not working, pymongo Collection.distinct don't accepts a
-        # query as argument :'(
+        # query as argument :'( (we need to wait for next version update in
+        # Ubuntu)
         if filters is None or type(filters) is not list or len(filters) == 0:
             topics = col.distinct("topic")
         else:
@@ -247,7 +249,7 @@ def get_topics(filters=None):
         # so we perform selection of topics using a Python filter
         topics = col.distinct("topic")
         if filters is not None and type(filters) is list and len(filters) > 0:
-            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) ]
+            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) and not x.startswith("forecast") ]
     client.close()
     return topics
 
@@ -284,33 +286,31 @@ def to_grafana_time_series(s):
     return result
 
 def process_series(ts, funcs):
-    for f in funcs:
-        method_name = f[0]
-        args = f[1:]
-        method = getattr(ts, method_name)
-        ts = method(*args)
+    g = { "__builtins__" : None } # only allow time-series object
+    l = { "ts" : ts }
+    for f in funcs: ts = eval("ts.{0}".format(f), g, l)
     return ts
 
-@app.route("/raspimon/api/topics")
+@app.route("/raspimon_pandas/api/topics")
 def http_get_topics():
     return json.dumps( get_topics() )
 
-@app.route("/raspimon/api/topics/filtered", methods=["POST"])
+@app.route("/raspimon_pandas/api/topics/filtered", methods=["POST"])
 def http_post_topics_filtered():
     filters = request.get_json(force=True)
     return json.dumps( get_topics(filters) )
 
-@app.route("/raspimon/api/aggregators")
+@app.route("/raspimon_pandas/api/aggregators")
 def http_get_aggregators():
     return json.dumps( reduce_operators.keys() );
 
-# http://localhost:5000/raspimon/api/aggregate/last/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
+# http://localhost:5000/raspimon_pandas/api/aggregate/last/raspimon:b827eb7c62d8:rfemon:10:6:vrms1:value/0/1448193433/100
 
-@app.route('/raspimon/api/aggregate/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
+@app.route('/raspimon_pandas/api/aggregate/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>')
 def http_get_aggregation_query(agg, topic, start, stop, max_data_points):
     return json.dumps( to_grafana_time_series( mapreduce_query(topic, start, stop, max_data_points, agg) ) )
 
-@app.route('/raspimon/api/pandas/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>', methods=["POST"])
+@app.route('/raspimon_pandas/api/pandas/<string:agg>/<string:topic>/<int:start>/<int:stop>/<int:max_data_points>', methods=["POST"])
 def http_get_pandas_query(agg, topic, start, stop, max_data_points):
     funcs = request.get_json(force=True)
     ts = mapreduce_query(topic, start, stop, max_data_points, agg)
@@ -320,7 +320,7 @@ if __name__ == "__main__":
     app.debug = IN_DEBUG
     if not IN_DEBUG:
         try:
-            handler = RotatingFileHandler('/var/log/raspimon/raspimon.log', maxBytes=10000, backupCount=1)
+            handler = RotatingFileHandler('/var/log/raspimon_pandas/raspimon_pandas.log', maxBytes=10000, backupCount=1)
             formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setLevel(logging.INFO)
             handler.setFormatter(formatter)

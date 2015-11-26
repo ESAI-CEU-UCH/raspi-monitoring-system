@@ -130,7 +130,8 @@ def get_topics(filters=None):
     client,col = connect()
     if False:
         # This code is not working, pymongo Collection.distinct don't accepts a
-        # query as argument :'(
+        # query as argument :'( (we need to wait for next version update in
+        # Ubuntu)
         if filters is None or type(filters) is not list or len(filters) == 0:
             topics = col.distinct("topic")
         else:
@@ -140,7 +141,7 @@ def get_topics(filters=None):
         # so we perform selection of topics using a Python filter
         topics = col.distinct("topic")
         if filters is not None and type(filters) is list and len(filters) > 0:
-            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) ]
+            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) and not x.startswith("forecast") ]
     client.close()
     return topics
 

@@ -1,4 +1,5 @@
-# Using Type=idle to force this script to be executed AFTER all other jobs
+# This script executes at boot the monitoring system raspimon.
+# Using Type=idle to force this script to be executed AFTER all other jobs.
 [Unit]
 Description=Starts raspimon at startup
 Wants=network.target

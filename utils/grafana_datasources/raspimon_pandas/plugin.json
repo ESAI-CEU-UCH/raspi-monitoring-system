@@ -1,6 +1,6 @@
 {
     "pluginType": "datasource",
-    "name": "Raspimon pandas MongoDB",
+    "name": "Raspimon Pandas MongoDB",
 
     "type": "raspimon_pandas",
     "serviceName": "RaspimonPandasDatasource",

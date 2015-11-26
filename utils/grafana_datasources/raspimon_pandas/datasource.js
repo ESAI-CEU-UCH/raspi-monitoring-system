@@ -20,7 +20,7 @@ define([
                    this.type = "raspimon_pandas";
                    this.url  = datasource.url;
                    // jsonData is a dictionary created by the controller and
-                   // resued by raspimon to track new configuration items
+                   // resued by raspimon_pandas to track new configuration items
                    if (datasource.jsonData) {
                        this.topic_filters = datasource.jsonData.topic_filters;
                    }
@@ -103,7 +103,7 @@ define([
                    }
                    
                    var buildQueryUrl = function(topic, aggregator) {
-                       return "/raspimon/api/aggregate/" + aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
+                       return "/raspimon_pandas/api/aggregate/" + aggregator + "/" + topic + "/" + from + "/" + to + "/" + maxDataPoints;
                    };
                    
                    // chain all promises, one per each element at qs (targets)
@@ -123,7 +123,7 @@ define([
                
                // test connectivity requesting the list of topics (all topics)
                RaspimonPandasDatasource.prototype.testDatasource = function () {
-                   return this._get('/raspimon/api/topics').then(function(topics) {
+                   return this._get('/raspimon_pandas/api/topics').then(function(topics) {
                        if (!topics) return { status: "error", message: "Unable to connect to data source" };
                        return { status: "success", message: "Data source is working", title: "Success" };
                    });
@@ -149,7 +149,7 @@ define([
                
                // Facility to request topics list from query editor.
                RaspimonPandasDatasource.prototype.getTopicsList = buildCachedPromiseMethod(function(self) {
-                   return self._get('/raspimon/api/topics').then(array_promise_callback)
+                   return self._get('/raspimon_pandas/api/topics').then(array_promise_callback)
                })
                
                // Returns the list of topics filtered by using topic_filters
@@ -168,7 +168,7 @@ define([
                
                // facility to request aggregators list from query editor
                RaspimonPandasDatasource.prototype.getAggregatorsList = buildCachedPromiseMethod(function(self) {
-                   return self._get('/raspimon/api/aggregators').then(array_promise_callback);
+                   return self._get('/raspimon_pandas/api/aggregators').then(array_promise_callback);
                });
                
                return RaspimonPandasDatasource;
