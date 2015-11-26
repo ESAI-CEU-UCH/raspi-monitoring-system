@@ -111,7 +111,7 @@ def __build_forecast_documents(key):
                 topic, int(basetime), len(messages))
     return messages
 
-def __upload_all_data(build_documents, queues):
+def __upload_all_data(db, build_documents, queues):
     insert_batch = [ y for x in queues.keys() for y in build_documents(x)]
     db.GVA2015_data.insert(insert_batch)
     logger.info("Inserted %d documents", len(insert_batch))
@@ -143,8 +143,8 @@ def stop():
     # close MQTT broker connection
     mqtt_client.disconnect()
     # force sending data to MongoDB
-    __upload_all_data(__build_raspimon_documents, raspimon_message_queues)
-    __upload_all_data(__build_forecast_documents, forecast_message_queues)
+    __upload_all_data(db, __build_raspimon_documents, raspimon_message_queues)
+    __upload_all_data(db, __build_forecast_documents, forecast_message_queues)
     # close rest of pending connections
     mongo_client.close()
     logger.close()
@@ -165,7 +165,7 @@ def upload_data():
         pending_messages = []
         
         try:
-            db.GVA2015_data.insert(insert_batch)
+            if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
         except:
             pending_messages = insert_batch
             if len(pending_messages) > PENDING_MESSAGES_LENGTH_ERROR:
