@@ -297,9 +297,11 @@ def process_series(ts, funcs):
     g = { "__builtins__" : None } # only allow time-series object
     l = { "ts" : ts }
     print funcs
-    print ts
-    for f in funcs: ts = eval("ts.{0}".format(f), g, l)
-    print ts
+    for f in funcs:
+        print ts.values
+        ts = eval("ts.{0}".format(f), g, l)
+    print ts.values
+    print "YES"
     return ts
 
 @app.route("/raspimon_pandas/api/topics")
