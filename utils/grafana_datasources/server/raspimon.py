@@ -141,7 +141,8 @@ def get_topics(filters=None):
         # so we perform selection of topics using a Python filter
         topics = col.distinct("topic")
         if filters is not None and type(filters) is list and len(filters) > 0:
-            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) and not x.startswith("forecast") ]
+            topics = [ x for x in topics if any([x.find(y)!=-1 for y in filters]) ]
+    topics = filter(lambda x: not x.startswith("forecast"), topics)
     client.close()
     return topics
 
