@@ -18,7 +18,7 @@ define([
                    $scope.datasource.getAggregatorsList().then(function(aggregators) {
                        $scope.aggregators = aggregators;
                    });
-                   $scope.consolidateby = "last";
+                   $scope.consolidateby = target.consolidateby || "last";
                    $scope.function_names = [
                        "abs", "add", "clip", "clip_lower", "clip_upper",
                        "cumprod", "cumsum", "diff", "div", "dropna", "fillna",
@@ -29,7 +29,7 @@ define([
                        "rolling_skew", "rolling_std", "rolling_sum",
                        "rolling_var", "rolling_window", "round", "shift", "sub",
                    ];
-                   target.functions = [];
+                   target.functions = target.functions || [];
                    
                    $scope.addFunction = function() {
                        target.functions.push( { "name" : undefined,

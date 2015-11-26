@@ -286,9 +286,7 @@ def to_grafana_time_series(s):
     if len(values.shape) == 1: values = list( values )
     else: values = list( values[:,0] )
     time = list( s.index )
-    print values
     result = [ [filt(v),k] for v,k in zip(values,time) ]
-    print result
     return result
 
 def process_series(ts, funcs):
