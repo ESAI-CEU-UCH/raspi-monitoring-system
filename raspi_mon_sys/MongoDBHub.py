@@ -200,7 +200,7 @@ def upload_data():
 if __name__ == "__main__":
     Scheduler.start()
     start()
-    Scheduler.repeat_o_clock_with_offset(PERIOD*1000, PERIOD/12*1000, publish)
+    Scheduler.repeat_o_clock_with_offset(PERIOD*1000, PERIOD/12*1000, upload_data)
     try:
         while True: time.sleep(60)
     except:
