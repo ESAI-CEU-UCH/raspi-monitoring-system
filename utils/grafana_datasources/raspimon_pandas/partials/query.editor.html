@@ -38,7 +38,7 @@
     </ul>
 
     <ul class="tight-form-list" role="menu">
-      <li class="tight-form-item query-keyword" style="width: 100px">
+      <li class="tight-form-item query-keyword" style="width: 75px">
 	Topic
       </li>
       <li class="tight-form-item">
@@ -109,48 +109,46 @@
       </li>
     </ul>
     
-    <br>
-    
-    <ul class="tight-form-list" role="menu">
-      <li class="tight-form-item query-keyword">
-	Pandas filters
-      </li class="tight-form-item">
-      
-      <li ng-repeat="func in functions">
-        <!-- function name dropdown -->
-	<select class="tight-form-input input-mini"
-                ng-model="func.name"
-		ng-options="name as name for name in function_names"
-		ng-change="targetBlur()"
-                bs-tooltip="'By default it is last.'">
-	</select>
-        <!-- function arguments -->
+  </div>
+  
+  <div class="tight-form">
+    <ul class="tight-form-list">
+      <li class="tight-form-item query-keyword tight-form-align" style="width: 75px;">
+	Filters
+      </li>
+      <li ng-repeat="func in target.functions">
+	<metric-segment segment="segment" ng-model="func.name" get-options="function_names"></metric-segment>
         (
         <input type="number" class="tight-form-input input-mini"
 	       ng-model="func.arguments"
 	       spellcheck='false'
 	       ng-blur="targetBlur()"></input>
-        )
-        <!-- function controls -->
-        <div class="tight-form-func-controls">
-          <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a>
-          <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-arrow-remove"></i></a>
-          <a class="pointer" ng-click="moveFunction($index,$index+1)"><i class="fa fa-arrow-right"></i></a>
-        </div>
-      </li>
-      <!-- add button -->
-      <li class="tight-form-item">
-        <a class="tight-form-item tight-form-func" ng-click="addFunction()">
-          <i class="fa fa-plus"></i>
-        </a>
-        <!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -->
-	<!--   <i class="fa fa-warning"></i> -->
-	<!-- </a> -->
+        )        
       </li>
     </ul>
-
     <div class="clearfix"></div>
-
   </div>
+      
+  <!--       <\!-- function controls -\-> -->
+  <!--       <div class="tight-form-func-controls"> -->
+  <!--         <a class="pointer" ng-click="moveFunction($index,$index-1)"><i class="fa fa-arrow-left"></i></a> -->
+  <!--         <a class="pointer" ng-click="removeFunction($index)"><i class="fa fa-arrow-remove"></i></a> -->
+  <!--         <a class="pointer" ng-click="moveFunction($index,$index+1)"><i class="fa fa-arrow-right"></i></a> -->
+  <!--       </div> -->
+  <!--     </li> -->
+  <!--     <\!-- add button -\-> -->
+  <!--     <li class="tight-form-item"> -->
+  <!--       <a class="tight-form-item tight-form-func" ng-click="addFunction()"> -->
+  <!--         <i class="fa fa-plus"></i> -->
+  <!--       </a> -->
+  <!--       <\!-- <a bs-tooltip="target.errors.aggregator" style="color: rgb(229, 189, 28)" ng-show="target.errors.aggregator"> -\-> -->
+  <!--       <\!--   <i class="fa fa-warning"></i> -\-> -->
+  <!--       <\!-- </a> -\-> -->
+  <!--     </li> -->
+  <!--   </ul> -->
+
+  <!--   <div class="clearfix"></div> -->
+
+  <!-- </div> -->
 
 </div>
