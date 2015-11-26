@@ -128,7 +128,7 @@ def __build_after_deadline_documents(build_docs, queues, t):
     lock.acquire()
     keys = queues.keys()
     lock.release()
-    batch = [ (y for y in build_docs(x) if t - x[1] > PERIOD) for x in keys ]
+    batch = [ y for x in keys if t - x[1] > PERIOD for y in build_docs(x) ]
     return batch
 
 def start():
@@ -174,7 +174,6 @@ def upload_data():
         pending_documents = []
         
         try:
-            print insert_batch
             if len(insert_batch) > 0: db.GVA2015_data.insert(insert_batch)
         except:
             pending_documents = insert_batch
