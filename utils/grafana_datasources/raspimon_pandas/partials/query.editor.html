@@ -117,13 +117,14 @@
       <li class="tight-form-item query-keyword tight-form-align" style="width: 75px;">
 	Filters
       </li>
-      <li ng-repeat="func in target.functions">
+      <li class="tight-form-item" ng-repeat="func in target.functions">
 	<select ng-model="func.name" class="tight-form-input input-large"
 		ng-options="name as name for name in function_names"
-		ng-change="targetBlur()"
-                required>
+		ng-change="targetBlur()">
+        </select>
         (
         <input type="text" auto-grow
+               class="tight-form-input input-small"
 	       ng-model="func.arguments"
 	       ng-blur="targetBlur()"></input>
         )
