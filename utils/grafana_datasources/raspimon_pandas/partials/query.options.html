@@ -46,6 +46,11 @@
 	  max data points
 	</a>
       </li>
+      <li class="tight-form-item">
+	<a ng-click="toggleEditorHelp(5)" bs-tooltip="'click to show helpful info'" data-placement="bottom">
+	  filters
+	</a>
+      </li>
     </ul>
     <div class="clearfix"></div>
   </div>
@@ -85,6 +90,13 @@
         <li>Consolidation operation depends on consolidateBy as indicated in the query</li>
         <li>Consolidation will effect series legend values</li>
         <li>High values to maxDataPoints can be harmful to performance</li>
+      </ul>
+    </div>
+    <div class="grafana-info-box span6" ng-if="editorHelpIndex === 5">
+      <h5>Filters</h5>
+      <ul>
+        <li>All filters function are Python pandas functions</li>
+        <li>The functions are documented in pandas reference manual</li>
       </ul>
     </div>
   </div>

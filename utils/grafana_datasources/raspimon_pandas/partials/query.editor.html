@@ -130,9 +130,9 @@
 	       ng-blur="targetBlur(); get_data()"></input>
         <span>)</span>
         <!-- function controls -->
-        <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();"><i class="fa fa-arrow-left"></i></a>
-        <a class="pointer" ng-click="moveFunction($index,$index+1); get_data();"><i class="fa fa-arrow-right"></i></a>
-        <a class="pointer" ng-click="removeFunction($index); get_data();"><i class="fa fa-remove"></i></a>
+        <a class="pointer" ng-click="removeFunction($index); get_data();" bs-tooltip="'Removes this filter.'"><i class="fa fa-remove"></i></a>
+        <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();" bs-tooltip="Swaps with next filter.'"><i class="fa fa-arrow-left"></i></a>
+        <a class="pointer" ng-click="moveFunction($index,$index+1); get_data();" bs-tooltip="Swaps with previous filter.'"><i class="fa fa-arrow-right"></i></a>
       </li>
       <!-- add button -->
       <li class="tight-form-item">
