@@ -32,8 +32,8 @@ define([
                    target.functions = [];
                    
                    $scope.addFunction = function() {
-                       target.functions.put( { "name" : undefined,
-                                               "arguments" : undefined } )
+                       target.functions.push( { "name" : undefined,
+                                                "arguments" : undefined } )
                    };
                    $scope.removeFunction = function(i) {
                        target.functions.splice(i, 1);
