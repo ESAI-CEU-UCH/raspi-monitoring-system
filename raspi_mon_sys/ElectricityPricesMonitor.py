@@ -31,6 +31,7 @@ import urllib2
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
+logger = None
 topic = Utils.gettopic("electricity_prices/{0}")
 url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
 
@@ -40,7 +41,7 @@ def __on_connect(client, userdata, rc):
 def __configure(client):
     client.on_connect = __on_connect
 
-def __publish_data_of_day(logger, day_str):
+def __publish_data_of_day(day_str):
     try:
         client = Utils.getpahoclient(logger, __configure)
     except:
@@ -113,4 +114,6 @@ if __name__ == "__main__":
     import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
     transport = "ipc:///tmp/zmq_electricity_prices_server.ipc"
     ScreenLoggerServer.start_thread(transport)
+    global logger
+    logger = LoggerClient.open("AEMETMonitor", transport)
     __publish_data_of_day(sys.argv[1])
