@@ -24,6 +24,7 @@ given day offset (current if `offset=0`, next if `offset=1`).
 
 import datetime
 import json
+import sys
 import time
 import urllib2
 
@@ -39,26 +40,14 @@ def __on_connect(client, userdata, rc):
 def __configure(client):
     client.on_connect = __on_connect
 
-def start():
-    """Opens logger connection."""
-    global logger
-    logger = LoggerClient.open("ElectricityPricesMonitor")
-
-def stop():
-    logger.close()
-    
-def publish(day_offset):
-    """Publishes the electricity prices for a given day offset.
-    
-    If `offset=0` prices will be for current day, if `offset=1` prices will be
-    for next day, and so on.
-    """
-    client = Utils.getpahoclient(logger, __configure)
+def __publish_data_of_day(logger, day_str):
     try:
-        # take the date for tomorrow
-        dt=datetime.date.today() + datetime.timedelta(days=day_offset)
-        ref_time = time.mktime(dt.timetuple())
-        tomorrow_url = url.format(dt.strftime("%Y%m%d"))
+        client = Utils.getpahoclient(logger, __configure)
+    except:
+        logger.error("Unable to connecto to MQTT broker")
+        raise
+    tomorrow_url = url.format(day_str)
+    try:
         # http request
         response_string = urllib2.urlopen(tomorrow_url)
     except:
@@ -98,3 +87,30 @@ def publish(day_offset):
         logger.info("Unable to publish electricity prices")
         client.disconnect()
         raise
+    else:
+        client.disconnect()
+
+def start():
+    """Opens logger connection."""
+    global logger
+    logger = LoggerClient.open("ElectricityPricesMonitor")
+
+def stop():
+    logger.close()
+
+def publish(day_offset):
+    """Publishes the electricity prices for a given day offset.
+    
+    If `offset=0` prices will be for current day, if `offset=1` prices will be
+    for next day, and so on.
+    """
+    # take the date for tomorrow
+    dt=datetime.date.today() + datetime.timedelta(days=day_offset)
+    ref_time = time.mktime(dt.timetuple())
+    __publish_data_of_day(dt.strftime("%Y%m%d"))
+
+if __name__ == "__main__":
+    import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
+    transport = "ipc:///tmp/zmq_electricity_prices_server.ipc"
+    ScreenLoggerServer.start_thread(transport)
+    __publish_data_of_day(sys.argv[1])
