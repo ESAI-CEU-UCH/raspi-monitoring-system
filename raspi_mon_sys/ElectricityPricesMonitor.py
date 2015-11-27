@@ -41,7 +41,7 @@ def __on_connect(client, userdata, rc):
 def __configure(client):
     client.on_connect = __on_connect
 
-def __publish_data_of_day(day_str):
+def __publish_data_of_day(day_str, ref_time):
     try:
         client = Utils.getpahoclient(logger, __configure)
     except:
@@ -108,13 +108,14 @@ def publish(day_offset):
     # take the date for tomorrow
     dt=datetime.date.today() + datetime.timedelta(days=day_offset)
     ref_time = time.mktime(dt.timetuple())
-    __publish_data_of_day(dt.strftime("%Y%m%d"))
+    __publish_data_of_day(dt.strftime("%Y%m%d"), ref_time)
 
 if __name__ == "__main__":
     import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
     transport = "ipc:///tmp/zmq_electricity_prices_server.ipc"
     ScreenLoggerServer.start_thread(transport)
     logger = LoggerClient.open("AEMETMonitor", transport)
-    print sys.argv
-    __publish_data_of_day(sys.argv[1])
+    dt = datetime.datetime.strptime(sys.argv[1], "%Y%m%d")
+    ref_time = time.mktime( dt.timetuple() )
+    __publish_data_of_day(sys.argv[1], ref_time)
     logger.close()
