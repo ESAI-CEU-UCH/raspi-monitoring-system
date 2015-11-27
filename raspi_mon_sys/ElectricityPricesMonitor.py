@@ -27,7 +27,6 @@ import json
 import pytz
 import sys
 import time
-import tz
 import urllib2
 
 import raspi_mon_sys.LoggerClient as LoggerClient
