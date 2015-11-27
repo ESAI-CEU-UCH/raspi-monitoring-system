@@ -161,7 +161,7 @@ def __try_element(e, child, func):
 
 def __datetimestr2time(s, fmt="%Y-%m-%dT%H:%M:%S"):
     dt = tz.localize( datetime.datetime.strptime(s, fmt) )
-    return time.mktime(dt.utctimetuple())
+    return time.mktime(dt.timetuple())
 
 def __datestr2time(s): return __datetimestr2time(s, "%Y-%m-%d")
 
@@ -292,7 +292,7 @@ def __publish_hourly_forecast(client):
         delta = int( body.find("tr").find("td").text )
         t = t + datetime.timedelta(0, delta * 3600)
         for row in body.findall("tr"):
-            series_data[0].append(time.mktime(t.utctimetuple()))
+            series_data[0].append(time.mktime(t.timetuple()))
             t = t + datetime.timedelta(0, 3600)
             j = 0
             for i,elem in enumerate(row.findall("td")):

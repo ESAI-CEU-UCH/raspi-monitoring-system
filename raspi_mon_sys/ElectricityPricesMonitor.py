@@ -111,7 +111,7 @@ def publish(day_offset):
     dt = datetime.date.today() + datetime.timedelta(days=day_offset)
     dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
     dt = tz.localize(dt)
-    ref_time = time.mktime(dt.utctimetuple())
+    ref_time = time.mktime(dt.timetuple())
     __publish_data_of_day(dt.strftime("%Y%m%d"), ref_time)
 
 if __name__ == "__main__":
@@ -122,6 +122,6 @@ if __name__ == "__main__":
     tz = pytz.timezone("Europe/Madrid")
     dt = datetime.datetime.strptime(sys.argv[1], "%Y%m%d")
     dt = tz.localize(dt)
-    ref_time = time.mktime(dt.utctimetuple())
+    ref_time = time.mktime(dt.timetuple())
     __publish_data_of_day(sys.argv[1], ref_time)
     logger.close()
