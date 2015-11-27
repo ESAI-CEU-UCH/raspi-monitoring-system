@@ -24,8 +24,10 @@ given day offset (current if `offset=0`, next if `offset=1`).
 
 import datetime
 import json
+import pytz
 import sys
 import time
+import tz
 import urllib2
 
 import raspi_mon_sys.LoggerClient as LoggerClient
@@ -106,8 +108,11 @@ def publish(day_offset):
     for next day, and so on.
     """
     # take the date for tomorrow
-    dt=datetime.date.today() + datetime.timedelta(days=day_offset)
-    ref_time = time.mktime(dt.timetuple())
+    tz = pytz.timezone("Europe/Madrid")
+    dt = datetime.date.today() + datetime.timedelta(days=day_offset)
+    dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
+    dt = tz.localize(dt)
+    ref_time = time.mktime(dt.utctimetuple())
     __publish_data_of_day(dt.strftime("%Y%m%d"), ref_time)
 
 if __name__ == "__main__":
@@ -115,7 +120,9 @@ if __name__ == "__main__":
     transport = "ipc:///tmp/zmq_electricity_prices_server.ipc"
     ScreenLoggerServer.start_thread(transport)
     logger = LoggerClient.open("AEMETMonitor", transport)
+    tz = pytz.timezone("Europe/Madrid")
     dt = datetime.datetime.strptime(sys.argv[1], "%Y%m%d")
-    ref_time = time.mktime( dt.timetuple() )
+    dt = tz.localize(dt)
+    ref_time = time.mktime(dt.utctimetuple())
     __publish_data_of_day(sys.argv[1], ref_time)
     logger.close()
