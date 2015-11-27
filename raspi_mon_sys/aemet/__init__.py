@@ -175,11 +175,10 @@ class DatosFecha:
 	'''Carga de los datos del XML para el dia seleccionado'''
 	def __load_datos(self, fecha):
                 def try_periodo(elem):
-                        try:
-                                return elem.get('periodo')
-                        except:
-                                return "00-24"
-
+                        p = elem.get('periodo')
+                        if p is None: return "00-24"
+                        return p
+                
 		nodo = self.rss.find("prediccion/dia[@fecha='" + fecha + "']")
 
 		'''Probabilidad de precipitacion'''
