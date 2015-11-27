@@ -114,6 +114,7 @@ if __name__ == "__main__":
     import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
     transport = "ipc:///tmp/zmq_electricity_prices_server.ipc"
     ScreenLoggerServer.start_thread(transport)
-    global logger
     logger = LoggerClient.open("AEMETMonitor", transport)
+    print sys.argv
     __publish_data_of_day(sys.argv[1])
+    logger.close()
