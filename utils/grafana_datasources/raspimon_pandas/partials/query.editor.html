@@ -120,15 +120,15 @@
       <li class="tight-form-item" ng-repeat="func in target.functions">
 	<select dir="rtl" ng-model="func.name"
                 class="tight-form-input input-medium"
-		ng-options="name as name for name in function_names"
+		ng-options="name as (name | uppercase) for name in function_names"
 		ng-change="targetBlur(); get_data();">
         </select>
-        <span>(</span>
+        <span><b>(</b></span>
         <input type="text" auto-grow style="width: 10px;"
                class="tight-form-input" comfort-zone="0"
 	       ng-model="func.args"
 	       ng-blur="targetBlur(); get_data()"></input>
-        <span>)</span>
+        <span><b>)</b></span>
         <!-- function controls -->
         <a class="pointer" ng-click="removeFunction($index); get_data();" bs-tooltip="'Removes this filter.'"><i class="fa fa-remove"></i></a>
         <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();" bs-tooltip="'Swaps with previous filter.'"><i class="fa fa-arrow-left"></i></a>
