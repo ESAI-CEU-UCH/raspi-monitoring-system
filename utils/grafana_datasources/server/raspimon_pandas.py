@@ -233,7 +233,7 @@ def transform_to_time_series(data):
     for pair in data:
         p = pair["value"]
         dt = datetime.datetime.fromtimestamp(p["secs"])
-        dt = tz.localize(t)
+        dt = tz.localize( dt )
         idx.append( dt )
         ts.append( p["value"] )
     return MySeries(np.array(ts), index=np.array(idx))
