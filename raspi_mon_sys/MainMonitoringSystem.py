@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     if try_start(PlugwiseMonitor):
         # repeat every second lectures from plugwise circles
-        Scheduler.repeat_o_clock(T1_SECOND, PlugwiseMonitor.publish)
+        Scheduler.repeat_o_clock(10*T1_SECOND, PlugwiseMonitor.publish)
     
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")

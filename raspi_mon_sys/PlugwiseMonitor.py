@@ -14,7 +14,9 @@ This sequence is a time series of power consumption and state values. State
 value messages are only sended if state changes from previous and current read.
 
 Looking into code and `Plugwise-2-py <https://github.com/SevenW/Plugwise-2-py>`_
-it seems that 1 second sampling period is allowed.
+it seems that 1 second sampling period is allowed but 8-10 seconds would obtain
+better resolution from pulse counters.
+
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
