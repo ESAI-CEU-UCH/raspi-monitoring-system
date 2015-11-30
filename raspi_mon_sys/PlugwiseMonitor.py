@@ -88,8 +88,8 @@ def start():
         }) )
         circle_data["state"] = "NA"
         for v in OUTPUT_LIST:
-        circle_data["power" + v["suffix"]] = -10000.0
-        circle_data["when" + v["suffix"]] = 0.0
+            circle_data["power" + v["suffix"]] = -10000.0
+            circle_data["when" + v["suffix"]] = 0.0
 
     client.loop_start()
 
