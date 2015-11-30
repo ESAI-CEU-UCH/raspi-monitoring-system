@@ -32,33 +32,39 @@ pending_points = []
 
 def __enqueue_raspimon_point(client, userdata, topic, message, tz):
     timestamp = message["timestamp"]
-    data = message["data"]
-    if data is not None:
-        doc = {
-            "measurement": topic,
-            "time": datetime.datetime.fromtimestamp(timestamp, tz).isoformat(),
-            "fields": { "value": data }
-        }
-        lock.acquire()
-        try:
-            pending_points.append( doc )
-        except:
-            print "Unexpected error:", traceback.format_exc()
-            logger.error("Unexpected error: %s", traceback.format_exc())        
-        lock.release()
+    v = message["data"]
+    fields = {}
+    if v is None: fields["null"] = "true"
+    elif type(v) == str or type(v) == unicode: fields["svalue"] = unicode(v)
+    else: fields["value"] = v
+    doc = {
+        "measurement": topic,
+        "time": datetime.datetime.fromtimestamp(timestamp, tz).isoformat(),
+        "fields": fields
+    }
+    lock.acquire()
+    try:
+        pending_points.append( doc )
+    except:
+        print "Unexpected error:", traceback.format_exc()
+        logger.error("Unexpected error: %s", traceback.format_exc())        
+    lock.release()
 
 def __enqueue_forecast_point(client, userdata, topic, message, tz):
     timestamp = message["timestamp"]
     lock.acquire()
     try:
         for s,e,v in zip(message["periods_start"],message["periods_end"],message["values"]):
-            if v is not None:
-                doc = {
-                    "measurement": topic,
-                    "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
-                    "fields": { "value": v }
-                }
-                pending_points.append( doc )
+            fields = {}
+            if v is None: fields["null"] = "true"
+            elif type(v) == str or type(v) == unicode: fields["svalue"] = unicode(v)
+            else: fields["value"] = v
+            doc = {
+                "measurement": topic,
+                "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
+                "fields": fields
+            }
+            pending_points.append( doc )
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
