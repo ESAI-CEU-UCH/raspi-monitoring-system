@@ -105,7 +105,7 @@ def start():
         influx_client.create_database(INFLUX_DATABASE)
     except:
         pass
-    client.create_retention_policy('week_policy', '7d', 1, default=True)
+    influx_client.create_retention_policy('week_policy', '7d', 1, default=True)
 
 def stop():
     mqtt_client.disconnect()
