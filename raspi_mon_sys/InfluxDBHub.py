@@ -84,7 +84,10 @@ def start():
     influx_client = InfluxDBClient(INFLUX_HOST, INFLUX_PORT,
                                    INFLUX_USER, INFLUX_PASSWORD,
                                    INFLUX_DATABASE)
-    influx_client.create_database(INFLUX_DATABASE)
+    try:
+        influx_client.create_database(INFLUX_DATABASE)
+    except:
+        pass
 
 def stop():
     mqtt_client.disconnect()
