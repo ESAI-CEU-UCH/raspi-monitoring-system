@@ -65,7 +65,6 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
                 "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
                 "fields": fields
             }
-            print doc
             pending_points.append( doc )
     except:
         print "Unexpected error:", traceback.format_exc()
@@ -113,11 +112,12 @@ def stop():
 
 def write_data():
     lock.acquire()
-    try:
-        global pending_points
-        influx_client.write_points(pending_points)
-        pending_points = []
-    except:
-        print "Unexpected error:", traceback.format_exc()
-        logger.error("Unexpected error: %s", traceback.format_exc())
+    if len(pending_points) > 0:
+        try:
+            global pending_points
+            influx_client.write_points(pending_points)
+            pending_points = []
+        except:
+            print "Unexpected error:", traceback.format_exc()
+            logger.error("Unexpected error: %s", traceback.format_exc())
     lock.release()
