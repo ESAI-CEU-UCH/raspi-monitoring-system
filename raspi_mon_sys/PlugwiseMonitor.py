@@ -4,9 +4,10 @@
 Plugwise data is published under topics::
 
     BASETOPIC/plugwise/MACADDRESS1/NAME1/power1s/value {"timestamp":t1,"data":power1}
+    BASETOPIC/plugwise/MACADDRESS1/NAME1/power8s/value {"timestamp":t1,"data":power1}
     BASETOPIC/plugwise/MACADDRESS1/NAME1/state/value   {"timestamp":t1,"data":state1}
     ...
-    BASETOPIC/plugwise/MACADDRESS1/NAME2/power1s/value {"timestamp":t2,"data":power2}
+    BASETOPIC/plugwise/MACADDRESS1/NAME2/power8s/value {"timestamp":t2,"data":power2}
     BASETOPIC/plugwise/MACADDRESS1/NAME2/state/value   {"timestamp":t2,"data":state2}
     ...
 
@@ -34,6 +35,7 @@ import raspi_mon_sys.Utils as Utils
 MAX_TIME_BETWEEN_READINGS = 1800
 DEFAULT_POWER_TOLERANCE = 0.0
 DEFAULT_SERIAL_PORT = "/dev/ttyUSB0" # USB port used by Plugwise receiver
+OUTPUT_LIST = [ {"key":0,"suffix":"1s"}, {"key":1,"suffix":"8s"} ]
 
 topic = Utils.gettopic("plugwise/{0}/{1}/{2}")
 logger = None
@@ -70,9 +72,9 @@ def start():
     assert config is not None
     device  = plugwise_api.Stick(logger, DEFAULT_SERIAL_PORT)
 
-    # circles_config is a list of dictionaries: name, mac, desc.
-    # state field is added in next loop to track its value so it can be used to
-    # only send messages in state transitions. power1s field is used to check
+    # circles_config is a list of dictionaries: name, mac, desc.  state field is
+    # added in next loop to track its value so it can be used to only send
+    # messages in state transitions. power1s and power8s field is used to check
     # the relative difference in power in order to reduce the network overhead.
     circles_config = config["circles"]
     circles = []
@@ -85,8 +87,9 @@ def start():
             "production" : "True"
         }) )
         circle_data["state"] = "NA"
-        circle_data["power1s"] = -10000.0
-        circle_data["when"] = 0.0
+        for v in OUTPUT_LIST:
+        circle_data["power" + v["suffix"]] = -10000.0
+        circle_data["when" + v["suffix"]] = 0.0
 
     client.loop_start()
 
@@ -106,22 +109,25 @@ def publish():
             t    = time.time()
             mac  = config["mac"]
             name = config["name"]
-            last_power1s = config["power1s"]
+            last_powers = [ config["power"+x["suffix"]] for x in OUTPUT_LIST ]
             last_state = config["state"]
             try:
-                power   = c.get_power_usage()
-                power1s = power[0]
+                reading = c.get_power_usage()
+                powers  = [ reading[x["key"]] for x in OUTPUT_LIST ]
                 state   = c.get_info()['relay_state']
                 alert_below_th = config.get("alert_below_threshold", None)
-                if alert_below_th is not None and power1s < alert_below_th:
-                    logger.alert("Value %f for circle %s registered with name %s is below threshold %f",
-                                 float(power1s), mac, name, float(alert_below_th))
-                if Utils.compute_relative_difference(last_power1s, power1s) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"] > MAX_TIME_BETWEEN_READINGS:
-                    power1s_usage_message = { 'timestamp' : t, 'data': power1s }
-                    messages.append( (topic.format(mac, name, "power1s"), power1s_usage_message) )
-                    config["power1s"] = power1s
-                    config["when"] = t
-                    # check state transition before message is appended
+                for i,p in enumerate(powers):
+                    key = OUTPUT_LIST[i]["key"]
+                    suffix = OUTPUT_LIST[i]["suffix"]
+                    if alert_below_th is not None and p < alert_below_th:
+                        logger.alert("Value %f %s for circle %s registered with name %s is below threshold %f",
+                                     float(p), suffix, mac, name, float(alert_below_th))
+                    if Utils.compute_relative_difference(last_powers[i], p) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"+suffix] > MAX_TIME_BETWEEN_READINGS:
+                        usage_message = { 'timestamp' : t, 'data': p }
+                        messages.append( (topic.format(mac, name, "power"+suffix), usage_message) )
+                        config["power"+suffix] = p
+                        config["when"+suffix] = t
+                # check state transition before message is appended
                 if state != last_state:
                     state_message = { 'timestamp' : t, 'data' : state }
                     messages.append( (topic.format(mac, name, "state"), state_message) )
