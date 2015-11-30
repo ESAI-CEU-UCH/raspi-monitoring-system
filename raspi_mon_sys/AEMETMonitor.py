@@ -379,14 +379,14 @@ def start():
     hourly_forecast_url = config["hourly_forecast_url"]
     global current_weather_url
     current_weather_url = config["current_weather_url"]
-    global tz
-    tz = pytz.timezone(config["timezone"])
 
 def stop():
     """Closes connection with logger."""
     logger.close()
 
 def publish():
+    global tz
+    tz = pytz.timezone(config["timezone"])
     try:
         client = Utils.getpahoclient(logger)
         __publish_daily_forecast(client)
