@@ -10,6 +10,7 @@ Type=idle
 EnvironmentFile=-/etc/default/raspimon
 PIDFile=/run/raspimon.pid
 User=pi
+Group=pi
 ExecStart=/home/pi/raspi-monitoring-system/start.sh ${STARTED_AT_BOOT} ${STARTUP_SLEEP}
 ExecStop=/home/pi/raspi-monitoring-system/stop.sh
 
