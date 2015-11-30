@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pandas as pd
 import pymongo
+import pytz
 import re
 import time
 
@@ -22,6 +23,7 @@ app = Flask(__name__)
 IN_DEBUG=True
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
+tz = pytz.timezone("Europe/Madrid")
 
 mapfn = """function() {{
     period = {0};
@@ -230,7 +232,9 @@ def transform_to_time_series(data):
     ts = []
     for pair in data:
         p = pair["value"]
-        idx.append( datetime.datetime.utcfromtimestamp(p["secs"]) )
+        dt = datetime.datetime.fromtimestamp(p["secs"])
+        dt = tz.localize( dt )
+        idx.append( dt )
         ts.append( p["value"] )
     return MySeries(np.array(ts), index=np.array(idx))
 
@@ -290,7 +294,7 @@ def to_grafana_time_series(s):
     if len(values.shape) == 1: values = list( values )
     else: values = list( values[:,0] )
     dates = list( s.index )
-    result = [ [filt(v),time.mktime(k.utctimetuple())] for v,k in zip(values,dates) ]
+    result = [ [filt(v),time.mktime(k.timetuple())] for v,k in zip(values,dates) ]
     return result
 
 def process_series(ts, funcs):

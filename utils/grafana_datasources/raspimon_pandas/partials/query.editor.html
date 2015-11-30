@@ -79,8 +79,14 @@
 	<!--   <i class="fa fa-warning"></i> -->
 	<!-- </a> -->
       </li>
+    </ul>
 
-      <li class="tight-form-item query-keyword">
+    <div class="clearfix"></div>
+  </div>
+  
+  <div class="tight-form">
+    <ul class="tight-form-list">
+      <li class="tight-form-item query-keyword tight-form-align" style="width: 75px; text-align: right;">
 	Mul
       </li>
       <li class="tight-form-item">
@@ -107,28 +113,22 @@
 	<!--   <i class="fa fa-warning"></i> -->
 	<!-- </a> -->
       </li>
-    </ul>
 
-    <div class="clearfix"></div>
-  </div>
-  
-  <div class="tight-form">
-    <ul class="tight-form-list">
-      <li class="tight-form-item query-keyword tight-form-align" style="width: 75px;">
+      <li class="tight-form-item query-keyword">
 	Filters
       </li>
       <li class="tight-form-item" ng-repeat="func in target.functions">
 	<select dir="rtl" ng-model="func.name"
                 class="tight-form-input input-medium"
-		ng-options="name as name for name in function_names"
+		ng-options="name as (name | uppercase) for name in function_names"
 		ng-change="targetBlur(); get_data();">
         </select>
-        <span>(</span>
-        <input type="text" auto-grow
-               class="tight-form-input input-mini"
+        <span><b>(</b></span>
+        <input type="text" auto-grow style="width: 10px;"
+               class="tight-form-input" comfort-zone="1"
 	       ng-model="func.args"
 	       ng-blur="targetBlur(); get_data()"></input>
-        <span>)</span>
+        <span><b>)</b></span>
         <!-- function controls -->
         <a class="pointer" ng-click="removeFunction($index); get_data();" bs-tooltip="'Removes this filter.'"><i class="fa fa-remove"></i></a>
         <a class="pointer" ng-click="moveFunction($index,$index-1); get_data();" bs-tooltip="'Swaps with previous filter.'"><i class="fa fa-arrow-left"></i></a>
