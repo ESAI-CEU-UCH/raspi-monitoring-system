@@ -30,13 +30,17 @@ lock = threading.RLock()
 
 pending_points = []
 
-def __enqueue_raspimon_point(client, userdata, topic, message, tz):
-    timestamp = message["timestamp"]
-    v = message["data"]
+def __build_fields_dict(v):
     fields = {}
+    if v is None or v == '': fields["null"] = "true"
     if v is None: fields["null"] = "true"
     elif type(v) == str or type(v) == unicode: fields["svalue"] = unicode(v)
     else: fields["value"] = v
+    return fields
+
+def __enqueue_raspimon_point(client, userdata, topic, message, tz):
+    timestamp = message["timestamp"]
+    fields = __build_fields_dict( message["data"] )
     doc = {
         "measurement": topic,
         "time": datetime.datetime.fromtimestamp(timestamp, tz).isoformat(),
@@ -55,10 +59,7 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
     lock.acquire()
     try:
         for s,e,v in zip(message["periods_start"],message["periods_end"],message["values"]):
-            fields = {}
-            if v is None: fields["null"] = "true"
-            elif type(v) == str or type(v) == unicode: fields["svalue"] = unicode(v)
-            else: fields["value"] = v
+            fields = __build_fields_dict(v)
             doc = {
                 "measurement": topic,
                 "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
