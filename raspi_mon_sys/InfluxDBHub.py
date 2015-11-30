@@ -33,25 +33,35 @@ pending_points = []
 def __enqueue_raspimon_point(client, userdata, topic, message, tz):
     timestamp = message["timestamp"]
     data = message["data"]
-    doc = {
-        "measurement": topic,
-        "time": datetime.datetime.fromtimestamp(timestamp, tz).isoformat(),
-        "fields": { "value": data }
-    }
-    lock.acquire()
-    pending_points.append( doc )
-    lock.release()
+    if data is not None:
+        doc = {
+            "measurement": topic,
+            "time": datetime.datetime.fromtimestamp(timestamp, tz).isoformat(),
+            "fields": { "value": data }
+        }
+        lock.acquire()
+        try:
+            pending_points.append( doc )
+        except:
+            print "Unexpected error:", traceback.format_exc()
+            logger.error("Unexpected error: %s", traceback.format_exc())        
+        lock.release()
 
 def __enqueue_forecast_point(client, userdata, topic, message, tz):
     timestamp = message["timestamp"]
     lock.acquire()
-    for s,e,v in zip(message["periods_start"],message["periods_end"],message["values"]):
-        doc = {
-            "measurement": topic,
-            "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
-            "fields": { "value": v }
-        }
-        pending_points.append( doc )
+    try:
+        for s,e,v in zip(message["periods_start"],message["periods_end"],message["values"]):
+            if v is not None:
+                doc = {
+                    "measurement": topic,
+                    "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
+                    "fields": { "value": v }
+                }
+                pending_points.append( doc )
+    except:
+        print "Unexpected error:", traceback.format_exc()
+        logger.error("Unexpected error: %s", traceback.format_exc())
     lock.release()
 
 def __on_mqtt_connect(client, userdata, rc):
@@ -93,13 +103,13 @@ def stop():
     mqtt_client.disconnect()
     logger.close()
 
-def write_data():        
+def write_data():
+    lock.acquire()
     try:
         global pending_points
-        lock.acquire()
         influx_client.write_points(pending_points)
         pending_points = []
-        lock.release()
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
+    lock.release()
