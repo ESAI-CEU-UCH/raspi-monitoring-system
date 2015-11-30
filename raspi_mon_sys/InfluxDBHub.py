@@ -97,7 +97,7 @@ def write_data():
     try:
         global pending_points
         lock.acquire()
-        client.write_points(pending_points)
+        influx_client.write_points(pending_points)
         pending_points = []
         lock.release()
     except:
