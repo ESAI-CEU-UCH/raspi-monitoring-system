@@ -111,10 +111,10 @@ def stop():
     logger.close()
 
 def write_data():
+    global pending_points
     lock.acquire()
     if len(pending_points) > 0:
         try:
-            global pending_points
             influx_client.write_points(pending_points)
             pending_points = []
         except:
