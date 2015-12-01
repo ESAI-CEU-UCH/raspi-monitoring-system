@@ -86,7 +86,6 @@ __transformation_dict = {
 }
 
 def __transform(ms):
-    print ms
     if type(ms) == str or type(ms) == unicode:
         n = float(ms[:-1])
         t = ms[-1].lower()
