@@ -24,6 +24,7 @@ import time
 translations = {
         "-" : "-",
         "avisos" : "alerts",
+        "c" : "C",
         "cielo" : "sky",
         "cielo_despejado" : "clear",
         "cubierto" : "covered",

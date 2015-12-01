@@ -17,12 +17,6 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
-INFLUX_HOST='localhost'
-INFLUX_PORT=8086
-INFLUX_USER='root'
-INFLUX_PASSWORD='root'
-INFLUX_DATABASE='raspimon'
-
 logger = None
 mqtt_client = None
 influx_client = None
@@ -98,14 +92,21 @@ def start():
     global influx_client
     logger = LoggerClient.open("InfluxDBHub")
     mqtt_client = Utils.getpahoclient(logger, __configure_mqtt)
-    influx_client = InfluxDBClient(INFLUX_HOST, INFLUX_PORT,
-                                   INFLUX_USER, INFLUX_PASSWORD,
-                                   INFLUX_DATABASE)
-    try:
-        influx_client.create_database(INFLUX_DATABASE)
-    except:
-        pass
-    influx_client.create_retention_policy('week_policy', '7d', 1, default=True)
+    config = Utils.getconfig("influxdb", logger)
+    influx_client = InfluxDBClient(config["host"], config["port"],
+                                   config["user"], config["password"],
+                                   config["database"])
+    if not {"name":config["database"]} in influx_client.get_list_database():
+        influx_client.create_database(config["database"])
+    if not any([ x["name"]=="raspimon_policy" for x in influx_client.get_list_retention_policies()]):
+        influx_client.create_retention_policy('raspimon_policy',
+                                              config["retention_policy"],
+                                              1, default=True)
+    else:
+        influx_client.alter_retention_policy('raspimon_policy',
+                                             duration=config["retention_policy"],
+                                             replication=1,
+                                             default=True)
 
 def stop():
     mqtt_client.disconnect()

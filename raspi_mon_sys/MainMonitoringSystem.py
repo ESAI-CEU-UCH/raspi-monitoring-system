@@ -3,6 +3,7 @@
 
 It should be executed from command line without arguments.
 """
+import importlib
 import time
 import traceback
 
@@ -25,6 +26,11 @@ def __try_call(logger, func, *args):
         print "Unexpected error:",traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
         return False
+
+def __replace_vars(x, module):
+    if type(x) is int or type(x) is float or not x.startswith("$this."): return x
+    method = getattr(module, x.replace("$this.",""))
+    return method
 
 if __name__ == "__main__":
     Utils.startup_wait()
@@ -50,48 +56,19 @@ if __name__ == "__main__":
     # Start all modules.
     started_modules = []
 
-    def try_start(module):
+    def try_start(module_info):
+        module = importlib.import_module(module_info["import"])
         if __try_call(logger, module.start):
             started_modules.append(module)
+            if "schedule_method" in module_info:
+                method = getattr(Scheduler, module_info["schedule_method"])
+                args = [ __replace_vars(x,module) for x in module_info["schedule_args"] ]
+                method(*args)
             return True
         return False
 
-    if try_start(MongoDBHub):
-        # repeat every hour with a 1/12th part as offset
-        Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.upload_data)
-
-    if try_start(InfluxDBHub):
-        # repeat every 10 seconds
-        Scheduler.repeat_o_clock(10*T1_SECOND, InfluxDBHub.write_data)
-    
-    if try_start(AEMETMonitor):
-        # publish last AEMET data
-        __try_call(logger, AEMETMonitor.publish)
-        # repeat every hour AEMET data capture
-        Scheduler.repeat_o_clock(T1_HOUR, AEMETMonitor.publish)
-
-    if try_start(CheckIP):
-        # publish current IP
-        __try_call(logger, CheckIP.publish)
-        # repeat every time multiple of five minutes (at 00, 05, 10, 15, etc)
-        Scheduler.repeat_o_clock(5 * T1_MINUTE, CheckIP.publish)
-
-    if try_start(ElectricityPrices):
-        # publish current electricity prices
-        __try_call(logger, ElectricityPrices.publish, 0)
-        if time.time()*1000 % T1_DAY > 21*T1_HOUR - 10*T1_SECOND:
-            # publish next day electricity prices when starting the software at
-            # night
-            __try_call(logger, ElectricityPrices.publish, 1)
-        # repeat every day at 21:00 UTC with prices for next day
-        Scheduler.repeat_o_clock_with_offset(T1_DAY, 21 * T1_HOUR,
-                                            ElectricityPrices.publish, 1)
-    
-    try_start(OpenEnergyMonitor)
-
-    if try_start(PlugwiseMonitor):
-        # repeat every second lectures from plugwise circles
-        Scheduler.repeat_o_clock(10*T1_SECOND, PlugwiseMonitor.publish)
+    config = Utils.getconfig("main", logger)
+    for module_info in config["modules"]: try_start(module_info)
     
     logger.info("Scheduler configured")
     logger.info("Starting infinite loop")

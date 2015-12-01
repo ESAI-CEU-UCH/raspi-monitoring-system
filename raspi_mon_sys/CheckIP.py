@@ -15,14 +15,6 @@ last_private_ip = None
 last_public_ip  = None
 failure = False
 
-def start():
-    """Connects with logging server."""
-    global logger
-    logger = LoggerClient.open("CheckIP")
-
-def stop():
-    logger.close()
-
 # This function SHOULD BE implemented always.
 def publish():
     """Publishes the IP using an ALERT message."""
@@ -52,3 +44,12 @@ def publish():
             last_private_ip = None
             last_public_ip  = None
         raise
+
+def start():
+    """Connects with logging server and sends first message."""
+    global logger
+    logger = LoggerClient.open("CheckIP")
+    publish()
+
+def stop():
+    logger.close()

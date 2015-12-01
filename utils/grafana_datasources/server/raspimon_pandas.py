@@ -23,7 +23,6 @@ app = Flask(__name__)
 IN_DEBUG=True
 MONGO_HOST = "localhost"
 MONGO_PORT = 27018
-tz = pytz.timezone("Europe/Madrid")
 
 mapfn = """function() {{
     period = {0};
@@ -223,17 +222,17 @@ def connect():
     return (client,collection)
 
 def transform_to_time_series(data):
+    tz = pytz.timezone("Europe/Madrid")
     if len(data) == 0: return MySeries(np.array([]))
     if len(data) == 1:
-        idx = np.array([ data[0]["value"]["secs"] ])
-        ts = np.array([ [data[0]["value"]["value"]] ])
+        idx = np.array([ datetime.datetime.fromtimestamp(data[0]["value"]["secs"],tz) ])
+        ts = np.array([data[0]["value"]["value"]])
         return MySeries(ts, index=idx)
     idx = []
     ts = []
     for pair in data:
         p = pair["value"]
-        dt = datetime.datetime.fromtimestamp(p["secs"])
-        dt = tz.localize( dt )
+        dt = datetime.datetime.fromtimestamp(p["secs"],tz)
         idx.append( dt )
         ts.append( p["value"] )
     return MySeries(np.array(ts), index=np.array(idx))

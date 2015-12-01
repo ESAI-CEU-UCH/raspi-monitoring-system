@@ -369,23 +369,6 @@ def __publish_current_weather_status(client):
         print "Unable to retrieve current weather status:", traceback.format_exc()
         logger.error("Unable to retrieve current weather status: %s", traceback.format_exc())
 
-def start():
-    """Opens logger connection and loads its configuration from MongoDB."""
-    global logger
-    global config
-    global location_id
-    global hourly_forecast_url
-    global current_weather_url
-    logger = LoggerClient.open("AEMETMonitor")
-    config = Utils.getconfig("aemet", logger)
-    location_id = config["location_id"]
-    hourly_forecast_url = config["hourly_forecast_url"]
-    current_weather_url = config["current_weather_url"]
-
-def stop():
-    """Closes connection with logger."""
-    logger.close()
-
 def publish():
     global tz
     tz = pytz.timezone(config["timezone"])
@@ -399,6 +382,25 @@ def publish():
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
+
+def start():
+    """Opens logger connection and loads its configuration from MongoDB and sends
+    first message."""
+    global logger
+    global config
+    global location_id
+    global hourly_forecast_url
+    global current_weather_url
+    logger = LoggerClient.open("AEMETMonitor")
+    config = Utils.getconfig("aemet", logger)
+    location_id = config["location_id"]
+    hourly_forecast_url = config["hourly_forecast_url"]
+    current_weather_url = config["current_weather_url"]
+    publish()
+
+def stop():
+    """Closes connection with logger."""
+    logger.close()
 
 if __name__ == "__main__":
     import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer
