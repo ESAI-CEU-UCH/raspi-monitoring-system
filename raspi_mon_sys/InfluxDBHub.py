@@ -104,8 +104,9 @@ def start():
                                               1, default=True)
     else:
         influx_client.alter_retention_policy('raspimon_policy',
-                                             config["retention_policy"],
-                                             1, default=True)
+                                             duration=config["retention_policy"],
+                                             replication=1,
+                                             default=True)
 
 def stop():
     mqtt_client.disconnect()
