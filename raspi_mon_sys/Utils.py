@@ -1,5 +1,11 @@
 #!/usr/bin/env python2.7
-"""Several utilities shared between different modules."""
+"""Several utilities shared between different modules.
+
+This module uses /etc/default/raspimon_auth to get a MongoDB connection URI:
+
+    mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+
+"""
 from email.mime.text import MIMEText
 from uuid import getnode
 
@@ -14,8 +20,11 @@ __PAHO_PORT      = 1883
 __PAHO_KEEPALIVE = 60
 __PAHO_BIND_ADDRESS = "127.0.0.1"
 
-__MONGO_HOST = "localhost"
-__MONGO_PORT = 27018
+__RASPIMON_AUTH = "/etc/default/raspimon_auth"
+
+def __get_mongodb_uri():
+    with open(RASPIMON_AUTH) as f: x = f.readline().strip()
+    return x
 
 def sendmail(credentials, subject, msg):
     """Sends an email using the given credentials dictionary, subject and message
@@ -81,11 +90,11 @@ def gettopic(name):
 def getmongoclient(logger):
     """Returns a client connected to Mongo DB."""
     try:
-        client = pymongo.MongoClient(__MONGO_HOST, __MONGO_PORT)
+        client = pymongo.MongoClient( __get_mongodb_uri() )
     except:
         if logger is not None: logger.alert("Unable to connect with MongoDB server")
         raise
-    if logger is not None: logger.info("MongoDB client connected to %s:%d", __MONGO_HOST, __MONGO_PORT)
+    if logger is not None: logger.info("MongoDB client connected")
     return client
 
 def getconfig(source, logger):
