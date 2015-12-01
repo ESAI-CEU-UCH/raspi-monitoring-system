@@ -64,8 +64,6 @@ define([
                        if (v[0] === null) dps.push([null, t]);
                        else dps.push([v[0]*mul + add, t]);
                    });
-                   console.log(data);
-                   console.log(dps);
                    // a time-series has 'target' string and 'datapoints' array
                    return {
                        target: query.alias || query.topic,
