@@ -98,7 +98,7 @@ def start():
                                    config["database"])
     if not {"name":config["database"]} in influx_client.get_list_database():
         influx_client.create_database(config["database"])
-    if not any([ x["name"]=="raspimon_policy" for x in get_list_retention_policies]):
+    if not any([ x["name"]=="raspimon_policy" for x in influx_client.get_list_retention_policies()]):
         influx_client.create_retention_policy('raspimon_policy',
                                               config["retention_policy"],
                                               1, default=True)
