@@ -85,6 +85,7 @@ logger = None
 current_weather_url = None
 hourly_forecast_url = None
 location_id = None
+config = None
 
 daily_forecast_info = (
     # more than one value
@@ -371,22 +372,23 @@ def __publish_current_weather_status(client):
 def start():
     """Opens logger connection and loads its configuration from MongoDB."""
     global logger
+    global config
+    global location_id
+    global hourly_forecast_url
+    global current_weather_url
     logger = LoggerClient.open("AEMETMonitor")
     config = Utils.getconfig("aemet", logger)
-    global location_id
     location_id = config["location_id"]
-    global hourly_forecast_url
     hourly_forecast_url = config["hourly_forecast_url"]
-    global current_weather_url
     current_weather_url = config["current_weather_url"]
-    global tz
-    tz = pytz.timezone(config["timezone"])
 
 def stop():
     """Closes connection with logger."""
     logger.close()
 
 def publish():
+    global tz
+    tz = pytz.timezone(config["timezone"])
     try:
         client = Utils.getpahoclient(logger)
         __publish_daily_forecast(client)

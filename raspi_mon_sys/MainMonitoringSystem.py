@@ -9,6 +9,7 @@ import traceback
 import raspi_mon_sys.AEMETMonitor as AEMETMonitor
 import raspi_mon_sys.CheckIP as CheckIP
 import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
+import raspi_mon_sys.InfluxDBHub as InfluxDBHub
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.MongoDBHub as MongoDBHub
 import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
@@ -58,6 +59,10 @@ if __name__ == "__main__":
     if try_start(MongoDBHub):
         # repeat every hour with a 1/12th part as offset
         Scheduler.repeat_o_clock_with_offset(T1_HOUR, T1_HOUR/12, MongoDBHub.upload_data)
+
+    if try_start(InfluxDBHub):
+        # repeat every 10 seconds
+        Scheduler.repeat_o_clock(10*T1_SECOND, InfluxDBHub.write_data)
     
     if try_start(AEMETMonitor):
         # publish last AEMET data
