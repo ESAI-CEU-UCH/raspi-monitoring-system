@@ -157,7 +157,7 @@ if (cursor.count() == 0) {
     db.GVA2015_config.insert({
         "source": "main",
         "house": house,
-        "raspi": "bcaec57122fc",
+        "raspi": raspi_mac,
         "modules" : [
             {
                 "import" : "raspi_mon_sys.MongoDBHub",
