@@ -62,8 +62,7 @@ define([
                        // seconds to integer miliseconds
                        var t = Math.round(v[1] * 1000);
                        if (v[0] === null) dps.push([null, t]);
-                       else dps.push([v[0]*mul + add, t);
-                       }
+                       else dps.push([v[0]*mul + add, t]);
                    });
                    console.log(data);
                    console.log(dps);
