@@ -3,6 +3,7 @@
 
 It should be executed from command line without arguments.
 """
+import importlib
 import time
 import traceback
 
@@ -57,8 +58,7 @@ if __name__ == "__main__":
     started_modules = []
 
     def try_start(module_info):
-        module = __import__(module_info["import"])
-        print module,module_info
+        module = importlib.import_module(module_info["import"])
         if __try_call(logger, module.start):
             started_modules.append(module)
             if "schedule_method" in module_info:
