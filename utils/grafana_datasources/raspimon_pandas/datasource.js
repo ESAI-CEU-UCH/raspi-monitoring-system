@@ -60,7 +60,10 @@ define([
                        var add = query.add || 0.0;
                        // multiply timestamp by 1000 to transform from float
                        // seconds to integer miliseconds
-                       dps.push([v[0]*mul + add, Math.round(v[1] * 1000)]);
+                       var t = Math.round(v[1] * 1000);
+                       if (v[0] === null) dps.push([null, t]);
+                       else dps.push([v[0]*mul + add, t);
+                       }
                    });
                    // a time-series has 'target' string and 'datapoints' array
                    return {
