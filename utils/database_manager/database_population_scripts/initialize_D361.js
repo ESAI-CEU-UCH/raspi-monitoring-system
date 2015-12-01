@@ -126,8 +126,8 @@ if (cursor.count() == 0) {
     print("Inserting at GVA2015_config collection aemet document");
     db.GVA2015_config.insert({
         "source": "aemet",
-        "house": "D361",
-        "raspi": "b827eb7c62d8",
+        "house": house,
+        "raspi": raspi_mac,
         "current_weather_url" : "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24",
         "hourly_forecast_url" : "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250",
         "location_id" : "46250",
@@ -140,8 +140,8 @@ if (cursor.count() == 0) {
     print("Inserting at GVA2015_config collection influxdb document");
     db.GVA2015_config.insert({
         "source": "influxdb",
-        "house": "D361",
-        "raspi": "bcaec57122fc",
+        "house": house,
+        "raspi": raspi_mac,
         "host": "localhost",
         "port": 8086,
         "user": "root",
@@ -156,31 +156,42 @@ if (cursor.count() == 0) {
     print("Inserting at GVA2015_config collection main document");
     db.GVA2015_config.insert({
         "source": "main",
-        "house": "D361",
+        "house": house,
         "raspi": "bcaec57122fc",
         "modules" : [
-            { "import" : "raspi_mon_sys.MongoDBHub",
-              "schedule_method":"repeat_o_clock_with_offset",
-              "schedule_args" : ["1h","0.08h","$this.upload_data"] },
-            { "import" : "raspi_mon_sys.InfluxDBHub",
-              "schedule_method":"repeat_o_clock",
-              "schedule_args" : ["10s","$this.write_data"] },
-            { "import" : "raspi_mon_sys.AEMETMonitor",
-              "schedule_method":"repeat_o_clock",
-              "schedule_args" : ["10s","$this.publish"] },
-            {"import" : "raspi_mon_sys.AEMETMonitor",
-             "schedule_method":"repeat_o_clock",
-             "schedule_args" : ["1h","$this.publish"] },
-            {"import" : "raspi_mon_sys.CheckIP",
-             "schedule_method":"repeat_o_clock",
-             "schedule_args" : ["5m","$this.publish"] },
-            {"import" : "raspi_mon_sys.ElectricityPrices",
-             "schedule_method":"repeat_o_clock_with_offset",
-             "schedule_args" : ["1d","21h","$this.publish",1] },
-            {"import" : "raspi_mon_sys.OpenEnergyMonitor" },
-            {"import" : "raspi_mon_sys.PlugwiseMonitor",
-             "schedule_method":"repeat_o_clock",
-             "schedule_args" : ["10s","$this.publish"] },
+            {
+                "import" : "raspi_mon_sys.MongoDBHub",
+                "schedule_method":"repeat_o_clock_with_offset",
+                "schedule_args" : ["1h","0.08h","$this.upload_data"]
+            },
+            {
+                "import" : "raspi_mon_sys.InfluxDBHub",
+                "schedule_method":"repeat_o_clock",
+                "schedule_args" : ["10s","$this.write_data"] 
+            },
+            {
+                "import" : "raspi_mon_sys.AEMETMonitor",
+                "schedule_method":"repeat_o_clock",
+                "schedule_args" : ["1h","$this.publish"]
+            },
+            {
+                "import" : "raspi_mon_sys.CheckIP",
+                "schedule_method":"repeat_o_clock",
+                "schedule_args" : ["5m","$this.publish"]
+            },
+            {
+                "import" : "raspi_mon_sys.ElectricityPrices",
+                "schedule_method":"repeat_o_clock_with_offset",
+                "schedule_args" : ["1d","21h","$this.publish",1]
+            },
+            {
+                "import" : "raspi_mon_sys.OpenEnergyMonitor"
+            },
+            {
+                "import" : "raspi_mon_sys.PlugwiseMonitor",
+                "schedule_method":"repeat_o_clock",
+                "schedule_args" : ["10s","$this.publish"]
+            },
         ]
     });
 }

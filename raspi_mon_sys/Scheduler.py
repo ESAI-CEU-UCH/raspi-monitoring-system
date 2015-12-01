@@ -4,11 +4,14 @@ functions.
 
 This module allow to execute functions delayed in time. The functions are able
 to receive many positional and/or keyword arguments. A function can be executed
-once delayed a given number of mili-seconds, or repeated every N mili-seconds. Similarly,
-a function can be called once the next timestamp multiple of a given number of
-mili-seconds, or repeated every timestamp multiple of a given number of mili-seconds. For
-this purpose, you can use the functions `once_after()`, `repeat_every()`,
-`once_o_clock()` and `repeat_o_clock()`.
+once delayed a given number of mili-seconds, or repeated every N
+mili-seconds. Similarly, a function can be called once the next timestamp
+multiple of a given number of mili-seconds, or repeated every timestamp multiple
+of a given number of mili-seconds. For this purpose, you can use the functions
+`once_after()`, `repeat_every()`, `once_o_clock()` and `repeat_o_clock()`. The
+number of mili-seconds can be given as a string with the syntax `"N+T"` where
+`N` is a number (integer or float) and `T in {"s","m","h","d","w"}` where 
+s is for seconds, m for minutes and so on.
 
 The normal use of this module requires the execution of `start()` function before
 any function scheduling, and `stop()` function once the program is ready to its
