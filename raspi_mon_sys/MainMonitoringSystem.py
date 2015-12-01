@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     def try_start(module_info):
         module = __import__(module_info["import"])
-        print module
+        print module,module_info
         if __try_call(logger, module.start):
             started_modules.append(module)
             if "schedule_method" in module_info:
