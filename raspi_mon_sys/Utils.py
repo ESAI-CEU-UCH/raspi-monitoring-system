@@ -23,7 +23,7 @@ __PAHO_BIND_ADDRESS = "127.0.0.1"
 __RASPIMON_AUTH = "/etc/default/raspimon_auth"
 
 def __get_mongodb_uri():
-    with open(RASPIMON_AUTH) as f: x = f.readline().strip()
+    with open(__RASPIMON_AUTH) as f: x = f.readline().strip()
     return x
 
 def sendmail(credentials, subject, msg):
