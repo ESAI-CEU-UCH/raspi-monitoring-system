@@ -28,7 +28,7 @@ def __try_call(logger, func, *args):
         return False
 
 def __replace_vars(x, module):
-    if not x.startswith("$this."): return x
+    if type(x) is int or type(x) is float or not x.startswith("$this."): return x
     method = getattr(module, x.replace("$this.",""))
     return method
 
