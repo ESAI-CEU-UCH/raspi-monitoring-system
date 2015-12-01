@@ -44,7 +44,6 @@ Another Example:
 All functions receive mili-second resolution as integer values.
 
 """
-import math
 import sys
 import time
 import threading
@@ -91,7 +90,7 @@ def __transform(ms):
     if type(ms) == str or type(ms) == unicode:
         n = float(ms[:-1])
         t = ms[-1].lower()
-        return int( math.round( __transformation_dict[t](n) ) )
+        return int( round( __transformation_dict[t](n) ) )
     else:
         return ms
 
