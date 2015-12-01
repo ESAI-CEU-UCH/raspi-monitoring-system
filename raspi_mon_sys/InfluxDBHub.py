@@ -98,11 +98,11 @@ def start():
                                    config["database"])
     try:
         influx_client.create_database(config["database"])
+        influx_client.create_retention_policy('raspimon_policy',
+                                              config["retention_policy"],
+                                              1, default=True)
     except:
         pass
-    influx_client.create_retention_policy('raspimon_policy',
-                                          config["retention_policy"],
-                                          1, default=True)
 
 def stop():
     mqtt_client.disconnect()
