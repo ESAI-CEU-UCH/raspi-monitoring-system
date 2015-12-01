@@ -30,6 +30,7 @@ import time
 import urllib2
 
 import raspi_mon_sys.LoggerClient as LoggerClient
+import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
 logger = None
@@ -92,14 +93,6 @@ def __publish_data_of_day(day_str, ref_time):
     else:
         client.disconnect()
 
-def start():
-    """Opens logger connection."""
-    global logger
-    logger = LoggerClient.open("ElectricityPricesMonitor")
-
-def stop():
-    logger.close()
-
 def publish(day_offset):
     """Publishes the electricity prices for a given day offset.
     
@@ -113,6 +106,19 @@ def publish(day_offset):
     dt = tz.localize(dt)
     ref_time = time.mktime(dt.timetuple())
     __publish_data_of_day(dt.strftime("%Y%m%d"), ref_time)
+
+def start():
+    """Opens logger connection."""
+    global logger
+    logger = LoggerClient.open("ElectricityPricesMonitor")
+    publish(0)
+    if time.time()*1000 % Scheduler.T1_DAY > 21*Scheduler.T1_HOUR - 10*Scheduler.T1_SECOND:
+        # publish next day electricity prices when starting the software at
+        # night
+        publish(1)
+
+def stop():
+    logger.close()
 
 if __name__ == "__main__":
     import raspi_mon_sys.ScreenLoggerServer as ScreenLoggerServer

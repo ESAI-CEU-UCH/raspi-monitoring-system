@@ -20,7 +20,7 @@ if (cursor.count() == 0) {
     });
 }
 
-cusor = db.GVA2015_config.find({ "source":"open_energy_monitor", "house":house });
+cursor = db.GVA2015_config.find({ "source":"open_energy_monitor", "house":house });
 if (cursor.count() == 0) {
     print("Inserting at GVA2015_config collection open_energy_monitor document");
     db.GVA2015_config.insert({
@@ -121,7 +121,7 @@ if (cursor.count() == 0) {
     });
 }
 
-cusor = db.GVA2015_config.find({ "source":"aemet", "house":house });
+cursor = db.GVA2015_config.find({ "source":"aemet", "house":house });
 if (cursor.count() == 0) {
     print("Inserting at GVA2015_config collection aemet document");
     db.GVA2015_config.insert({
@@ -135,4 +135,53 @@ if (cursor.count() == 0) {
     });
 }
 
+cursor = db.GVA2015_config.find({ "source":"influxdb", "house":house });
+if (cursor.count() == 0) {
+    print("Inserting at GVA2015_config collection influxdb document");
+    db.GVA2015_config.insert({
+        "source": "influxdb",
+        "house": "D361",
+        "raspi": "bcaec57122fc",
+        "host": "localhost",
+        "port": 8086,
+        "user": "root",
+        "password": "root",
+        "database": "raspimon",
+        "retention_policy" : "7d"
+    });
+}
+
+cursor = db.GVA2015_config.find({ "source":"main", "house":house });
+if (cursor.count() == 0) {
+    print("Inserting at GVA2015_config collection main document");
+    db.GVA2015_config.insert({
+        "source": "main",
+        "house": "D361",
+        "raspi": "bcaec57122fc",
+        "modules" : [
+            { "import" : "raspi_mon_sys.MongoDBHub",
+              "schedule_method":"repeat_o_clock_with_offset",
+              "schedule_args" : ["1h","0.08h","$this.upload_data"] },
+            { "import" : "raspi_mon_sys.InfluxDBHub",
+              "schedule_method":"repeat_o_clock",
+              "schedule_args" : ["10s","$this.write_data"] },
+            { "import" : "raspi_mon_sys.AEMETMonitor",
+              "schedule_method":"repeat_o_clock",
+              "schedule_args" : ["10s","$this.publish"] },
+            {"import" : "raspi_mon_sys.AEMETMonitor",
+             "schedule_method":"repeat_o_clock",
+             "schedule_args" : ["1h","$this.publish"] },
+            {"import" : "raspi_mon_sys.CheckIP",
+             "schedule_method":"repeat_o_clock",
+             "schedule_args" : ["5m","$this.publish"] },
+            {"import" : "raspi_mon_sys.ElectricityPrices",
+             "schedule_method":"repeat_o_clock_with_offset",
+             "schedule_args" : ["1d","21h","$this.publish",1] },
+            {"import" : "raspi_mon_sys.OpenEnergyMonitor" },
+            {"import" : "raspi_mon_sys.PlugwiseMonitor",
+             "schedule_method":"repeat_o_clock",
+             "schedule_args" : ["10s","$this.publish"] },
+        ]
+    });
+}
 print("Ok")

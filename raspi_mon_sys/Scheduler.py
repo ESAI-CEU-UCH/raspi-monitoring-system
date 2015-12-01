@@ -67,6 +67,31 @@ __running = []
 __main_thread = None
 __main_thread_running = False
 
+T1_MILISECOND  = 1
+T1_CENTISECOND = 10
+T1_DECISECOND  = 100
+T1_SECOND      = 1000
+T1_MINUTE      = 60000
+T1_HOUR        = 3600000
+T1_DAY         = 24 * T1_HOUR
+T1_WEEK        = 7 * T1_DAY
+
+__transformation_dict = {
+    "s" : lambda x: x*T1_SECOND,
+    "m" : lambda x: x*T1_MINUTE,
+    "h" : lambda x: x*T1_HOUR,
+    "d" : lambda x: x*T1_DAY,
+    "w" : lambda x: x*T1_WEEK,
+}
+
+def __transform(ms):
+    if type(ms) == str or type(ms) == unicode:
+        n = float(ms[:-1])
+        t = ms[-1].lower()
+        return __transformation_dict[t](n)
+    else:
+        return ms
+
 def __gettime(): return time.time()*1000
 
 def __run_threaded(job_func, *args, **kwargs):
@@ -168,6 +193,7 @@ def remove(uuid):
 
 def once_after(mili_seconds, func, *args, **kwargs):
     """Executes the given job function after given mili-seconds amount and returns a UUID."""
+    mili_seconds = __transform(mili_seconds)
     assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
     __once_after(mili_seconds, uuid, func, *args, **kwargs)
@@ -175,6 +201,7 @@ def once_after(mili_seconds, func, *args, **kwargs):
 
 def repeat_every(mili_seconds, func, *args, **kwargs):
     """Repeats execution of given job function after every mili-seconds and returns a UUID."""
+    mili_seconds = __transform(mili_seconds)
     assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
     __once_after(mili_seconds, uuid, __repeated_job, mili_seconds, __gettime() + mili_seconds, uuid,
@@ -192,6 +219,7 @@ def once_when(ms_timestamp, func, *args, **kwargs):
 
 def once_o_clock(mili_seconds, func, *args, **kwargs):
     """Executes job function at next time multiple of the given mili-seconds and returns a UUID."""
+    mili_seconds = __transform(mili_seconds)
     assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
     now  = __gettime()
@@ -201,6 +229,8 @@ def once_o_clock(mili_seconds, func, *args, **kwargs):
 
 def repeat_o_clock_with_offset(mili_seconds, offset, func, *args, **kwargs):
     """Repeated execution of job function at every next time multiple of the given mili-seconds plus the given offset and returns a UUID."""
+    mili_seconds = __transform(mili_seconds)
+    offset = __transform(offset)
     if offset >= mili_seconds: raise Exception("Offset should be less than mili_seconds")
     assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
     assert type(offset) is int, "Needs an integer as offset parameter"
@@ -213,6 +243,7 @@ def repeat_o_clock_with_offset(mili_seconds, offset, func, *args, **kwargs):
 
 def repeat_o_clock(mili_seconds, func, *args, **kwargs):
     """Repeated execution of job function at every next time multiple of the given mili-seconds and returns a UUID."""
+    mili_seconds = __transform(mili_seconds)
     return repeat_o_clock_with_offset(mili_seconds, 0, func, *args, **kwargs)
 
 def start():
