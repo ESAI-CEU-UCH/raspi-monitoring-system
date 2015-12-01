@@ -29,8 +29,7 @@ def __try_call(logger, func, *args):
 
 def __replace_vars(x, module):
     if not x.startswith("$this."): return x
-    x.replace("$this.","")
-    method = getattr(module,x)
+    method = getattr(module, x.replace("$this.",""))
     return method
 
 if __name__ == "__main__":
@@ -64,7 +63,7 @@ if __name__ == "__main__":
             if "schedule_method" in module_info:
                 method = getattr(Scheduler, module_info["schedule_method"])
                 args = [ __replace_vars(x,module) for x in module_info["schedule_args"] ]
-                method(args)
+                method(*args)
             return True
         return False
 
