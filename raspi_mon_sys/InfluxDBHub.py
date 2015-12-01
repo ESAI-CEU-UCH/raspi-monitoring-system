@@ -96,13 +96,16 @@ def start():
     influx_client = InfluxDBClient(config["host"], config["port"],
                                    config["user"], config["password"],
                                    config["database"])
-    try:
+    if not {"name":config["database"]} in influx_client.get_list_database():
         influx_client.create_database(config["database"])
+    if not any([ x["name"]=="raspimon_policy" for x in get_list_retention_policies]):
         influx_client.create_retention_policy('raspimon_policy',
                                               config["retention_policy"],
                                               1, default=True)
-    except:
-        pass
+    else:
+        influx_client.alter_retention_policy('raspimon_policy',
+                                             config["retention_policy"],
+                                             1, default=True)
 
 def stop():
     mqtt_client.disconnect()
