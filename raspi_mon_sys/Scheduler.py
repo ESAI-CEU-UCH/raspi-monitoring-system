@@ -42,7 +42,9 @@ Another Example:
 >>> Scheduler.loop_forever()
 
 All functions receive mili-second resolution as integer values.
+
 """
+import math
 import sys
 import time
 import threading
@@ -85,10 +87,11 @@ __transformation_dict = {
 }
 
 def __transform(ms):
+    print ms
     if type(ms) == str or type(ms) == unicode:
         n = float(ms[:-1])
         t = ms[-1].lower()
-        return __transformation_dict[t](n)
+        return int( math.round( __transformation_dict[t](n) ) )
     else:
         return ms
 
