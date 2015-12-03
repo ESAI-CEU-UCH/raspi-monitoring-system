@@ -53,9 +53,9 @@ if __name__ == "__main__":
         module = importlib.import_module(module_info["import"])
         if __try_call(logger, module.start):
             started_modules.append(module)
-            if "schedule_method" in module_info:
-                method = getattr(Scheduler, module_info["schedule_method"])
-                args = [ __replace_vars(x,module) for x in module_info["schedule_args"] ]
+            for sched in module_info["schedules"]:
+                method = getattr(Scheduler, sched["method"])
+                args = [ __replace_vars(x,module) for x in sched["args"] ]
                 method(*args)
             return True
         return False
