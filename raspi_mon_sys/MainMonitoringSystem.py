@@ -53,7 +53,7 @@ if __name__ == "__main__":
         module = importlib.import_module(module_info["import"])
         if __try_call(logger, module.start):
             started_modules.append(module)
-            if schedules in module_info:
+            if "schedules" in module_info:
                 for sched in module_info["schedules"]:
                     method = getattr(Scheduler, sched["method"])
                     args = [ __replace_vars(x,module) for x in sched["args"] ]
