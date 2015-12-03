@@ -7,14 +7,7 @@ import importlib
 import time
 import traceback
 
-import raspi_mon_sys.AEMETMonitor as AEMETMonitor
-import raspi_mon_sys.CheckIP as CheckIP
-import raspi_mon_sys.ElectricityPricesMonitor as ElectricityPrices
-import raspi_mon_sys.InfluxDBHub as InfluxDBHub
 import raspi_mon_sys.LoggerClient as LoggerClient
-import raspi_mon_sys.MongoDBHub as MongoDBHub
-import raspi_mon_sys.OpenEnergyMonitor as OpenEnergyMonitor
-import raspi_mon_sys.PlugwiseMonitor as PlugwiseMonitor
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
