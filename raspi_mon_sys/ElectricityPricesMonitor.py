@@ -115,7 +115,10 @@ def start():
     if time.time()*1000 % Scheduler.T1_DAY > 21*Scheduler.T1_HOUR - 10*Scheduler.T1_SECOND:
         # publish next day electricity prices when starting the software at
         # night
-        publish(1)
+        try:
+            publish(1)
+        except:
+            print "Unexpected error:",traceback.format_exc()
 
 def stop():
     logger.close()
