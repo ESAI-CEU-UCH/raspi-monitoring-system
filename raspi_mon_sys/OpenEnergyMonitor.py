@@ -8,7 +8,7 @@ schedule configured at open energy monitor devices.
 
 Open energy monitor data is published under topics::
 
-    BASETOPIC/rfemon/NODE_ID/KEY/NAME/value {"timestamp":timestamp,"data":data}
+    BASETOPIC/rfemon/NAME/NODE_ID/KEY/value {"timestamp":timestamp,"data":data}
 
 EmonTxV3 sends the following data list::
 
@@ -96,7 +96,7 @@ def __process(logger, client, iface, nodes, node2keys):
                                  float(v), nodeId, key, name, float(alert_below_th))
                 if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
                     message = { 'timestamp' : t, 'data' : v }
-                    client.publish(topic.format(nodeId, key, name), json.dumps(message))
+                    client.publish(topic.format(name, nodeId, key), json.dumps(message))
                     conf["data"] = v
                     conf["when"] = t
         time.sleep(0.05)

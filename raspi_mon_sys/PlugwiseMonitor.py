@@ -3,12 +3,12 @@
 
 Plugwise data is published under topics::
 
-    BASETOPIC/plugwise/MACADDRESS1/NAME1/power1s/value {"timestamp":t1,"data":power1}
-    BASETOPIC/plugwise/MACADDRESS1/NAME1/power8s/value {"timestamp":t1,"data":power1}
-    BASETOPIC/plugwise/MACADDRESS1/NAME1/state/value   {"timestamp":t1,"data":state1}
+    BASETOPIC/plugwise/NAME1/power1s/MACADDRESS1/value {"timestamp":t1,"data":power1}
+    BASETOPIC/plugwise/NAME1/power8s/MACADDRESS1/value {"timestamp":t1,"data":power1}
+    BASETOPIC/plugwise/NAME1/state/MACADDRESS1/value   {"timestamp":t1,"data":state1}
     ...
-    BASETOPIC/plugwise/MACADDRESS1/NAME2/power8s/value {"timestamp":t2,"data":power2}
-    BASETOPIC/plugwise/MACADDRESS1/NAME2/state/value   {"timestamp":t2,"data":state2}
+    BASETOPIC/plugwise/NAME2/power8s/MACADDRESS2/value {"timestamp":t2,"data":power2}
+    BASETOPIC/plugwise/NAME2/state/MACADDRESS2/value   {"timestamp":t2,"data":state2}
     ...
 
 This sequence is a time series of power consumption and state values. State
@@ -124,13 +124,13 @@ def publish():
                                      float(p), suffix, mac, name, float(alert_below_th))
                     if Utils.compute_relative_difference(last_powers[i], p) > config.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - config["when"+suffix] > MAX_TIME_BETWEEN_READINGS:
                         usage_message = { 'timestamp' : t, 'data': p }
-                        messages.append( (topic.format(mac, name, "power"+suffix), usage_message) )
+                        messages.append( (topic.format(name, "power"+suffix, mac), usage_message) )
                         config["power"+suffix] = p
                         config["when"+suffix] = t
                 # check state transition before message is appended
                 if state != last_state:
                     state_message = { 'timestamp' : t, 'data' : state }
-                    messages.append( (topic.format(mac, name, "state"), state_message) )
+                    messages.append( (topic.format(name, "state", mac), state_message) )
                     config["state"] = state # track current state value
             except:
                 print "Unexpected error:", traceback.format_exc()

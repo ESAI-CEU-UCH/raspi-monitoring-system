@@ -25,6 +25,7 @@ translations = {
         "-" : "-",
         "avisos" : "alerts",
         "c" : "C",
+        "calma" : "C",
         "cielo" : "sky",
         "cielo_despejado" : "clear",
         "cubierto" : "covered",
