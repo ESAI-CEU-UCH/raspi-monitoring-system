@@ -134,7 +134,7 @@ def publish():
                     config["state"] = state # track current state value
             except:
                 print "Unexpected error:", traceback.format_exc()
-                logger.error("Error happened while processing circles data: %s", traceback.format_exc())
+                logger.info("Error happened while processing circles data: %s", traceback.format_exc())
         for top,message in messages:
             client.publish(top, json.dumps(message))
     except:
