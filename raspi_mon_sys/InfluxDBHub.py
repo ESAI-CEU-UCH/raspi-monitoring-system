@@ -56,7 +56,7 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
             fields = __build_fields_dict(v)
             doc = {
                 "measurement": topic,
-                "time": datetime.datetime.fromtimestamp(0.5*(s+e), tz).isoformat(),
+                "time": datetime.datetime.fromtimestamp(s, tz).isoformat(),
                 "fields": fields
             }
             pending_points.append( doc )
