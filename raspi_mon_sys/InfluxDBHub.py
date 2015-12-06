@@ -60,6 +60,14 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
                 "fields": fields
             }
             pending_points.append( doc )
+            last_e = e
+            last_fields = fields
+        doc = {
+            "measurement": topic,
+            "time": datetime.datetime.fromtimestamp(last_e, tz).isoformat(),
+            "fields": last_fields
+        }
+        pending_points.append( doc )
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
