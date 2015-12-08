@@ -75,15 +75,16 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
 
 def __on_mqtt_connect(client, userdata, rc):
     client.subscribe("raspimon/#")
+    client.subscribe("derived/#")
     client.subscribe("forecast/#")
 
 def __on_mqtt_message(client, userdata, msg):
     tz = pytz.timezone("Europe/Madrid")
-    topic = msg.topic.replace("/",":")
+    topic = msg.topic.replace("/",".")
     message = json.loads(msg.payload)
-    if topic.startswith("raspimon:"):
+    if topic.startswith("raspimon") or topic.startswith("derived"):
         __enqueue_raspimon_point(client, userdata, topic, message, tz)
-    elif topic.startswith("forecast:"):
+    elif topic.startswith("forecast"):
         __enqueue_forecast_point(client, userdata, topic, message, tz)
     else:
         raise ValueError("Unknown MQTT topic " + topic)
