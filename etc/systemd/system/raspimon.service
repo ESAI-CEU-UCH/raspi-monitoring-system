@@ -11,8 +11,14 @@ EnvironmentFile=-/etc/default/raspimon
 PIDFile=/run/raspimon.pid
 User=pi
 Group=pi
+PermissionsStartOnly=true
+ExecStartPre=service stop ntp
+ExecStartPre=timeout 6s ntpd -gq
+ExecStartPre=service start ntp
 ExecStart=/home/pi/raspi-monitoring-system/start.sh ${STARTED_AT_BOOT} ${STARTUP_SLEEP}
 ExecStop=/home/pi/raspi-monitoring-system/stop.sh
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

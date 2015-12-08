@@ -9,6 +9,8 @@ This module uses /etc/default/raspimon_auth to get a MongoDB connection URI:
 from email.mime.text import MIMEText
 from uuid import getnode
 
+import datetime
+import ntplib
 import os
 import paho.mqtt.client as paho
 import pymongo
@@ -107,6 +109,13 @@ def getconfig(source, logger):
     assert config is not None
     if logger is not None: logger.debug("Configuration retrieved properly for source %s", source)
     return config
+
+def ntpcheck():
+    c = ntplib.NTPClient()
+    response = c.request('europe.pool.ntp.org', version=3)
+    ntp_time = datetime.datetime.fromtimestamp(response.tx_time)
+    today = datetime.datetime.today()
+    assert abs(ntp_time - today) < datetime.timedelta(0,10,0) # 10 seconds
 
 def startup_wait():
     if os.getenv("STARTED_AT_BOOT") == "yes":

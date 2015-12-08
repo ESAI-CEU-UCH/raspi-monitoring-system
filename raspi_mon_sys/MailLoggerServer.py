@@ -119,6 +119,8 @@ def start(mail_credentials_path=__mail_credentials_path,
 
     """
     if not Scheduler.is_running():
+        Utils.ntpcheck()
+        
         ctx = zmq.Context.instance()
         s   = ctx.socket(zmq.PULL)
         s.bind(transport_string)

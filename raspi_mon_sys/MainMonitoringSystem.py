@@ -26,6 +26,7 @@ def __replace_vars(x, module):
     return method
 
 if __name__ == "__main__":
+    Utils.ntpcheck()
     Utils.startup_wait()
     
     T1_MILISECOND  = 1
