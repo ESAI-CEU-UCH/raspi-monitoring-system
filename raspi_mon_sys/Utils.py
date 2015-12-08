@@ -115,7 +115,7 @@ def ntpcheck():
     response = c.request('europe.pool.ntp.org', version=3)
     ntp_time = datetime.datetime.fromtimestamp(response.tx_time)
     today = datetime.datetime.today()
-    assert abs(ntp_time - today) < datetime.timedelta(0,10,0) # 10 seconds
+    assert abs(ntp_time - today) < datetime.timedelta(0,1,0) # 1 second
 
 def startup_wait():
     if os.getenv("STARTED_AT_BOOT") == "yes":

@@ -70,7 +70,9 @@ if __name__ == "__main__":
 
     # Inifite loop.
     try:
-        while True: time.sleep(60)
+        while True:
+            time.sleep(60)
+            Utils.ntpcheck()
     except:
         logger.info("Stopping scheduler")
         Scheduler.stop()
