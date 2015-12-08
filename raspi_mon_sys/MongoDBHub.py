@@ -8,7 +8,7 @@ structure::
         "_id": ObjectID(...),
         "house": HOUSE_NAME,
         "basetime": DATE VALUE IN TIMESTAMP,
-        "topic": MQTT TOPIC WITH / REPLACED BY :,
+        "topic": MQTT TOPIC WITH '/' REPLACED BY '.',
         "delta_times": AN ARRAY,
         "values": ANOTHER ARRAY
     }
@@ -69,11 +69,11 @@ def __on_mqtt_connect(client, userdata, rc):
 
 def __on_mqtt_message(client, userdata, msg):
     global raspimon_message_queues
-    topic = msg.topic.replace("/",":")
+    topic = msg.topic.replace("/",".")
     message = json.loads(msg.payload)
-    if topic.startswith("raspimon:"):
+    if topic.startswith("raspimon"):
         __enqueue_raspimon_message(client, userdata, topic, message)
-    elif topic.startswith("forecast:"):
+    elif topic.startswith("forecast"):
         __enqueue_forecast_message(client, userdata, topic, message)
     else:
         raise ValueError("Unknown MQTT topic " + topic)
