@@ -398,9 +398,13 @@ void loop()
  
   if (debug==1) {
     Serial.print(emontx.power1); Serial.print(" ");
+    Serial.print(emontx.aPower1); Serial.print(" ");                                  //ADDED aPower readings to debug
     Serial.print(emontx.power2); Serial.print(" ");
+    Serial.print(emontx.aPower2); Serial.print(" ");
     Serial.print(emontx.power3); Serial.print(" ");
+    Serial.print(emontx.aPower3); Serial.print(" ");
     Serial.print(emontx.power4); Serial.print(" ");
+    Serial.print(emontx.aPower4); Serial.print(" ");
     Serial.print(emontx.Vrms); Serial.print(" ");
     Serial.print(emontx.pulseCount); Serial.print(" ");
     if (DS18B20_STATUS==1){
