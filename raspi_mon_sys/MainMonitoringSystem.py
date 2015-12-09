@@ -72,7 +72,7 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(60)
-            Utils.ntpcheck(logger)
+            # Utils.ntpcheck(logger) We rely in NTP daemon
     except:
         logger.info("Stopping scheduler")
         Scheduler.stop()
