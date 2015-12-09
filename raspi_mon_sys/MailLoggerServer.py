@@ -48,9 +48,7 @@ __weekly_queue = Queue.PriorityQueue()
 __levels    = LoggerClient.levels
 __schedules = LoggerClient.schedules
 
-__errored = False
-
-# Mapping between schedule options and python queues.
+ between schedule options and python queues.
 __schedule2queue = {
     str(__schedules.HOURLY) : __hourly_queue,
     str(__schedules.DAILY)  : __daily_queue,
@@ -112,13 +110,6 @@ def __process_message(mail_credentials_path, msg):
     elif sched != str(__schedules.SILENTLY):
         __schedule2queue[ sched ].put( (msg["datetime"],txt) )
 
-def __ntpcheck():
-    global __errored
-    try:
-        Utils.ntpcheck()
-    except:
-        __errored = True
-        
 def start(mail_credentials_path=__mail_credentials_path,
           transport_string=__transport):
     """Starts the execution of the server.
@@ -153,11 +144,10 @@ def start(mail_credentials_path=__mail_credentials_path,
                                  mail_credentials_path, "DAILY", __daily_queue)
         Scheduler.repeat_o_clock(3600*24*7*1000, __queue_handler,
                                  mail_credentials_path, "WEEKLY", __weekly_queue)
-        Scheduler.repeat_o_clock(60*1000, __ntpcheck)
         
         print("Running server at ZMQ transport: " + transport_string)
         try:
-            while not __errored:
+            while true:
                 msg = s.recv_pyobj()
                 __process_message(mail_credentials_path, msg)
             raise Exception("Unexpected error (probably NTP related)")
