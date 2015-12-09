@@ -15,3 +15,5 @@ if [[ "$STARTED_AT_BOOT" = "yes" ]]; then
         sleep 2
     done
 fi
+
+exit -10

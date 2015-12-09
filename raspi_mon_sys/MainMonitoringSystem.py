@@ -26,7 +26,7 @@ def __replace_vars(x, module):
     return method
 
 if __name__ == "__main__":
-    Utils.ntpcheck()
+    Utils.ntpcheck(logger)
     Utils.startup_wait()
     
     T1_MILISECOND  = 1
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(60)
-            Utils.ntpcheck()
+            Utils.ntpcheck(logger)
     except:
         logger.info("Stopping scheduler")
         Scheduler.stop()
