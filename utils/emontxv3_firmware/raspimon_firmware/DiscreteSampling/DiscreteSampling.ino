@@ -63,7 +63,7 @@ const byte version = 23;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
-const byte TIME_BETWEEN_READINGS = 10;            //Time between readings   
+const byte TIME_BETWEEN_READINGS = 1000;            // Time between readings in ms (10s before raspimon)
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
@@ -72,15 +72,15 @@ const float Ical2=                90.9;                                 // (2000
 const float Ical3=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-float Vcal=                       268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+//float Vcal=                       268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 //float Vcal=276.9;
-//const float Vcal=               260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+float Vcal=               260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
 const float Vcal_USA=             130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
 
 const float phase_shift=          1.7;
 const int no_of_samples=          1662; 
-const int no_of_half_wavelengths= 30;
+const int no_of_half_wavelengths= 10;                          // 30 before raspimon. 10 half are 5 cycles, with 50Hz, and 4 CT sensors = 400ms for power reading
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
 const byte min_pulsewidth= 110;                                // minimum width of interrupt pulse (default pulse output meters = 100ms)
@@ -111,7 +111,7 @@ byte numSensors;
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 8;                                                        // emonTx RFM12B node ID
+byte nodeID = 10;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
  
 typedef struct { 
@@ -142,7 +142,7 @@ void setup()
 
   Serial.begin(9600);
  
-  Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
+  Serial.print("raspimon - emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
   #if (RF69_COMPAT)
     Serial.println(" RFM69CW");
   #else
@@ -422,7 +422,7 @@ void loop()
   send_rf_data();                                                           // *SEND RF DATA* - see emontx_lib
   
   unsigned long runtime = millis() - start;
-  unsigned long sleeptime = (TIME_BETWEEN_READINGS*1000) - runtime - 100;
+  unsigned long sleeptime = max( 20, TIME_BETWEEN_READINGS - runtime - 100 ); // raspimon: added max(20,value) to avoid negative times
   
   if (ACAC) {                                                               // If powered by AC-AC adaper (mains power) then delay instead of sleep
     delay(sleeptime);
