@@ -1,3 +1,10 @@
+# NTP
+
+Para que funcione la sincronización del reloj, es importante que el
+puerto 123 esté abierto para el protocolo UDP en todos los
+firewalls. Revisar siempre el router para añadir regla NAT que permita
+abrir dicho puerto.
+
 # Mensajes MQTT
 
 Todos los mensajes están pensados para series temporales, con lo que su
