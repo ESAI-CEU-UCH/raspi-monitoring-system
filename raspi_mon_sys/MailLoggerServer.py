@@ -48,7 +48,7 @@ __weekly_queue = Queue.PriorityQueue()
 __levels    = LoggerClient.levels
 __schedules = LoggerClient.schedules
 
- between schedule options and python queues.
+# Mapping between schedule options and python queues.
 __schedule2queue = {
     str(__schedules.HOURLY) : __hourly_queue,
     str(__schedules.DAILY)  : __daily_queue,
