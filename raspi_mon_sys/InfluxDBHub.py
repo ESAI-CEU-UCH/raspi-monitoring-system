@@ -29,7 +29,7 @@ def __build_fields_dict(v):
     if v is None or v == '': fields["null"] = "true"
     if v is None: fields["null"] = "true"
     elif type(v) == str or type(v) == unicode: fields["svalue"] = unicode(v)
-    else: fields["value"] = v
+    else: fields["value"] = float(v)
     return fields
 
 def __enqueue_raspimon_point(client, userdata, topic, message, tz):
