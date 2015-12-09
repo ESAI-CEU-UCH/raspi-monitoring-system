@@ -147,7 +147,7 @@ def start(mail_credentials_path=__mail_credentials_path,
         
         print("Running server at ZMQ transport: " + transport_string)
         try:
-            while true:
+            while True:
                 msg = s.recv_pyobj()
                 __process_message(mail_credentials_path, msg)
             raise Exception("Unexpected error (probably NTP related)")
