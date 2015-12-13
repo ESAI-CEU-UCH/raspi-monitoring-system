@@ -4,8 +4,8 @@ today and tomorrow.
 
 This module is particularly different from other ones because its data is
 published using two different topic roots. It publishes under
-`raspimon/aemet/ID/NAME/#` current weather status, and under
-`forecast/aemet/ID/HORIZON/NAME/#` where `ID` is the location identifier,
+`BASETOPIC/aemet/NAME/ID` current weather status, and under
+`forecast/RASPIMAC/aemet/HORIZON/NAME/ID` where `ID` is the location identifier,
 `NAME` is the particular data identifier (wind,
 rain, temperature, min_temperature, max_temperature, etc.) and `HORIZON` is the
 forecast horizon (hourly, two_days, week, etc.). Messages for `raspimon` are a
@@ -77,7 +77,7 @@ import raspi_mon_sys.Utils as Utils
 NUM_DAYS = 4
 
 weather_topic  = Utils.gettopic("aemet/{0}/{1}")
-forecast_topic = "forecast/aemet/{0}/{1}/{2}"
+forecast_topic = Utils.gettopic("aemet/{0}/{1}/{2}", "forecast")
 
 # This variables are loaded from MongoDB server at start() function.
 tz = None
@@ -265,7 +265,7 @@ def __publish_daily_forecast(client):
         for msg in pre_messages:
             key = msg.pop("content_key")
             msg["timestamp"] = when
-            client.publish(forecast_topic.format(location_id, "daily", key),
+            client.publish(forecast_topic.format("daily", key, location_id),
                            json.dumps(msg))
     except:
         print "Unable to retrieve daily forecast:", traceback.format_exc()
@@ -338,7 +338,7 @@ def __publish_hourly_forecast(client):
                 "periods_start" : series_data[0],
                 "periods_end" : [ x+3600 for x in series_data[0] ]
             }
-            client.publish(forecast_topic.format(location_id, "hourly", name),
+            client.publish(forecast_topic.format("hourly", name, location_id),
                            json.dumps(msg))
 
     except:
@@ -363,7 +363,7 @@ def __publish_current_weather_status(client):
         for name,value in zip(names,values):
             if type(value) == str and len(value) == 0: value = None
             msg = { "timestamp" : t, "data" : value }
-            client.publish(weather_topic.format(location_id,name), json.dumps(msg))
+            client.publish(weather_topic.format(name,location_id), json.dumps(msg))
 
     except:
         print "Unable to retrieve current weather status:", traceback.format_exc()
