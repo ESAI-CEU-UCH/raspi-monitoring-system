@@ -85,9 +85,9 @@ def getpahoclient(logger,configure=__dummy_configure):
     return client
 
 def gettopic(name):
-    """Returns a MQTT topic as `raspimon/MACADDRESS/name/value` where name is given
+    """Returns a MQTT topic as `raspimon/MACADDRESS/name` where name is given
     as argument to this function."""
-    return "raspimon/" + getmac() + "/" + name + "/value"
+    return "raspimon/" + getmac() + "/" + name
 
 def getmongoclient(logger):
     """Returns a client connected to Mongo DB."""

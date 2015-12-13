@@ -371,7 +371,7 @@ def __publish_current_weather_status(client):
 
 def publish():
     global tz
-    tz = pytz.timezone(config["timezone"])
+    tz = pytz.timezone("Europe/Madrid")
     try:
         client = Utils.getpahoclient(logger)
         __publish_daily_forecast(client)

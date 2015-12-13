@@ -43,46 +43,46 @@ if (cursor.count() == 0) {
             "10": [
                 {
                     "key": 2,
-                    "desc": "CT Clip 1, EmonTXV3 1, telephone power consumption",
-                    "name": "telephone",
+                    "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads.",
+                    "name": "ground_floor/circuits/grid",
                     "unit": "W",
-                    "tolerance" : 0.0005
+                    "tolerance": 0.0005
                 },
                 {
                     "key": 6,
                     "desc": "VRMS EmonTXV3 1",
-                    "name": "vrms1",
+                    "name": "ground_floor/circuits/vrms1",
                     "mul": 0.01,
                     "add": 0,
                     "unit": "V",
-                    "tolerance" : 0.0005
+                    "tolerance": 0.0005
                 }
             ],
             "19": [
                 {
                     "key": 2,
-                    "desc": "DHT22 Temperature 1",
-                    "name": "in_temperature1",
+                    "desc": "Temperature dining room measured with DHT22",
+                    "name": "ground_floor/dining_room/temperature",
                     "unit": "ºC",
                     "mul": 0.1,
-                    "tolerance" : 0.01
+                    "tolerance": 0.01
                 },
                 {
                     "key": 4,
-                    "desc": "DHT22 Humidity 1",
-                    "name": "in_humidity1",
+                    "desc": "Humidity dining room measured with DHT22",
+                    "name": "ground_floor/dining_room/humidity",
                     "mul": 0.1,
                     "unit": "%",
-                    "tolerance" : 0.01
+                    "tolerance": 0.01
                 },
                 {
                     "key": 5,
-                    "desc": "Battery voltage EmonTH 1",
-                    "name": "emonth1_battery_voltage",
+                    "desc": "EmonTH battery level",
+                    "name": "ground_floor/dining_room/emonth_battery_level",
                     "mul": 0.1,
                     "unit": "V",
-                    "tolerance" : 0.01,
-                    "alert_below_threshold" : 1.5
+                    "tolerance": 0.01,
+                    "alert_below_threshold": 1.5
                 }
             ]
         }
@@ -99,23 +99,127 @@ if (cursor.count() == 0) {
         "raspi": raspi_mac,
         "pairing": {
             "000D6F0005671DC3": [
-                "000D6F00004BFA7C"
+                "000D6F00004BFA7C",
+                "000D6F00004BA14E",
+                "000D6F00004BE7CD",
+                "000D6F00004BF57F",
+                "000D6F00004ECE05",
+                "000D6F000043B5FB",
+                "000D6F00004BE94C",
+                "000D6F00004BE7CD",
+                "000D6F00004698D2",
+                "000D6F00004BFAD3",
+                "000D6F0004B1EF92",
+                "000D6F0004B1E853",
+                "000D6F0004B1F028",
+                "000D6F000043B9AA"
             ]
         },
         "circles": [
             {
                 "mac": "000D6F0005671DC3",
-                "desc": "Telephone D361 IMF",
-                "name": "telephone",
+                "desc": "Raspberry pi + router",
+                "name": "ground_floor/dining_room/rpi",
                 "unit": "W",
-                "tolerance" : 0.005
+                "tolerance": 0.005
             },
             {
                 "mac": "000D6F00004BFA7C",
-                "desc": "Raspberry pi " + raspi_mac,
-                "name": "raspi",
+                "desc": "Reverse osmosis water source",
+                "name": "ground_floor/kitchen/water_source",
                 "unit": "W",
-                "tolerance" : 0.005
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004BA14E",
+                "desc": "Washing machine",
+                "name": "ground_floor/kitchen/washer",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004BE7CD",
+                "desc": "Heater (oil version) + vacuum cleaner (few times) at dining room",
+                "name": "ground_floor/dining_room/heater",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004BF57F",
+                "desc": "Dressing room: heater (air version) + vacuum cleaner (few times)",
+                "name": "second_floor/dressing_room/heater",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004ECE05",
+                "desc": "Two computers: iMac + PC + screen + speakers. Reading lamp. Sometimes iPad charger, Mac Book Air charger, mobile phone charger. At largest room 3.",
+                "name": "second_floor/room3/outlets",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F000043B5FB",
+                "desc": "Heater (oil version) at largest room 3.",
+                "name": "second_floor/room3/heater",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004BE94C",
+                "desc": "Microwave oven",
+                "name": "ground_floor/kitchen/microwave",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F0001106539",
+                "desc": "Instruments room, small room 1: electronic piano + fan (few times in summer) + heater (few times in winter) + amplified speakers + mixing table",
+                "name": "first_floor/room1/outlets",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004698D2",
+                "desc": "Fridge 1 (larger one)",
+                "name": "ground_floor/kitchen/fridge1",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F00004BFAD3",
+                "desc": "Fridge 2 (smaller one)",
+                "name": "ground_floor/kitchen/fridge2",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F0004B1EF92",
+                "desc": "Electric oven",
+                "name": "ground_floor/kitchen/oven",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F0004B1E853",
+                "desc": "Toaster + juice maker + vacuum cleaner (few times)",
+                "name": "ground_floor/kitchen/outlets",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F0004B1F028",
+                "desc": "TV + multimedia computer + amplifier",
+                "name": "ground_floor/dining_room/multimedia",
+                "unit": "W",
+                "tolerance": 0.005
+            },
+            {
+                "mac": "000D6F000043B9AA",
+                "desc": "Guest room 2 (middle one): heater in winter + computer + fan in summer",
+                "name": "first_floor/room2/outlets",
+                "unit": "W",
+                "tolerance": 0.005
             }
         ]
     });
@@ -130,8 +234,7 @@ if (cursor.count() == 0) {
         "raspi": raspi_mac,
         "current_weather_url" : "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24",
         "hourly_forecast_url" : "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250",
-        "location_id" : "46250",
-        "timezone" : "Europe/Madrid"
+        "location_id" : "46250"
     });
 }
 
@@ -147,7 +250,8 @@ if (cursor.count() == 0) {
         "user": "root",
         "password": "root",
         "database": "raspimon",
-        "retention_policy" : "7d"
+        "retention_policy" : "7d",
+        "timezone" : "Europe/Madrid"
     });
 }
 

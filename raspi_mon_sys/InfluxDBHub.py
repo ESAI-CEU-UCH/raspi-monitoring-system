@@ -17,6 +17,7 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
+config = None
 logger = None
 mqtt_client = None
 influx_client = None
@@ -79,7 +80,7 @@ def __on_mqtt_connect(client, userdata, rc):
     client.subscribe("forecast/#")
 
 def __on_mqtt_message(client, userdata, msg):
-    tz = pytz.timezone("Europe/Madrid")
+    tz = pytz.timezone(config["timezone"])
     topic = msg.topic.replace("/",".")
     message = json.loads(msg.payload)
     if topic.startswith("raspimon") or topic.startswith("derived"):
@@ -98,6 +99,7 @@ def start():
     global logger
     global mqtt_client
     global house_data
+    global config
     global influx_client
     logger = LoggerClient.open("InfluxDBHub")
     mqtt_client = Utils.getpahoclient(logger, __configure_mqtt)

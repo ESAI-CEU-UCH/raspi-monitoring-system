@@ -8,7 +8,7 @@ schedule configured at open energy monitor devices.
 
 Open energy monitor data is published under topics::
 
-    BASETOPIC/rfemon/NAME/NODE_ID/KEY/value {"timestamp":timestamp,"data":data}
+    BASETOPIC/rfemon/NAME/NODE_ID/KEY {"timestamp":timestamp,"data":data}
 
 EmonTxV3 sends the following data list::
 

@@ -3,12 +3,13 @@
 
 Plugwise data is published under topics::
 
-    BASETOPIC/plugwise/NAME1/power1s/MACADDRESS1/value {"timestamp":t1,"data":power1}
-    BASETOPIC/plugwise/NAME1/power8s/MACADDRESS1/value {"timestamp":t1,"data":power1}
-    BASETOPIC/plugwise/NAME1/state/MACADDRESS1/value   {"timestamp":t1,"data":state1}
+    BASETOPIC/plugwise/NAME1/power1s/MACADDRESS1 {"timestamp":t1,"data":power1s}
+    BASETOPIC/plugwise/NAME1/power8s/MACADDRESS1 {"timestamp":t1,"data":power8s}
+    BASETOPIC/plugwise/NAME1/state/MACADDRESS1   {"timestamp":t1,"data":state}
     ...
-    BASETOPIC/plugwise/NAME2/power8s/MACADDRESS2/value {"timestamp":t2,"data":power2}
-    BASETOPIC/plugwise/NAME2/state/MACADDRESS2/value   {"timestamp":t2,"data":state2}
+    BASETOPIC/plugwise/NAME2/power1s/MACADDRESS2 {"timestamp":t2,"data":power1s}
+    BASETOPIC/plugwise/NAME2/power8s/MACADDRESS2 {"timestamp":t2,"data":power8s}
+    BASETOPIC/plugwise/NAME2/state/MACADDRESS2   {"timestamp":t2,"data":state}
     ...
 
 This sequence is a time series of power consumption and state values. State

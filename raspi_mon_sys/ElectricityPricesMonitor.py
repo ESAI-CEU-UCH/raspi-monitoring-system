@@ -6,13 +6,13 @@ the prices for next day will be available every day at 20:15, so we can check
 the price at 21:00 UTC in order to be sure they are available. This module
 publishes a sequence of messages as::
 
-    BASETOPIC/electricity_prices/GEN/value {"timestamp":REF+0,"data":10}
-    BASETOPIC/electricity_prices/NOC/value {"timestamp":REF+0,"data":66}
-    BASETOPIC/electricity_prices/VHC/value {"timestamp":REF+0,"data":70}
+    BASETOPIC/electricity_prices/GEN {"timestamp":REF+0,"data":10}
+    BASETOPIC/electricity_prices/NOC {"timestamp":REF+0,"data":66}
+    BASETOPIC/electricity_prices/VHC {"timestamp":REF+0,"data":70}
     ...
-    BASETOPIC/electricity_prices/GEN/value {"timestamp":REF+3600,"data":12}
-    BASETOPIC/electricity_prices/NOC/value {"timestamp":REF+3600,"data":69}
-    BASETOPIC/electricity_prices/VHC/value {"timestamp":REF+3600,"data":80}
+    BASETOPIC/electricity_prices/GEN {"timestamp":REF+3600,"data":12}
+    BASETOPIC/electricity_prices/NOC {"timestamp":REF+3600,"data":69}
+    BASETOPIC/electricity_prices/VHC {"timestamp":REF+3600,"data":80}
     ...
 
 This sequence can be interpreted as a time series of electricity prices for a
