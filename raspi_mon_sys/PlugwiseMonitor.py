@@ -118,6 +118,7 @@ def publish():
                 state   = c.get_info()['relay_state']
                 alert_below_th = config.get("alert_below_threshold", None)
                 for i,p in enumerate(powers):
+                    p = max(0, p)
                     key = OUTPUT_LIST[i]["key"]
                     suffix = OUTPUT_LIST[i]["suffix"]
                     if alert_below_th is not None and p < alert_below_th:
