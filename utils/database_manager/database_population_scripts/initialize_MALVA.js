@@ -43,13 +43,62 @@ if (cursor.count() == 0) {
             "10": [
                 {
                     "key": 2,
-                    "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads.",
-                    "name": "ground_floor/circuits/grid",
+                    "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads. Real power.",
+                    "name": "ground_floor/circuits/grid_real_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 3,
+                    "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads. Apparent power.",
+                    "name": "ground_floor/circuits/grid_app_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 4,
+                    "desc": "CT Clip 2, EmonTXV3 num 1. Circuit 1 loads, 20A. Real power.",
+                    "name": "ground_floor/circuits/circuit1_real_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 5,
+                    "desc": "CT Clip 2, EmonTXV3 num 1. Circuit 1 loads 20A. Apparent power.",
+                    "name": "ground_floor/circuits/circuit1_app_power",
                     "unit": "W",
                     "tolerance": 0.0005
                 },
                 {
                     "key": 6,
+                    "desc": "CT Clip 3, EmonTXV3 num 1. Circuit 2 loads 16A. Real power.",
+                    "name": "ground_floor/circuits/circuit2_real_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 7,
+                    "desc": "CT Clip 3, EmonTXV3 num 1. Circuit 2 loads 16A. Apparent power.",
+                    "name": "ground_floor/circuits/circuit2_app_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 8,
+                    "desc": "CT Clip 4, EmonTXV3 num 1. Circuit 3 loads 15A. Real power.",
+                    "name": "ground_floor/circuits/circuit3_real_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 9,
+                    "desc": "CT Clip 4, EmonTXV3 num 1. Circuit 3 loads 15A. Apparent power.",
+                    "name": "ground_floor/circuits/circuit3_app_power",
+                    "unit": "W",
+                    "tolerance": 0.0005
+                },
+                {
+                    "key": 10,
                     "desc": "VRMS EmonTXV3 1",
                     "name": "ground_floor/circuits/vrms1",
                     "mul": 0.01,

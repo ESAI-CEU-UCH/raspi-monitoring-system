@@ -112,7 +112,7 @@ boolean USA=FALSE;
 const float phase_shift=          1.7;
 const int no_of_samples=          1662; 
 const int no_of_half_wavelengths= 14;                          // 30 before raspimon. 14 half are 7 cycles, with 50Hz, and 4 CT sensors = 560ms for power reading
-const int timeout=                2000;                               //emonLib timeout 
+const int timeout=                220;                               //emonLib timeout: 2000 before raspimon
 const int ACAC_DETECTION_LEVEL=   3000;
 const byte min_pulsewidth= 110;                                // minimum width of interrupt pulse (default pulse output meters = 100ms)
 const int TEMPERATURE_PRECISION=  11;                          //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
