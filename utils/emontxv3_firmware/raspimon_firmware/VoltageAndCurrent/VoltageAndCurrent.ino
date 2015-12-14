@@ -1,3 +1,6 @@
+/*
+  Computes an average of all EnergyMonitor object properties for all four CTs.
+*/
 #define emonTxV3                                                                   // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
 #define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 
@@ -6,26 +9,31 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                                      
 
 #include "EmonLib.h"                                                               // Include EmonLib energy monitoring library https://github.com/openenergymonitor/EmonLib
 EnergyMonitor ct1, ct2, ct3, ct4;       
+EnergyMonitor Ect1, Ect2, Ect3, Ect4;
+
+void initEct(EnergyMonitor &Ect);
+double average(double Ev, double v);
+void update(EnergyMonitor &Ect, const EnergyMonitor &ct);
 
 #include <OneWire.h>                                                               // http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 // All CTs are considered as enabled
 const byte version = 10;
 
-float Vcal1=276.9; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
-float Vcal2=276.9; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
-float Vcal3=276.9; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
-float Vcal4=276.9; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal1=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal2=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal3=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal4=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
 
-const float Ical1=                87.60;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical2=                87.70;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical3=                87.50;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
+const float Ical1=                88.24;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical2=                85.70;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical3=                87.60;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical4=                16.20;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-const float phase_shift1=          1.7;
-const float phase_shift2=          1.7;
-const float phase_shift3=          1.7;
-const float phase_shift4=          1.7;
+const float phase_shift1=          1.56;
+const float phase_shift2=          1.57;
+const float phase_shift3=          1.60;
+const float phase_shift4=          1.54;
 
 //----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
 const byte LEDpin=                 6;                              // emonTx V3 LED
@@ -40,8 +48,9 @@ const int networkGroup = 210;
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 bool ACAC;
-const int no_of_half_wavelengths = 20;
+const int no_of_half_wavelengths = 40;
 const int timeout = 400;
+long counter = 0;
 
 void setup() 
 {
@@ -99,6 +108,11 @@ void setup()
   digitalWrite(LEDpin, HIGH);
   delay(200);
   digitalWrite(LEDpin, LOW);
+  
+  initEct(Ect1);
+  initEct(Ect2);
+  initEct(Ect3);
+  initEct(Ect4);
 }
 
 void loop() 
@@ -108,16 +122,22 @@ void loop()
     delay(1000);
     return;
   }
+  ++counter;
   
   ct1.calcVI(no_of_half_wavelengths,timeout); 
   ct2.calcVI(no_of_half_wavelengths,timeout); 
   ct3.calcVI(no_of_half_wavelengths,timeout); 
   ct4.calcVI(no_of_half_wavelengths,timeout); 
+
+  update(Ect1, ct1);  
+  update(Ect2, ct2);  
+  update(Ect3, ct3);    
+  update(Ect4, ct4);  
   
-  Serial.print("CT1: "); ct1.serialprint();
-  Serial.print("CT2: "); ct2.serialprint();
-  Serial.print("CT3: "); ct3.serialprint();
-  Serial.print("CT4: "); ct4.serialprint();
+  Serial.print("ECT1: "); Ect1.serialprint();
+  Serial.print("ECT2: "); Ect2.serialprint();
+  Serial.print("ECT3: "); Ect3.serialprint();
+  Serial.print("ECT4: "); Ect4.serialprint();
 
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powe  
   delay(10);
@@ -133,5 +153,28 @@ double calc_rms(int pin, int samples)
   }
   double rms = sqrt((double)sum / samples);
   return rms;
+}
+
+void initEct(EnergyMonitor &Ect)
+{
+  Ect.realPower = 0.0;
+  Ect.apparentPower = 0.0;
+  Ect.Vrms = 0.0;
+  Ect.Irms = 0.0;
+  Ect.powerFactor = 0.0;
+}
+
+double average(double Ev, double v)
+{
+  return ((double)(counter-1)/(double)counter) * Ev + 1.0/(double)counter * v;
+}
+
+void update(EnergyMonitor &Ect, const EnergyMonitor &ct)
+{
+  Ect.realPower = average(Ect.realPower, ct.realPower);
+  Ect.apparentPower = average(Ect.apparentPower, ct.apparentPower);
+  Ect.Vrms = average(Ect.Vrms, ct.Vrms);
+  Ect.Irms = average(Ect.Irms, ct.Irms);
+  Ect.powerFactor = average(Ect.powerFactor, ct.powerFactor);
 }
 

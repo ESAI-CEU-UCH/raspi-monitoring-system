@@ -98,10 +98,10 @@ const long TIME_BETWEEN_READINGS = 1000;            // Time between readings in 
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
-const float Ical1=                87.60;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical2=                87.70;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical3=                87.50;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
+const float Ical1=                88.24;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical2=                85.70;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical3=                87.60;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical4=                16.20;                               // (2000 turns / 120 Ohm burden) = 16.67
 
 //float Vcal=                       268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 //float Vcal=276.9;
@@ -109,7 +109,11 @@ float Vcal=               241;                             //  Calibration for E
 const float Vcal_USA=             130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
 
-const float phase_shift=          1.7;
+const float phase_shift1=          1.56;
+const float phase_shift2=          1.57;
+const float phase_shift3=          1.60;
+const float phase_shift4=          1.54;
+
 const int no_of_samples=          1662; 
 const int no_of_half_wavelengths= 14;                          // 30 before raspimon. 14 half are 7 cycles, with 50Hz, and 4 CT sensors = 560ms for power reading
 const int timeout=                220;                               //emonLib timeout: 2000 before raspimon
@@ -275,7 +279,10 @@ void setup()
       Serial.println("assuming pwr from AC-AC (jumper closed)");
       if (USA==TRUE) Serial.println("USA mode active"); 
       Serial.print("Vcal: "); Serial.println(Vcal);
-      Serial.print("Phase Shift: "); Serial.println(phase_shift);
+      Serial.print("Phase Shift1: "); Serial.println(phase_shift1);
+      Serial.print("Phase Shift2: "); Serial.println(phase_shift2);
+      Serial.print("Phase Shift3: "); Serial.println(phase_shift3);
+      Serial.print("Phase Shift4: "); Serial.println(phase_shift4);
     } else {
       Serial.println("AC-AC NOT detected - Apparent Pwr measure enabled");
       Serial.print("Assuming VRMS: "); Serial.print(Vrms); Serial.println("V");
@@ -330,10 +337,10 @@ void setup()
   
   if (ACAC)
   {
-    if (CT1) ct1.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
-    if (CT2) ct2.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
-    if (CT3) ct3.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
-    if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
+    if (CT1) ct1.voltage(0, Vcal, phase_shift1);          // ADC pin, Calibration, phase_shift
+    if (CT2) ct2.voltage(0, Vcal, phase_shift2);          // ADC pin, Calibration, phase_shift
+    if (CT3) ct3.voltage(0, Vcal, phase_shift3);          // ADC pin, Calibration, phase_shift
+    if (CT4) ct4.voltage(0, Vcal, phase_shift4);          // ADC pin, Calibration, phase_shift
   }
 
   attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting 
