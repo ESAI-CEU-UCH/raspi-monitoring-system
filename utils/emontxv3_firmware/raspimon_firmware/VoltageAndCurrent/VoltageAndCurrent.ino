@@ -13,25 +13,25 @@ EnergyMonitor Ect1, Ect2, Ect3, Ect4;
 
 void initEct(EnergyMonitor &Ect);
 double average(double Ev, double v);
-void update(EnergyMonitor &Ect, const EnergyMonitor &ct);
+void update(EnergyMonitor &Ect, const EnergyMonitor &ct, float turns);
 
 #include <OneWire.h>                                                               // http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 // All CTs are considered as enabled
 const byte version = 10;
 
-float Vcal1=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
-float Vcal2=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09  // FIXME240.9????
+float Vcal1=240.7; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal2=240.8; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09  // FIXME240.9????
 float Vcal3=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
 float Vcal4=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
 
-const float Ical1=                88.24;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical2=                85.70;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical3=                87.60;                               // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical4=                16.20;                               // (2000 turns / 120 Ohm burden) = 16.67
+const float Ical1=                87.80;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical2=                88.04;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical3=                86.10;                               // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical4=                16.24;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-const float phase_shift1=          1.90;
-const float phase_shift2=          1.57;
+const float phase_shift1=          1.50;
+const float phase_shift2=          1.50;
 const float phase_shift3=          1.45;
 const float phase_shift4=          1.54;
 
@@ -130,18 +130,15 @@ void loop()
   ct4.calcVI(no_of_half_wavelengths,timeout); 
 
   if (n < 10) {
-    Serial.print("CT1: "); ct1.serialprint();
-    Serial.print("CT2: "); ct2.serialprint();
-    Serial.print("CT3: "); ct3.serialprint();
-    Serial.print("CT4: "); ct4.serialprint();
+    Serial.println("Wait...");
   }
   else {
     ++counter;
     
-    update(Ect1, ct1);  
-    update(Ect2, ct2);  
-    update(Ect3, ct3);    
-    update(Ect4, ct4);  
+    update(Ect1, ct1, 0.8);  
+    update(Ect2, ct2, 0.8);  
+    update(Ect3, ct3, 0.8);    
+    update(Ect4, ct4, 0.8);  
     
     Serial.print("ECT1: "); Ect1.serialprint();
     Serial.print("ECT2: "); Ect2.serialprint();
@@ -179,12 +176,12 @@ double average(double Ev, double v)
   return ((double)(counter-1)/(double)counter) * Ev + 1.0/(double)counter * v;
 }
 
-void update(EnergyMonitor &Ect, const EnergyMonitor &ct)
+void update(EnergyMonitor &Ect, const EnergyMonitor &ct, float turns)
 {
-  Ect.realPower = average(Ect.realPower, ct.realPower);
-  Ect.apparentPower = average(Ect.apparentPower, ct.apparentPower);
+  Ect.realPower = average(Ect.realPower, ct.realPower/turns);
+  Ect.apparentPower = average(Ect.apparentPower, ct.apparentPower/turns);
   Ect.Vrms = average(Ect.Vrms, ct.Vrms);
-  Ect.Irms = average(Ect.Irms, ct.Irms);
+  Ect.Irms = average(Ect.Irms, ct.Irms/turns);
   Ect.powerFactor = average(Ect.powerFactor, ct.powerFactor);
 }
 
