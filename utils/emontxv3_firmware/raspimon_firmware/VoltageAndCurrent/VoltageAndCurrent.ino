@@ -21,7 +21,7 @@ void update(EnergyMonitor &Ect, const EnergyMonitor &ct);
 const byte version = 10;
 
 float Vcal1=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
-float Vcal2=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
+float Vcal2=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09  // FIXME240.9????
 float Vcal3=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
 float Vcal4=241.0; // (230V x 13) / (9V x 1.2) = 276.9 Calibration for EU AC-AC adapter 77DB-06-09 
 
@@ -30,9 +30,9 @@ const float Ical2=                85.70;                               // (2000 
 const float Ical3=                87.60;                               // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.20;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-const float phase_shift1=          1.56;
+const float phase_shift1=          1.90;
 const float phase_shift2=          1.57;
-const float phase_shift3=          1.60;
+const float phase_shift3=          1.45;
 const float phase_shift4=          1.54;
 
 //----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
@@ -50,7 +50,7 @@ const int networkGroup = 210;
 bool ACAC;
 const int no_of_half_wavelengths = 40;
 const int timeout = 400;
-long counter = 0;
+long counter = 0, n = 0;
 
 void setup() 
 {
@@ -122,23 +122,33 @@ void loop()
     delay(1000);
     return;
   }
-  ++counter;
+  ++n;
   
   ct1.calcVI(no_of_half_wavelengths,timeout); 
   ct2.calcVI(no_of_half_wavelengths,timeout); 
   ct3.calcVI(no_of_half_wavelengths,timeout); 
   ct4.calcVI(no_of_half_wavelengths,timeout); 
 
-  update(Ect1, ct1);  
-  update(Ect2, ct2);  
-  update(Ect3, ct3);    
-  update(Ect4, ct4);  
+  if (n < 10) {
+    Serial.print("CT1: "); ct1.serialprint();
+    Serial.print("CT2: "); ct2.serialprint();
+    Serial.print("CT3: "); ct3.serialprint();
+    Serial.print("CT4: "); ct4.serialprint();
+  }
+  else {
+    ++counter;
+    
+    update(Ect1, ct1);  
+    update(Ect2, ct2);  
+    update(Ect3, ct3);    
+    update(Ect4, ct4);  
+    
+    Serial.print("ECT1: "); Ect1.serialprint();
+    Serial.print("ECT2: "); Ect2.serialprint();
+    Serial.print("ECT3: "); Ect3.serialprint();
+    Serial.print("ECT4: "); Ect4.serialprint();
+  }
   
-  Serial.print("ECT1: "); Ect1.serialprint();
-  Serial.print("ECT2: "); Ect2.serialprint();
-  Serial.print("ECT3: "); Ect3.serialprint();
-  Serial.print("ECT4: "); Ect4.serialprint();
-
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powe  
   delay(10);
 }
