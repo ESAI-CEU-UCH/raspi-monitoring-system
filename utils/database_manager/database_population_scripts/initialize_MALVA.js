@@ -161,7 +161,8 @@ if (cursor.count() == 0) {
                 "000D6F0004B1EF92",
                 "000D6F0004B1E853",
                 "000D6F0004B1F028",
-                "000D6F000043B9AA"
+                "000D6F000043B9AA",
+                "000D6F000043BA5B"
             ]
         },
         "circles": [
@@ -203,7 +204,7 @@ if (cursor.count() == 0) {
             {
                 "mac": "000D6F00004ECE05",
                 "desc": "Two computers: iMac + PC + screen + speakers. Reading lamp. Sometimes iPad charger, Mac Book Air charger, mobile phone charger. At largest room 3.",
-                "name": "second_floor/room3/outlets",
+                "name": "second_floor/room3/electronics",
                 "unit": "W",
                 "tolerance": 0.005
             },
@@ -222,9 +223,9 @@ if (cursor.count() == 0) {
                 "tolerance": 0.005
             },
             {
-                "mac": "000D6F0001106539",
+                "mac": "000D6F000043B9AA",
                 "desc": "Instruments room, small room 1: electronic piano + fan (few times in summer) + heater (few times in winter) + amplified speakers + mixing table",
-                "name": "first_floor/room1/outlets",
+                "name": "first_floor/room1/electronics",
                 "unit": "W",
                 "tolerance": 0.005
             },
@@ -251,7 +252,7 @@ if (cursor.count() == 0) {
             },
             {
                 "mac": "000D6F0004B1E853",
-                "desc": "Toaster + juice maker + vacuum cleaner (few times)",
+                "desc": "Water heater + toaster + juice maker + vacuum cleaner (few times)",
                 "name": "ground_floor/kitchen/outlets",
                 "unit": "W",
                 "tolerance": 0.005
@@ -264,9 +265,9 @@ if (cursor.count() == 0) {
                 "tolerance": 0.005
             },
             {
-                "mac": "000D6F000043B9AA",
-                "desc": "Guest room 2 (middle one): heater in winter + computer + fan in summer",
-                "name": "first_floor/room2/outlets",
+                "mac": "000D6F000043BA5B",
+                "desc": "alarm clock + iPad charger + Mac Book Air charger + other outlets",
+                "name": "second_floor/room3/outlets",
                 "unit": "W",
                 "tolerance": 0.005
             }
