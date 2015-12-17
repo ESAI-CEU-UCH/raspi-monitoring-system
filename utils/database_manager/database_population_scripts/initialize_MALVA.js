@@ -328,7 +328,7 @@ if (cursor.count() == 0) {
                 "schedules": [
                     {
                         "method": "repeat_o_clock",
-                        "args": [ "10s", "$this.write_data" ]
+                        "args": [ "60s", "$this.write_data" ]
                     }
                 ]
             },
