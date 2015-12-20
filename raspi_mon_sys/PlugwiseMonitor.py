@@ -30,6 +30,7 @@ import traceback
 
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.plugwise.api as plugwise_api
+import raspi_mon_sys.Scheduler as Scheduler
 import raspi_mon_sys.Utils as Utils
 
 # Plugwise connection configuration.
@@ -41,6 +42,7 @@ OUTPUT_LIST = [ {"key":0,"suffix":"1s"}, {"key":1,"suffix":"8s"} ]
 topic = Utils.gettopic("plugwise/{0}/{1}/{2}")
 logger = None
 client = None
+config = None
 device = None
 circles_config = None
 circles = None
@@ -63,6 +65,7 @@ def start():
     connects with MQTT broker."""
     global logger
     global client
+    global config
     global device
     global circles_config
     global circles
@@ -143,3 +146,14 @@ def publish():
         print "Unexpected error:", traceback.format_exc()
         logger.error("Error happened while processing circles data")
         raise
+
+if __name__ == "__main__":
+    start()
+    Schedules.start()
+    Scheduler.repeat_o_clock(config["period"], publish)
+    try:
+        while True:
+            time.sleep(60)
+    except:
+        Scheduler.stop()
+        stop()

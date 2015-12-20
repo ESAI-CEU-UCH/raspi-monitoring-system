@@ -86,10 +86,23 @@ def __build_null_values(node2keys):
         values.append( current_values )
     return values
 
+def __try_open(logger):
+    try:
+        iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
+                                                        com_port, com_baud)
+    except:
+        iface = None
+        logger.alert("Unable to open connection with RF device")
+    return iface
+
 def __process(logger, client, iface, nodes, node2keys):
     last_timestamp = time.time()
     topic = Utils.gettopic("rfemon/{0}/{1}/{2}")
     while is_running:
+        if iface is None:
+            time.sleep(0.1)
+            iface = __try_open(logger)
+            continue
         # Execute run method
         iface.run()
         # Read socket
@@ -99,8 +112,7 @@ def __process(logger, client, iface, nodes, node2keys):
             logger.alert("No values read for a long time, probably something is wrong with RF device")
             iface.close()
             time.sleep(0.1)
-            iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
-                                                            com_port, com_baud)
+            iface = __try_open(logger)
         elif current_values is not None:
             current_values = [ current_values ]
         # If complete and valid data values were received
@@ -139,8 +151,7 @@ def start():
     client = Utils.getpahoclient(logger)
     
     global iface
-    iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
-                                                    com_port, com_baud)
+    iface = __try_open(logger)
 
     # config is a dictionary with:
     # devices : [ { id, desc, name  } ]
@@ -165,8 +176,16 @@ def start():
 def stop():
     global is_running
     is_running = False
+    time.sleep(0.1)
     client.disconnect()
     logger.close()
     iface.close()
 
-if __name__ == "__main__": start()
+if __name__ == "__main__":
+    start()
+    # Inifite loop.
+    try:
+        while True:
+            time.sleep(60)
+    except:
+        stop()

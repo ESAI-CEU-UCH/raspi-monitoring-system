@@ -146,6 +146,7 @@ if (cursor.count() == 0) {
         "house": house,
         "stick": plugwise_stick,
         "raspi": raspi_mac,
+        "period" : "8s",
         "pairing": {
             "000D6F0005671DC3": [
                 "000D6F00004BFA7C",
@@ -359,18 +360,6 @@ if (cursor.count() == 0) {
                     }
                 ]
             },
-            {
-                "import": "raspi_mon_sys.OpenEnergyMonitor"
-            },
-            {
-                "import": "raspi_mon_sys.PlugwiseMonitor",
-                "schedules": [
-                    {
-                        "method": "repeat_o_clock",
-                        "args": [ "8s", "$this.publish" ]
-                    }
-                ]
-            }
         ]
     });
 }

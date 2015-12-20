@@ -6,14 +6,18 @@ waitpid(){
     done
 }
 
-for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/MailLoggerServer.py"; do
+BREAK_TIME=4
+ACK_TIME=2
+
+for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/MailLoggerServer.py" "raspi_mon_sys/OpenEnergyMonitor.py" "raspi_mon_sys/PlugwiseMonitor.py"; do
     pid=$(pgrep -n -f "python $mask")
     if [[ ! -z $pid ]]; then
         kill -2 $pid
-        sleep 2
-        kill -9 $pid
+        echo "Sleeping $BREAK_TIME seconds to allow process termination"
+        sleep $BREAK_TIME
+        kill -9 $pid 2> /dev/null
         waitpid $pid
-        echo "Sleeping 2 seconds after killing the process"
-        sleep 2
+        echo "Sleeping $ACK_TIME seconds to allow other process acknowledgement"
+        sleep $ACK_TIME
     fi
 done
