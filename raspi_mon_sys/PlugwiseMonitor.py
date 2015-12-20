@@ -149,7 +149,7 @@ def publish():
 
 if __name__ == "__main__":
     start()
-    Schedules.start()
+    Scheduler.start()
     Scheduler.repeat_o_clock(config["period"], publish)
     try:
         while True:
