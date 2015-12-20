@@ -51,6 +51,7 @@ if __name__ == "__main__":
     started_modules = []
 
     def try_start(module_info):
+        logger.info("Starting module %s", module_info["import"])
         module = importlib.import_module(module_info["import"])
         if __try_call(logger, module.start):
             started_modules.append(module)
