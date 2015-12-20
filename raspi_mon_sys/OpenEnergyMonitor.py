@@ -99,7 +99,7 @@ def __process(logger, client, iface, nodes, node2keys):
             iface.close()
             iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                             com_port, com_baud)
-        else if current_values is not None:
+        elif current_values is not None:
             current_values = [ current_values ]
         # If complete and valid data values were received
         if current_values is not None:
