@@ -97,8 +97,10 @@ def __process(logger, client, iface, nodes, node2keys):
             current_values = __build_null_values(node2keys)
             logger.alert("No values read for a long time, probably something is wrong with RF device")
             iface.close()
+            time.sleep(0.1)
             iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                             com_port, com_baud)
+            print current_values
         elif current_values is not None:
             current_values = [ current_values ]
         # If complete and valid data values were received
