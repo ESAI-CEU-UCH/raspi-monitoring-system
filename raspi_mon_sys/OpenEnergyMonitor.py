@@ -63,9 +63,9 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
-MAX_TIME_BETWEEN_READINGS = 1800 # seconds
+MAX_TIME_BETWEEN_READINGS = 1800 # 30 minutes
 DEFAULT_POWER_TOLERANCE = 0.0
-MAX_TIME_WITHOUT_READ = 20 # seconds
+MAX_TIME_WITHOUT_READ = 300 # 5 minutes
 
 com_port = "/dev/ttyAMA0"
 com_baud = 38400
@@ -101,7 +101,6 @@ def __process(logger, client, iface, nodes, node2keys):
             time.sleep(0.1)
             iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                             com_port, com_baud)
-            print current_values
         elif current_values is not None:
             current_values = [ current_values ]
         # If complete and valid data values were received
