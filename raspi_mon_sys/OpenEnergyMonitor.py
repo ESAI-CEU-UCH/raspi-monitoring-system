@@ -83,6 +83,7 @@ def __build_null_values(node2keys):
         current_values = { 0:t, 1:int(nodeId) }
         for conf in node:
             current_values[conf["key"]] = None
+        values.append( current_values )
     return values
 
 def __process(logger, client, iface, nodes, node2keys):
