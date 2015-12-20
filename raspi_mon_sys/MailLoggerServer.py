@@ -74,20 +74,17 @@ def __generate_subject(frequency, name="LIST"):
 
 def __queue_handler(mail_credentials_path, frequency, queue):
     """Traverses the given queue and concatenates by lines all message texts."""
-    subject = __generate_subject(frequency)
-    if queue.empty():
-        msg = "Empty queue"
-    else:
+    if not queue.empty():
+        subject = __generate_subject(frequency)
         lines_list = []
         while not queue.empty(): lines_list.append( queue.get()[1] )
         msg = '\n'.join( lines_list )
-    try:
-        mail_credentials = json.loads( open(mail_credentials_path).read() )
-        Utils.sendmail(mail_credentials, subject, msg)
-        mail_credentials = None
-    except:
-        print "Unexpected error:", traceback.format_exc()
-        if msg != "Empty queue":
+        try:
+            mail_credentials = json.loads( open(mail_credentials_path).read() )
+            Utils.sendmail(mail_credentials, subject, msg)
+            mail_credentials = None
+        except:
+            print "Unexpected error:", traceback.format_exc()
             print("FATAL ERROR: irrecoverable information loss :(")
 
 def __process_message(mail_credentials_path, msg):
