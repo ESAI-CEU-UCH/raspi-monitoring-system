@@ -9,7 +9,7 @@ waitpid(){
 BREAK_TIME=4
 ACK_TIME=2
 
-for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/MailLoggerServer.py" "raspi_mon_sys/OpenEnergyMonitor.py" "raspi_mon_sys/PlugwiseMonitor.py"; do
+for mask in "raspi_mon_sys/MainMonitoringSystem.py" "raspi_mon_sys/OpenEnergyMonitor.py" "raspi_mon_sys/PlugwiseMonitor.py" "raspi_mon_sys/MailLoggerServer.py"; do
     pid=$(pgrep -n -f "python $mask")
     if [[ ! -z $pid ]]; then
         kill -2 $pid
