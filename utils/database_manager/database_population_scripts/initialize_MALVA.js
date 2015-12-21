@@ -284,7 +284,6 @@ if (cursor.count() == 0) {
         "house": house,
         "raspi": raspi_mac,
         "current_weather_url" : "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24",
-        "hourly_forecast_url" : "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250",
         "location_id" : "46250"
     });
 }

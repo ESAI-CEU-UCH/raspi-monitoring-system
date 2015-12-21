@@ -68,13 +68,14 @@ import traceback
 import unicodedata
 import urllib2
 
-from lxml import html
+from xml.etree.ElementTree import parse
 
 import raspi_mon_sys.aemet as aemet
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 NUM_DAYS = 4
+NUM_DAYS_HOURLY_FORECAST = 3
 
 weather_topic  = Utils.gettopic("aemet/{0}/{1}")
 forecast_topic = Utils.gettopic("aemet/{0}/{1}/{2}", "forecast")
@@ -83,7 +84,6 @@ forecast_topic = Utils.gettopic("aemet/{0}/{1}/{2}", "forecast")
 tz = None
 logger = None
 current_weather_url = None
-hourly_forecast_url = None
 location_id = None
 config = None
 
@@ -271,76 +271,46 @@ def __publish_daily_forecast(client):
         print "Unable to retrieve daily forecast:", traceback.format_exc()
         logger.error("Unable to retrieve daily forecast: %s", traceback.format_exc())
 
+def __process_hourly_forecast(result, name, dia, *args):
+    t = __datetimestr2time(dia.get("fecha"), "%Y-%m-%d")
+    for node in dia.findall(name):
+        periodo = node.get(u"periodo")
+        if periodo is not None:
+            if len(periodo) == 2:
+                h1 = t + int(periodo)*3600.0
+                h2 = t + int(periodo)*3600.0 + 3600.0
+            else:
+                assert len(periodo) == 4
+                h1 = t + int(periodo[0:2])*3600.0
+                h2 = t + int(periodo[2:4])*3600.0 - 3600.0
+            for fn in args:
+                k,v = fn(name,node)
+                if v is not None:
+                    l = result.setdefault(__normalize(k),
+                                          { "periods_start":[], "periods_end":[], "values":[] })
+                    print k,h1,h2,v
+                    l["periods_start"].append(h1)
+                    l["periods_end"].append(h2)
+                    l["values"].append(__try_number(__normalize(v)))
+
 def __publish_hourly_forecast(client):
-    """Traverses the HTML web page of AEMET and transforms it into forecast
-    MQTT messages as described above in this module documentation.
-    
-    All input strings are normalized to be in lower case, using underscores in
-    any whitespace character, replacing accents and other non ASCII characters
-    by its closest ASCII character.
-
-    """
     try:
-        d = datetime.date.today()
-        t = tz.localize( datetime.datetime(d.year, d.month, d.day) )
-        doc = html.fromstring(requests.get(hourly_forecast_url).content)
-        pred = doc.get_element_by_id("tabla_prediccion")
-        head = pred.find("thead").find("tr")
-        body = pred.find("tbody")
-        series_names = [ elem.get("title") for elem in head.findall("th") ]
-        series_names.append("Direccion viento")
-        series_data = [ [] for i in range(len(series_names)) ]
-        delta = int( body.find("tr").find("td").text )
-        t = t + datetime.timedelta(0, delta * 3600)
-        for row in body.findall("tr"):
-            series_data[0].append(time.mktime(t.timetuple()))
-            t = t + datetime.timedelta(0, 3600)
-            j = 0
-            for i,elem in enumerate(row.findall("td")):
-                j += 1
-                try:
-                    # in order to process properly rowspan property we need to
-                    # skip as many columns as they have more than content than
-                    # the expected
-                    while len(series_data[j]) >= len(series_data[0]): j += 1
-                    x = elem.text
-                    if x is not None: x = x.strip()
-                    if x is None or len(x) == 0:
-                        x = __try_element(elem, "img", lambda x: x.get("alt"))
-                    if x is None:
-                        x = __try_element(elem, "a", lambda x: x.text)
-                    if x is None:
-                        divs = elem.findall("div")
-                        assert len(divs) == 2
-                        x = divs[0].find("img").get("alt")
-                        x = __try_number(__normalize(x))
-                        series_data[-1].append(x)
-                        x = divs[1].text
-                    # normalize x and copy it as many times as rowspan indicates
-                    x = __try_number(__normalize(x))
-                    span = elem.get("rowspan", 1)
-                    for k in range(int(span)): series_data[j].append(x)
-                except:
-                    print "Unable to parse dom element:", traceback.format_exc()
-                    logger.error("Unable to parse dom element: %s", traceback.format_exc())
-
-        # Position 1 contains hour information, not needed, we use timestamps
-        # located at position 0.
-        series_names.pop(1)
-        series_data.pop(1)
-        series_names = [ __normalize(x) for x in series_names ]
-        
-        for i in range(1,len(series_names)):
-            name = series_names[i]
-            msg = {
-                "timestamp" : time.time(),
-                "values" : series_data[i],
-                "periods_start" : series_data[0],
-                "periods_end" : [ x+3600 for x in series_data[0] ]
-            }
-            client.publish(forecast_topic.format("hourly", name, location_id),
+        url = 'http://www.aemet.es/xml/municipios_h/localidad_h_' + location_id + '.xml'
+        doc = parse(urllib2.urlopen(url)).getroot()
+        pred = doc.find("prediccion")
+        result = {}
+        for dia in pred.findall("dia"):
+            for item_name in ["precipitacion","prob_precipitacion","prob_tormenta","nieve","prob_nieve","temperatura","sens_termica","humedad_relativa","racha_max"]:
+                __process_hourly_forecast(result, item_name, dia, lambda name,x: (name,x.text))
+            __process_hourly_forecast(result, "estado_cielo", dia, lambda name,x: (name,x.get('description')))
+            __process_hourly_forecast(result, "viento", dia,
+                                      lambda name,x: ("velocidad_del_viento",x.find('velocidad').text),
+                                      lambda name,x: ("direccion_del_viento",x.find('direccion').text))
+        when = time.time()
+        for key,msg in result.iteritems():
+            msg["timestamp"] = when
+            client.publish(forecast_topic.format("daily", key, location_id),
                            json.dumps(msg))
-
     except:
         print "Unable to retrieve hourly forecast:", traceback.format_exc()
         logger.error("Unable to retrieve hourly forecast: %s", traceback.format_exc())
@@ -389,12 +359,10 @@ def start():
     global logger
     global config
     global location_id
-    global hourly_forecast_url
     global current_weather_url
     logger = LoggerClient.open("AEMETMonitor")
     config = Utils.getconfig("aemet", logger)
     location_id = config["location_id"]
-    hourly_forecast_url = config["hourly_forecast_url"]
     current_weather_url = config["current_weather_url"]
     publish()
 
@@ -415,7 +383,6 @@ if __name__ == "__main__":
     logger = LoggerClient.open("AEMETMonitor", transport)
     # logger.config(logger.levels.DEBUG, logger.schedules.INSTANTANEOUSLY)
     current_weather_url = "http://www.aemet.es/es/eltiempo/observacion/ultimosdatos_8416Y_datos-horarios.csv?k=val&l=8416Y&datos=det&w=0&f=temperatura&x=h24"
-    hourly_forecast_url = "http://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/valencia-id46250"
     location_id = "46250"
     client = MQTTClientFake()
     __publish_daily_forecast(client)
