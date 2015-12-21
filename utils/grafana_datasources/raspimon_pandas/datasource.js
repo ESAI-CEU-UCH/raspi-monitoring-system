@@ -14,6 +14,18 @@ define([
 
            module.factory('RaspimonPandasDatasource', function($q, backendSrv) {
 
+               // rewritten from InfluxDB datasource
+               var replace_alias_wildcards = function(alias, topic) {
+                   var regex = /\$(\w+)/g;
+                   var segments = topic.split('.');
+                   return alias.replace(regex, function(match, group) {
+                       var segIndex = parseInt(group, 10);
+                       //
+                       if (!isNaN(segIndex)) { return segments[segIndex]; }
+                       return match;
+                   });
+               };
+
                // the datasource object passed to constructor is the same
                // defined in config.js named `current`
                function RaspimonPandasDatasource(datasource) {
@@ -66,7 +78,7 @@ define([
                    });
                    // a time-series has 'target' string and 'datapoints' array
                    return {
-                       target: query.alias || query.topic,
+                       target: replace_alias_wildcards(query.alias,query.topic) || query.topic,
                        datapoints: dps,
                    };
                };
