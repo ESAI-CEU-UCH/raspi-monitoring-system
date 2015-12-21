@@ -309,7 +309,7 @@ def __publish_hourly_forecast(client):
         when = time.time()
         for key,msg in result.iteritems():
             msg["timestamp"] = when
-            client.publish(forecast_topic.format("daily", key, location_id),
+            client.publish(forecast_topic.format("hourly", key, location_id),
                            json.dumps(msg))
     except:
         print "Unable to retrieve hourly forecast:", traceback.format_exc()
