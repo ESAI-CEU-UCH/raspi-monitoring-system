@@ -53,6 +53,7 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
     timestamp = message["timestamp"]
     lock.acquire()
     try:
+        last_e = None
         for s,e,v in zip(message["periods_start"],message["periods_end"],message["values"]):
             fields = __build_fields_dict(v)
             doc = {
@@ -63,12 +64,13 @@ def __enqueue_forecast_point(client, userdata, topic, message, tz):
             pending_points.append( doc )
             last_e = e
             last_fields = fields
-        doc = {
-            "measurement": topic,
-            "time": datetime.datetime.fromtimestamp(last_e, tz).isoformat(),
-            "fields": last_fields
-        }
-        pending_points.append( doc )
+        if last_e is not None:
+            doc = {
+                "measurement": topic,
+                "time": datetime.datetime.fromtimestamp(last_e, tz).isoformat(),
+                "fields": last_fields
+            }
+            pending_points.append( doc )
     except:
         print "Unexpected error:", traceback.format_exc()
         logger.error("Unexpected error: %s", traceback.format_exc())
