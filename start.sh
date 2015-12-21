@@ -7,6 +7,8 @@ export PYTHONPATH=$(pwd)
 
 screen -S raspi_log -d -m python raspi_mon_sys/MailLoggerServer.py /etc/mail_credentials.json
 screen -S raspi_main -d -m python raspi_mon_sys/MainMonitoringSystem.py
+screen -S raspi_rf -d -m python raspi_mon_sys/OpenEnergyMonitor.py
+screen -S raspi_plugwise -d -m python raspi_mon_sys/PlugwiseMonitor.py
 
 if [[ "$STARTED_AT_BOOT" = "yes" ]]; then
     # Monitorization of screen list for systemd startup script.

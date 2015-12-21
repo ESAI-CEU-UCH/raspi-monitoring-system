@@ -129,10 +129,14 @@ def write_data():
     global pending_points
     lock.acquire()
     if len(pending_points) > 0:
+        points = pending_points
+        pending_points = []
+        lock.release()
+        points.sort(key=lambda x: x["time"])
         try:
-            influx_client.write_points(pending_points)
-            pending_points = []
+            influx_client.write_points(points)
         except:
             print "Unexpected error:", traceback.format_exc()
             logger.error("Unexpected error: %s", traceback.format_exc())
-    lock.release()
+    else:
+        lock.release()

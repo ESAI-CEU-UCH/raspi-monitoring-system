@@ -46,56 +46,56 @@ if (cursor.count() == 0) {
                     "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads. Real power.",
                     "name": "ground_floor/circuits/grid_real_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 3,
                     "desc": "CT Clip 1, EmonTXV3 num 1. Grid loads. Apparent power.",
                     "name": "ground_floor/circuits/grid_app_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 4,
                     "desc": "CT Clip 2, EmonTXV3 num 1. Circuit 1 loads, 20A. Real power.",
                     "name": "ground_floor/circuits/circuit1_real_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 5,
                     "desc": "CT Clip 2, EmonTXV3 num 1. Circuit 1 loads 20A. Apparent power.",
                     "name": "ground_floor/circuits/circuit1_app_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 6,
                     "desc": "CT Clip 3, EmonTXV3 num 1. Circuit 2 loads 16A. Real power.",
                     "name": "ground_floor/circuits/circuit2_real_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 7,
                     "desc": "CT Clip 3, EmonTXV3 num 1. Circuit 2 loads 16A. Apparent power.",
                     "name": "ground_floor/circuits/circuit2_app_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 8,
                     "desc": "CT Clip 4, EmonTXV3 num 1. Circuit 3 loads 15A. Real power.",
                     "name": "ground_floor/circuits/circuit3_real_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 9,
                     "desc": "CT Clip 4, EmonTXV3 num 1. Circuit 3 loads 15A. Apparent power.",
                     "name": "ground_floor/circuits/circuit3_app_power",
                     "unit": "W",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 },
                 {
                     "key": 10,
@@ -104,7 +104,7 @@ if (cursor.count() == 0) {
                     "mul": 0.01,
                     "add": 0,
                     "unit": "V",
-                    "tolerance": 0.0005
+                    "tolerance": 0.005
                 }
             ],
             "19": [
@@ -146,6 +146,7 @@ if (cursor.count() == 0) {
         "house": house,
         "stick": plugwise_stick,
         "raspi": raspi_mac,
+        "period" : "8s",
         "pairing": {
             "000D6F0005671DC3": [
                 "000D6F00004BFA7C",
@@ -161,7 +162,8 @@ if (cursor.count() == 0) {
                 "000D6F0004B1EF92",
                 "000D6F0004B1E853",
                 "000D6F0004B1F028",
-                "000D6F000043B9AA"
+                "000D6F000043B9AA",
+                "000D6F000043BA5B"
             ]
         },
         "circles": [
@@ -203,7 +205,7 @@ if (cursor.count() == 0) {
             {
                 "mac": "000D6F00004ECE05",
                 "desc": "Two computers: iMac + PC + screen + speakers. Reading lamp. Sometimes iPad charger, Mac Book Air charger, mobile phone charger. At largest room 3.",
-                "name": "second_floor/room3/outlets",
+                "name": "second_floor/room3/electronics",
                 "unit": "W",
                 "tolerance": 0.005
             },
@@ -222,9 +224,9 @@ if (cursor.count() == 0) {
                 "tolerance": 0.005
             },
             {
-                "mac": "000D6F0001106539",
+                "mac": "000D6F000043B9AA",
                 "desc": "Instruments room, small room 1: electronic piano + fan (few times in summer) + heater (few times in winter) + amplified speakers + mixing table",
-                "name": "first_floor/room1/outlets",
+                "name": "first_floor/room1/electronics",
                 "unit": "W",
                 "tolerance": 0.005
             },
@@ -251,7 +253,7 @@ if (cursor.count() == 0) {
             },
             {
                 "mac": "000D6F0004B1E853",
-                "desc": "Toaster + juice maker + vacuum cleaner (few times)",
+                "desc": "Water heater + toaster + juice maker + vacuum cleaner (few times)",
                 "name": "ground_floor/kitchen/outlets",
                 "unit": "W",
                 "tolerance": 0.005
@@ -264,9 +266,9 @@ if (cursor.count() == 0) {
                 "tolerance": 0.005
             },
             {
-                "mac": "000D6F000043B9AA",
-                "desc": "Guest room 2 (middle one): heater in winter + computer + fan in summer",
-                "name": "first_floor/room2/outlets",
+                "mac": "000D6F000043BA5B",
+                "desc": "alarm clock + iPad charger + Mac Book Air charger + other outlets",
+                "name": "second_floor/room3/outlets",
                 "unit": "W",
                 "tolerance": 0.005
             }
@@ -327,7 +329,7 @@ if (cursor.count() == 0) {
                 "schedules": [
                     {
                         "method": "repeat_o_clock",
-                        "args": [ "10s", "$this.write_data" ]
+                        "args": [ "60s", "$this.write_data" ]
                     }
                 ]
             },
@@ -358,18 +360,6 @@ if (cursor.count() == 0) {
                     }
                 ]
             },
-            {
-                "import": "raspi_mon_sys.OpenEnergyMonitor"
-            },
-            {
-                "import": "raspi_mon_sys.PlugwiseMonitor",
-                "schedules": [
-                    {
-                        "method": "repeat_o_clock",
-                        "args": [ "8s", "$this.publish" ]
-                    }
-                ]
-            }
         ]
     });
 }

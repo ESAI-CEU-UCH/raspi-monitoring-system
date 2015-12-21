@@ -98,20 +98,23 @@ const long TIME_BETWEEN_READINGS = 1000;            // Time between readings in 
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
-const float Ical1=                88.24;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical2=                85.70;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical3=                87.60;                                 // (2000 turns / 22 Ohm burden) = 90.9
-const float Ical4=                16.20;                               // (2000 turns / 120 Ohm burden) = 16.67
+const float Ical1=                87.80;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical2=                88.04;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical3=                86.10;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical4=                16.24;                               // (2000 turns / 120 Ohm burden) = 16.67
 
 //float Vcal=                       268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 //float Vcal=276.9;
-float Vcal=               241;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+float Vcal1=               240.7;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+float Vcal2=               240.8;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+float Vcal3=               241.0;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+float Vcal4=               241.0;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
 const float Vcal_USA=             130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
 
-const float phase_shift1=          1.56;
-const float phase_shift2=          1.57;
-const float phase_shift3=          1.60;
+const float phase_shift1=          1.50;
+const float phase_shift2=          1.50;
+const float phase_shift3=          1.45;
 const float phase_shift4=          1.54;
 
 const int no_of_samples=          1662; 
@@ -194,7 +197,10 @@ void setup()
  
 
   if (USA==TRUE){                                                         // if USA mode is true
-    Vcal=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
+    Vcal1=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
+    Vcal2=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
+    Vcal3=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
+    Vcal4=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
   } 
   
   delay(10);
@@ -265,10 +271,10 @@ void setup()
   if (Serial) debug = 1; else debug=0;          // if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
   {
-    Serial.print("CT 1 Cal "); Serial.println(Ical1);
-    Serial.print("CT 2 Cal "); Serial.println(Ical2);
-    Serial.print("CT 3 Cal "); Serial.println(Ical3);
-    Serial.print("CT 4 Cal "); Serial.println(Ical4);
+    Serial.print("CT 1 ICal "); Serial.println(Ical1);
+    Serial.print("CT 2 ICal "); Serial.println(Ical2);
+    Serial.print("CT 3 ICal "); Serial.println(Ical3);
+    Serial.print("CT 4 ICal "); Serial.println(Ical4);
     delay(1000);
 
     Serial.print("RMS Voltage on AC-AC  is: ~");
@@ -278,7 +284,10 @@ void setup()
       Serial.println("AC-AC detected - Real Power measure enabled");
       Serial.println("assuming pwr from AC-AC (jumper closed)");
       if (USA==TRUE) Serial.println("USA mode active"); 
-      Serial.print("Vcal: "); Serial.println(Vcal);
+      Serial.print("Vcal 1: "); Serial.println(Vcal1);
+      Serial.print("Vcal 2: "); Serial.println(Vcal2);
+      Serial.print("Vcal 3: "); Serial.println(Vcal3);
+      Serial.print("Vcal 4: "); Serial.println(Vcal4);
       Serial.print("Phase Shift1: "); Serial.println(phase_shift1);
       Serial.print("Phase Shift2: "); Serial.println(phase_shift2);
       Serial.print("Phase Shift3: "); Serial.println(phase_shift3);
@@ -337,10 +346,10 @@ void setup()
   
   if (ACAC)
   {
-    if (CT1) ct1.voltage(0, Vcal, phase_shift1);          // ADC pin, Calibration, phase_shift
-    if (CT2) ct2.voltage(0, Vcal, phase_shift2);          // ADC pin, Calibration, phase_shift
-    if (CT3) ct3.voltage(0, Vcal, phase_shift3);          // ADC pin, Calibration, phase_shift
-    if (CT4) ct4.voltage(0, Vcal, phase_shift4);          // ADC pin, Calibration, phase_shift
+    if (CT1) ct1.voltage(0, Vcal1, phase_shift1);          // ADC pin, Calibration, phase_shift
+    if (CT2) ct2.voltage(0, Vcal2, phase_shift2);          // ADC pin, Calibration, phase_shift
+    if (CT3) ct3.voltage(0, Vcal3, phase_shift3);          // ADC pin, Calibration, phase_shift
+    if (CT4) ct4.voltage(0, Vcal4, phase_shift4);          // ADC pin, Calibration, phase_shift
   }
 
   attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting 

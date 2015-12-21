@@ -63,50 +63,86 @@ import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
-MAX_TIME_BETWEEN_READINGS = 1800
+MAX_TIME_BETWEEN_READINGS = 1800 # 30 minutes
 DEFAULT_POWER_TOLERANCE = 0.0
+MAX_TIME_WITHOUT_READ = 300 # 5 minutes
+
+com_port = "/dev/ttyAMA0"
+com_baud = 38400
+timeout = 0
 
 client = None
 iface = None
 is_running = False
 logger = None
 
+def __build_null_values(node2keys):
+    t = time.time()
+    values = []
+    for nodeId,node in node2keys.iteritems():
+        current_values = { 0:t, 1:int(nodeId) }
+        for conf in node:
+            current_values[conf["key"]] = None
+        values.append( current_values )
+    return values
+
+def __try_open(logger):
+    try:
+        iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
+                                                        com_port, com_baud)
+    except:
+        iface = None
+        logger.alert("Unable to open connection with RF device")
+    return iface
+
 def __process(logger, client, iface, nodes, node2keys):
+    last_timestamp = time.time()
     topic = Utils.gettopic("rfemon/{0}/{1}/{2}")
     while is_running:
+        if iface is None:
+            time.sleep(0.1)
+            iface = __try_open(logger)
+            continue
         # Execute run method
         iface.run()
         # Read socket
-        values = iface.read()
+        current_values = iface.read()
+        if current_values is None and time.time() - last_timestamp > MAX_TIME_WITHOUT_READ:
+            current_values = __build_null_values(node2keys)
+            logger.alert("No values read for a long time, probably something is wrong with RF device")
+            iface.close()
+            time.sleep(0.1)
+            iface = __try_open(logger)
+        elif current_values is not None:
+            current_values = [ current_values ]
         # If complete and valid data values were received
-        if values is not None:
-            logger.debug(str(values))
-            t      = values[0]
-            nodeId = values[1]
-            for conf in node2keys[str(nodeId)]:
-                last_data = conf["data"]
-                key       = conf["key"]
-                name      = conf["name"]
-                mul       = conf.get("mul", 1.0)
-                add       = conf.get("add", 0.0)
-                v         = (values[key] + add) * mul
-                alert_below_th = conf.get("alert_below_threshold", None)
-                if alert_below_th is not None and v < alert_below_th:
-                    logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
-                                 float(v), nodeId, key, name, float(alert_below_th))
-                if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
-                    message = { 'timestamp' : t, 'data' : v }
-                    client.publish(topic.format(name, nodeId, key), json.dumps(message))
-                    conf["data"] = v
-                    conf["when"] = t
+        if current_values is not None:
+            for values in current_values:
+                logger.debug(str(values))
+                t      = values[0]
+                nodeId = values[1]
+                for conf in node2keys[str(nodeId)]:
+                    last_data = conf["data"]
+                    key       = conf["key"]
+                    name      = conf["name"]
+                    mul       = conf.get("mul", 1.0)
+                    add       = conf.get("add", 0.0)
+                    v         = values[key]
+                    if v is not None: v = (v + add) * mul
+                    alert_below_th = conf.get("alert_below_threshold", None)
+                    if alert_below_th is not None and v is not None and v < alert_below_th:
+                        logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
+                                     float(v), nodeId, key, name, float(alert_below_th))
+                    if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
+                        message = { 'timestamp' : t, 'data' : v }
+                        client.publish(topic.format(name, nodeId, key), json.dumps(message))
+                        conf["data"] = v
+                        conf["when"] = t
+                last_timestamp = t
         time.sleep(0.05)
 
 def start():
-    """Starts a thread which reads from RFM69Pi and publishes using MQTT."""
-    com_port = "/dev/ttyAMA0"
-    com_baud = 38400
-    timeout = 0
-    
+    """Starts a thread which reads from RFM69Pi and publishes using MQTT."""    
     global logger
     logger = LoggerClient.open("OpenEnergyMonitor")
     logger.info("Opening connection")
@@ -115,8 +151,7 @@ def start():
     client = Utils.getpahoclient(logger)
     
     global iface
-    iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
-                                                    com_port, com_baud)
+    iface = __try_open(logger)
 
     # config is a dictionary with:
     # devices : [ { id, desc, name  } ]
@@ -141,8 +176,16 @@ def start():
 def stop():
     global is_running
     is_running = False
+    time.sleep(0.1)
     client.disconnect()
     logger.close()
     iface.close()
 
-if __name__ == "__main__": start()
+if __name__ == "__main__":
+    start()
+    # Inifite loop.
+    try:
+        while True:
+            time.sleep(60)
+    except:
+        stop()

@@ -130,4 +130,7 @@ def startup_wait():
         time.sleep(wait)
         print "Starting"
 
-def compute_relative_difference(a, b): return abs(b - a) / (max(abs(a),abs(b)) + 1e-20)
+def compute_relative_difference(a, b):
+    if a is None and b is None: return 0.0
+    if a is None or b is None: return float("inf")
+    return abs(b - a) / (max(abs(a),abs(b)) + 1e-20)
