@@ -90,7 +90,6 @@ def start():
     logger  = LoggerClient.open("PlugwiseMonitor")
     if not verbose: logger.config(logger.levels.WARNING, logger.schedules.DAILY)
     config  = Utils.getconfig("plugwise", logger)
-    client  = Utils.getpahoclient(logger, __configure)
     assert config is not None
     device  = plugwise_api.Stick(logger, DEFAULT_SERIAL_PORT)
 
@@ -114,7 +113,8 @@ def start():
         for v in OUTPUT_LIST:
             circle_data["power" + v["suffix"]] = -10000.0
             circle_data["when" + v["suffix"]] = 0.0
-
+    
+    client = Utils.getpahoclient(logger, __configure)
     client.loop_start()
 
 def stop():
