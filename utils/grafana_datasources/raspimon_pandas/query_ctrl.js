@@ -23,12 +23,11 @@ define([
                        "abs", "add", "clip", "clip_lower", "clip_upper",
                        "cumprod", "cumsum", "diff", "div", "dropna", "fillna",
                        "floordiv", "interpolate", "mod", "mul", "nlargest",
-                       "nonzero", "nsmallest", "pow", "rank", "resample",
+                       "nonzero", "nsmallest", "pow", "rank", "replace", "resample",
                        "rolling_count", "rolling_kurtosis", "rolling_max",
                        "rolling_mean", "rolling_median", "rolling_min",
                        "rolling_skew", "rolling_std", "rolling_sum",
                        "rolling_var", "rolling_window", "round", "shift", "sub",
-                       "replace",
                    ];
                    target.functions = target.functions || [];
                    
