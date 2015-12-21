@@ -19,6 +19,12 @@ Looking into code and `Plugwise-2-py <https://github.com/SevenW/Plugwise-2-py>`_
 it seems that 1 second sampling period is allowed but 8-10 seconds would obtain
 better resolution from pulse counters.
 
+This module allow commands givan as MQTT messages with the following structure::
+
+    plugwise/MACADDRESS/state
+    plugwise/MACADDRESS/state
+
+with the content 'on' or 'off'.
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
@@ -46,6 +52,7 @@ config = None
 device = None
 circles_config = None
 circles = None
+mac2circle = None
 verbose = False
 
 def __on_connect(client, userdata, rc):
@@ -54,7 +61,17 @@ def __on_connect(client, userdata, rc):
 
 def __on_message(client, userdata, msg):
     #print(msg.topic+" "+str(msg.payload))
-    pass
+    topic = msg.topic
+    if topic.startswith("plugwise"):
+        message = msg.payload
+        cmd = topic.split("/")
+        mac = cmd[1]
+        assert cmd[2] == "state"
+        c = mac2circle.get(mac)
+        if c is not None:
+            if message == "on": c.switch_on()
+            elif message == "off": c.switch_off()
+            else: logger.error("Unknown message value: %s", message)
 
 def __configure(client):
     client.on_connect = __on_connect
@@ -69,6 +86,7 @@ def start():
     global device
     global circles_config
     global circles
+    global mac2circle
     logger  = LoggerClient.open("PlugwiseMonitor")
     if not verbose: logger.config(logger.levels.WARNING, logger.schedules.DAILY)
     config  = Utils.getconfig("plugwise", logger)
@@ -82,6 +100,7 @@ def start():
     # the relative difference in power in order to reduce the network overhead.
     circles_config = config["circles"]
     circles = []
+    mac2circle = {}
     for circle_data in circles_config:
         mac = circle_data["mac"]
         circles.append( plugwise_api.Circle(logger, mac, device, {
@@ -90,6 +109,7 @@ def start():
             "always_on" : "False",
             "production" : "True"
         }) )
+        mac2circle[mac] = circles[-1]
         circle_data["state"] = "NA"
         for v in OUTPUT_LIST:
             circle_data["power" + v["suffix"]] = -10000.0
