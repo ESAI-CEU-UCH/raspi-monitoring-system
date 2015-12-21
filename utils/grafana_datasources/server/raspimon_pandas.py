@@ -207,6 +207,9 @@ class MySeries:
 
     def resample(self, *args, **kwargs):
         return MySeries(self.x.resample(*args, **kwargs))
+        
+    def replace(self, *args, **kwargs):
+        return MySeries(self.x.replace(*args, **kwargs))
     
 def build_mapfn(step): return mapfn.format(step)
 

@@ -28,6 +28,7 @@ define([
                        "rolling_mean", "rolling_median", "rolling_min",
                        "rolling_skew", "rolling_std", "rolling_sum",
                        "rolling_var", "rolling_window", "round", "shift", "sub",
+                       "replace",
                    ];
                    target.functions = target.functions || [];
                    
