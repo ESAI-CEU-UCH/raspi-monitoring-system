@@ -288,7 +288,6 @@ def __process_hourly_forecast(result, name, dia, *args):
                 if v is not None:
                     l = result.setdefault(__normalize(k),
                                           { "periods_start":[], "periods_end":[], "values":[] })
-                    print k,h1,h2,v
                     l["periods_start"].append(h1)
                     l["periods_end"].append(h2)
                     l["values"].append(__try_number(__normalize(v)))
