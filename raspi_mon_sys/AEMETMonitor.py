@@ -300,7 +300,7 @@ def __publish_hourly_forecast(client):
         for dia in pred.findall("dia"):
             for item_name in ["precipitacion","prob_precipitacion","prob_tormenta","nieve","prob_nieve","temperatura","sens_termica","humedad_relativa","racha_max"]:
                 __process_hourly_forecast(result, item_name, dia, lambda name,x: (name,x.text))
-            __process_hourly_forecast(result, "estado_cielo", dia, lambda name,x: (name,x.get('description')))
+            __process_hourly_forecast(result, "estado_cielo", dia, lambda name,x: (name,x.get('descripcion')))
             __process_hourly_forecast(result, "viento", dia,
                                       lambda name,x: ("velocidad_del_viento",x.find('velocidad').text),
                                       lambda name,x: ("direccion_del_viento",x.find('direccion').text))
