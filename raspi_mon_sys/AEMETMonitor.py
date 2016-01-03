@@ -75,7 +75,6 @@ import raspi_mon_sys.LoggerClient as LoggerClient
 import raspi_mon_sys.Utils as Utils
 
 NUM_DAYS = 4
-NUM_DAYS_HOURLY_FORECAST = 3
 
 weather_topic  = Utils.gettopic("aemet/{0}/{1}")
 forecast_topic = Utils.gettopic("aemet/{0}/{1}/{2}", "forecast")
@@ -281,7 +280,7 @@ def __process_hourly_forecast(result, name, dia, *args):
                 h2 = t + int(periodo)*3600.0 + 3600.0
             else:
                 assert len(periodo) == 4
-                h1 = t + int(periodo[0:2])*3600.0
+                h1 = t + int(periodo[0:2])*3600.0 - 3600.0
                 h2 = t + int(periodo[2:4])*3600.0 - 3600.0
             for fn in args:
                 k,v = fn(name,node)
