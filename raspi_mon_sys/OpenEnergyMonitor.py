@@ -182,6 +182,7 @@ def stop():
     iface.close()
 
 if __name__ == "__main__":
+    Utils.startup_wait()
     start()
     # Inifite loop.
     try:
