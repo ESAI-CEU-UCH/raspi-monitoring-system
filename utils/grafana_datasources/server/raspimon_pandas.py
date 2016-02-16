@@ -59,18 +59,15 @@ avg_reducefn = """function(key,values) {{
 sum_reducefn = """function(key,values) {{
     values.sort(function(a,b) {{ return a.secs - b.secs; }});
     sum = 0.0;
-    t = 0.0;
     for(i=1; i<values.length; ++i) {{
         dt = values[i].secs - values[i-1].secs;
         if (dt > 0.0) {{
             value = 0.5*values[i].value + 0.5*values[i-1].value;
             sum  += value * dt;
-            t    += dt;
         }}
     }}
-    if (t < 1.0) t = 1.0;
     if (sum == 0.0) sum = values[0].value;
-    return {{ secs: values[values.length-1].secs, value: sum }};
+    return {{ secs: 0.5*values[0].secs + 0.5*values[values.length-1].secs, value: sum }};
 }}"""
 
 generic_math_reducefn = """function(key,values) {{
@@ -91,7 +88,7 @@ generic_math_reducefn = """function(key,values) {{
 reduce_operators = {
     "first" : [ take_one_reducefn, 0 ],
     "last" : [ take_one_reducefn, "values.length-1" ],
-    #"sum" : [ sum_reducefn ],
+    "sum" : [ sum_reducefn ],
     "avg" : [ avg_reducefn ],
     "min" : [ generic_math_reducefn, "min" ],
     "max" : [ generic_math_reducefn, "max" ]
