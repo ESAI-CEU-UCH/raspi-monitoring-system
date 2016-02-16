@@ -168,6 +168,7 @@ def publish():
         raise
 
 if __name__ == "__main__":
+    Utils.startup_wait()
     start()
     Scheduler.start()
     Scheduler.repeat_o_clock(config["period"], publish)
