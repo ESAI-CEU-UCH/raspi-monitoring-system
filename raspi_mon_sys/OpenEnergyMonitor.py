@@ -58,6 +58,7 @@ import json
 import serial
 import time
 import threading
+import traceback
 
 import raspi_mon_sys.emonhub.emonhub_interfacer as emonhub_interfacer
 import raspi_mon_sys.LoggerClient as LoggerClient
@@ -87,6 +88,7 @@ def __build_null_values(node2keys):
     return values
 
 def __try_open(logger):
+    global iface
     try:
         iface = emonhub_interfacer.EmonHubJeeInterfacer("raspimon", logger,
                                                         com_port, com_baud)
@@ -103,42 +105,46 @@ def __process(logger, client, iface, nodes, node2keys):
             time.sleep(0.1)
             iface = __try_open(logger)
             continue
-        # Execute run method
-        iface.run()
-        # Read socket
-        current_values = iface.read()
-        if current_values is None and time.time() - last_timestamp > MAX_TIME_WITHOUT_READ:
-            current_values = __build_null_values(node2keys)
-            logger.alert("No values read for a long time, probably something is wrong with RF device")
-            iface.close()
-            time.sleep(0.1)
-            iface = __try_open(logger)
-        elif current_values is not None:
-            current_values = [ current_values ]
-        # If complete and valid data values were received
-        if current_values is not None:
-            for values in current_values:
-                logger.debug(str(values))
-                t      = values[0]
-                nodeId = values[1]
-                for conf in node2keys[str(nodeId)]:
-                    last_data = conf["data"]
-                    key       = conf["key"]
-                    name      = conf["name"]
-                    mul       = conf.get("mul", 1.0)
-                    add       = conf.get("add", 0.0)
-                    v         = values[key]
-                    if v is not None: v = (v + add) * mul
-                    alert_below_th = conf.get("alert_below_threshold", None)
-                    if alert_below_th is not None and v is not None and v < alert_below_th:
-                        logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
-                                     float(v), nodeId, key, name, float(alert_below_th))
-                    if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
-                        message = { 'timestamp' : t, 'data' : v }
-                        client.publish(topic.format(name, nodeId, key), json.dumps(message))
-                        conf["data"] = v
-                        conf["when"] = t
-                last_timestamp = t
+        try:
+            # Execute run method
+            iface.run()
+            # Read socket
+            current_values = iface.read()
+            if current_values is None and time.time() - last_timestamp > MAX_TIME_WITHOUT_READ:
+                current_values = __build_null_values(node2keys)
+                logger.alert("No values read for a long time, probably something is wrong with RF device")
+                iface.close()
+                time.sleep(0.1)
+                iface = __try_open(logger)
+            elif current_values is not None:
+                current_values = [ current_values ]
+            # If complete and valid data values were received
+            if current_values is not None:
+                for values in current_values:
+                    logger.debug(str(values))
+                    t      = values[0]
+                    nodeId = values[1]
+                    for conf in node2keys[str(nodeId)]:
+                        last_data = conf["data"]
+                        key       = conf["key"]
+                        name      = conf["name"]
+                        mul       = conf.get("mul", 1.0)
+                        add       = conf.get("add", 0.0)
+                        v         = values[key]
+                        if v is not None: v = (v + add) * mul
+                        alert_below_th = conf.get("alert_below_threshold", None)
+                        if alert_below_th is not None and v is not None and v < alert_below_th:
+                            logger.alert("Value %f for nodeId %d key %d registered with name %s is below threshold %f",
+                                         float(v), nodeId, key, name, float(alert_below_th))
+                        if Utils.compute_relative_difference(last_data, v) > conf.get("tolerance",DEFAULT_POWER_TOLERANCE) or t - conf["when"] > MAX_TIME_BETWEEN_READINGS:
+                            message = { 'timestamp' : t, 'data' : v }
+                            client.publish(topic.format(name, nodeId, key), json.dumps(message))
+                            conf["data"] = v
+                            conf["when"] = t
+                    last_timestamp = t
+        except:
+            print "Unexpected error:",traceback.format_exc()
+            logger.error("Unexpected error: %s", traceback.format_exc())
         time.sleep(0.05)
 
 def start():
