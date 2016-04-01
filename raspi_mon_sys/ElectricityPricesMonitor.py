@@ -17,6 +17,12 @@ publishes a sequence of messages as::
 
 This sequence can be interpreted as a time series of electricity prices for a
 given day offset (current if `offset=0`, next if `offset=1`).
+
+2016/04/01: It seems that the URL for downloading data has been changed to the following one:
+            https://api.esios.ree.es/archives/70/download_json?locale=es
+
+TODO: It is necessary to update the code because the new URL doesn't receive the date. So, it
+      always returns the last PVPC for the corresponding day.
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
@@ -36,7 +42,8 @@ import raspi_mon_sys.Utils as Utils
 
 logger = None
 topic = Utils.gettopic("electricity_prices/{0}")
-url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
+#url = 'http://www.esios.ree.es/Solicitar?fileName=PVPC_CURV_DD_{0}&fileType=txt&idioma=es'
+url = 'https://api.esios.ree.es/archives/70/download_json?locale=es'
 
 def __on_connect(client, userdata, rc):
     logger.info("Connected to MQTT broker")
@@ -50,7 +57,7 @@ def __publish_data_of_day(day_str, ref_time):
     except:
         logger.error("Unable to connecto to MQTT broker")
         raise
-    tomorrow_url = url.format(day_str)
+    tomorrow_url = url #.format(day_str)
     try:
         # http request
         response_string = urllib2.urlopen(tomorrow_url)
