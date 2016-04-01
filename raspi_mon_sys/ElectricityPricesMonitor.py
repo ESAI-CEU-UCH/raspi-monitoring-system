@@ -23,6 +23,9 @@ given day offset (current if `offset=0`, next if `offset=1`).
 
 TODO: It is necessary to update the code because the new URL doesn't receive the date. So, it
       always returns the last PVPC for the corresponding day.
+
+TODO: Update this script to use the data stored at MongoDB config, source="electricity_prices",
+      which contains the URL and token necessaries to download data with the new API of ESIOS.
 """
 
 # Copyright (C) 2015 Miguel Lorenzo, Francisco Zamora-Martinez
