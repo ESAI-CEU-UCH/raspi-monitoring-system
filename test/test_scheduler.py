@@ -9,8 +9,8 @@ sched.start()
 sched.once_after(100, say, "it's", "me")
 sched.once_when(int(time.time()*1000 + 200), say, "it's", "me")
 a = sched.repeat_every(5000, say, "Hello", "World")
-b = sched.repeat_o_clock(60000, say, "One", "Minute")
-b = sched.repeat_o_clock_with_offset(60000, 5, say, "One", "Minute plus five")
+b = sched.repeat_o_clock("60s", say, "One", "Minute")
+b = sched.repeat_o_clock_with_offset("60s", 5, say, "One", "Minute plus five")
 
 time.sleep(31)
 

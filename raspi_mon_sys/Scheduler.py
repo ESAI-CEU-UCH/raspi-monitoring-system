@@ -10,7 +10,7 @@ multiple of a given number of mili-seconds, or repeated every timestamp multiple
 of a given number of mili-seconds. For this purpose, you can use the functions
 `once_after()`, `repeat_every()`, `once_o_clock()` and `repeat_o_clock()`. The
 number of mili-seconds can be given as a string with the syntax `"N+T"` where
-`N` is a number (integer or float) and `T in {"s","m","h","d","w"}` where 
+`N` is a number (integer or float) and `T in {"s","m","h","d","w"}` where
 s is for seconds, m for minutes and so on.
 
 The normal use of this module requires the execution of `start()` function before
@@ -47,7 +47,6 @@ Another Example:
 All functions receive mili-second resolution as integer values.
 
 """
-import sys
 import time
 import threading
 import traceback
@@ -59,10 +58,27 @@ import Queue
 ## PRIVATE SECTION ##
 #####################
 
+T1_MILISECOND = 1
+T1_CENTISECOND = 10
+T1_DECISECOND = 100
+T1_SECOND = 1000
+T1_MINUTE = 60000
+T1_HOUR = 3600000
+T1_DAY = 24 * T1_HOUR
+T1_WEEK = 7 * T1_DAY
+
+__TRANSFORMATION_DICT = {
+    "s" : lambda x: x*T1_SECOND,
+    "m" : lambda x: x*T1_MINUTE,
+    "h" : lambda x: x*T1_HOUR,
+    "d" : lambda x: x*T1_DAY,
+    "w" : lambda x: x*T1_WEEK,
+}
+
 # Set of removed jobs.
 __removed = set()
 # Queue of pending jobs. Every job is tuple (timestamp, (function, args, kwargs)).
-__jobs  = Queue.PriorityQueue()
+__jobs = Queue.PriorityQueue()
 # Event to awake main thread when jobs are ready or sleep time has passed.
 __awake = threading.Event()
 # List of pending threads, in order to execute join when the terminate.
@@ -71,32 +87,16 @@ __running = []
 __main_thread = None
 __main_thread_running = False
 
-T1_MILISECOND  = 1
-T1_CENTISECOND = 10
-T1_DECISECOND  = 100
-T1_SECOND      = 1000
-T1_MINUTE      = 60000
-T1_HOUR        = 3600000
-T1_DAY         = 24 * T1_HOUR
-T1_WEEK        = 7 * T1_DAY
-
-__transformation_dict = {
-    "s" : lambda x: x*T1_SECOND,
-    "m" : lambda x: x*T1_MINUTE,
-    "h" : lambda x: x*T1_HOUR,
-    "d" : lambda x: x*T1_DAY,
-    "w" : lambda x: x*T1_WEEK,
-}
-
-def __transform(ms):
-    if type(ms) == str or type(ms) == unicode:
-        n = float(ms[:-1])
-        t = ms[-1].lower()
-        return int( round( __transformation_dict[t](n) ) )
+def __transform(msec):
+    if isinstance(msec, str) or isinstance(msec, unicode):
+        n = float(msec[:-1])
+        t = msec[-1].lower()
+        return int(round(__TRANSFORMATION_DICT[t](n)))
     else:
-        return ms
+        return msec
 
-def __gettime(): return time.time()*1000
+def __gettime():
+    return time.time()*1000
 
 def __run_threaded(job_func, *args, **kwargs):
     """Executes the given function with args and kwargs in a thread."""
@@ -113,46 +113,47 @@ def __check_running_threads(timeout=0.0):
     r = []
     for th in __running:
         th.join(timeout)
-        if th.isAlive(): r.append( th )
+        if th.isAlive():
+            r.append(th)
     __running = r
 
 def __main_loop():
     """Traverses the priority queue __jobs executing jobs in order.
-    
+
     When a job is ready (its timestamp has passed), it is executed. Otherwise,
     the main thread will wait until the expected timestamp or until __awake
     condition is notified.
     """
     while __main_thread_running:
         __check_running_threads()
-        when,uuid,data = __jobs.get()
+        when, uuid, data = __jobs.get()
         if uuid in __removed:
             __removed.discard(uuid)
             continue
         amount = when - __gettime()
         if amount > 0:
-            __jobs.put( (when,uuid,data) )
+            __jobs.put((when, uuid, data))
             amount = when - __gettime()
             if amount > 0:
                 __awake.wait(amount/1000.0)
                 __awake.clear()
         else:
-            job,args,kwargs = data
-            __running.append( __run_threaded(job, *args, **kwargs) )
+            job, args, kwargs = data
+            __running.append(__run_threaded(job, *args, **kwargs))
 
 def __once_after(mili_seconds, uuid, func, *args, **kwargs):
     """Executes the given job function after given mili-seconds amount."""
     if __main_thread_running:
-        now  = __gettime()
+        now = __gettime()
         when = now + mili_seconds
-        __jobs.put( (when, uuid, (func,args,kwargs)) )
+        __jobs.put((when, uuid, (func, args, kwargs)))
         __awake.set()
     else:
         raise Exception("Unable to enqueue any job while Scheduler is stopped.")
 
 def __repeated_job(mili_seconds, expected_when, uuid, func, *args, **kwargs):
     """Repeats execution of a function every mili-seconds.
-    
+
     This function uses expected_when in order to improve precision of next
     repetition.
     """
@@ -171,13 +172,16 @@ def __repeated_job(mili_seconds, expected_when, uuid, func, *args, **kwargs):
     __once_after(amount, uuid, __repeated_job, mili_seconds, expected_when, uuid,
                  func, *args, **kwargs)
 
-def __repeated_o_clock_with_offset(mili_seconds, offset, uuid, func, *args, **kwargs):
-    """Repeats execution of job function at next time multiple of the given mili-seconds plus the given offset."""
+def __repeated_o_clock_with_offset(mili_seconds, offset, uuid,
+                                   func, *args, **kwargs):
+    """Repeats execution of job function at next time multiple of the
+    given mili-seconds plus the given offset.
+    """
     try:
         func(*args, **kwargs)
     except:
         print "Unexpected error:", traceback.format_exc()
-    now  = __gettime()
+    now = __gettime()
     when = now + (mili_seconds - ((now-offset) % mili_seconds))
     __once_after(when - now, uuid, __repeated_o_clock_with_offset,
                  mili_seconds, offset, uuid, func, *args, **kwargs)
@@ -188,7 +192,7 @@ def __repeated_o_clock_with_offset(mili_seconds, offset, uuid, func, *args, **kw
 
 def remove(uuid):
     """Allow remove a job scheduled using any repeat_* or once_* functions.
-    
+
     This function is not removing the job from the scheduler, it uses a set of
     removed uuids ignoring the execution of the job once it pops out of the
     priority queue.
@@ -198,7 +202,7 @@ def remove(uuid):
 def once_after(mili_seconds, func, *args, **kwargs):
     """Executes the given job function after given mili-seconds amount and returns a UUID."""
     mili_seconds = __transform(mili_seconds)
-    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
+    assert isinstance(mili_seconds, int), "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
     __once_after(mili_seconds, uuid, func, *args, **kwargs)
     return uuid
@@ -206,7 +210,7 @@ def once_after(mili_seconds, func, *args, **kwargs):
 def repeat_every(mili_seconds, func, *args, **kwargs):
     """Repeats execution of given job function after every mili-seconds and returns a UUID."""
     mili_seconds = __transform(mili_seconds)
-    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
+    assert isinstance(mili_seconds, int), "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
     __once_after(mili_seconds, uuid, __repeated_job, mili_seconds, __gettime() + mili_seconds, uuid,
                  func, *args, **kwargs)
@@ -214,39 +218,46 @@ def repeat_every(mili_seconds, func, *args, **kwargs):
 
 def once_when(ms_timestamp, func, *args, **kwargs):
     """Executes job function at the given timestamp in mili-seconds and returns a UUID."""
-    assert type(ms_timestamp) is int, "Needs an integer as ms_timestamp parameter"
+    assert isinstance(ms_timestamp, int), "Needs an integer as ms_timestamp parameter"
     uuid = uuid4()
     mili_seconds = ms_timestamp - __gettime()
-    if mili_seconds > 0: __once_after(mili_seconds, uuid, func, *args, **kwargs)
-    else: raise Exception("Unable to schedule functions in the past")
+    if mili_seconds > 0:
+        __once_after(mili_seconds, uuid, func, *args, **kwargs)
+    else:
+        raise Exception("Unable to schedule functions in the past")
     return uuid
 
 def once_o_clock(mili_seconds, func, *args, **kwargs):
     """Executes job function at next time multiple of the given mili-seconds and returns a UUID."""
     mili_seconds = __transform(mili_seconds)
-    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
+    assert isinstance(mili_seconds, int), "Needs an integer as mili_seconds parameter"
     uuid = uuid4()
-    now  = __gettime()
+    now = __gettime()
     when = now + (mili_seconds - (now % mili_seconds))
     __once_after(when - now, uuid, func, *args, **kwargs)
     return uuid
 
 def repeat_o_clock_with_offset(mili_seconds, offset, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given mili-seconds plus the given offset and returns a UUID."""
+    """Repeated execution of job function at every next time multiple of
+    the given mili-seconds plus the given offset and returns a UUID.
+    """
     mili_seconds = __transform(mili_seconds)
     offset = __transform(offset)
-    if offset >= mili_seconds: raise Exception("Offset should be less than mili_seconds")
-    assert type(mili_seconds) is int, "Needs an integer as mili_seconds parameter"
-    assert type(offset) is int, "Needs an integer as offset parameter"
+    if offset >= mili_seconds:
+        raise Exception("Offset should be less than mili_seconds")
+    assert isinstance(mili_seconds, int), "Needs an integer as mili_seconds parameter"
+    assert isinstance(offset, int), "Needs an integer as offset parameter"
     uuid = uuid4()
-    now  = __gettime()
+    now = __gettime()
     when = now + (mili_seconds - ((now-offset) % mili_seconds))
     __once_after(when - now, uuid, __repeated_o_clock_with_offset,
                  mili_seconds, offset, uuid, func, *args, **kwargs)
     return uuid
 
 def repeat_o_clock(mili_seconds, func, *args, **kwargs):
-    """Repeated execution of job function at every next time multiple of the given mili-seconds and returns a UUID."""
+    """Repeated execution of job function at every next time multiple of
+    the given mili-seconds and returns a UUID.
+    """
     mili_seconds = __transform(mili_seconds)
     return repeat_o_clock_with_offset(mili_seconds, 0, func, *args, **kwargs)
 
@@ -256,7 +267,7 @@ def start():
     if not __main_thread_running:
         global __main_thread
         __main_thread_running = True
-        __main_thread = __run_threaded( __main_loop )
+        __main_thread = __run_threaded(__main_loop)
 
 def stop():
     """Stops execution of the scheduler."""
@@ -264,13 +275,15 @@ def stop():
     if __main_thread_running:
         global __main_thread
         __main_thread_running = False
-        while not __jobs.empty(): __jobs.get()
+        while not __jobs.empty():
+            __jobs.get()
         __awake.set()
         __check_running_threads(None)
         __main_thread.join()
         __main_thread = None
 
 def is_running():
+    """Indicates if scheduler has been started."""
     return __main_thread_running
 
 def loop_forever():
@@ -281,7 +294,8 @@ def loop_forever():
 
 if __name__ == "__main__":
     def say(something, more):
-        print(time.time(), something, more)    
+        """Task function example."""
+        print(time.time(), something, more)
     start()
     repeat_every(5, say, "Hello", "World")
     repeat_o_clock(60, say, "One", "Minute")
